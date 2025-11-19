@@ -1,13 +1,13 @@
 /**
  * Script to create an admin user
  * Usage: node scripts/create-admin.js <username> <password>
+ *
  */
 
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 
-const MONGODB_URI =
-  process.env.MONGODB_URI || "mongodb://localhost:27017/unik-academy";
+const MONGODB_URI = "";
 
 const AdminSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
@@ -52,7 +52,7 @@ async function createAdmin(username, password) {
 
 // Get arguments from command line
 const username = "admin";
-const password = "admin";
+const password = "admin@2025";
 
 if (!username || !password) {
   console.error("Usage: node scripts/create-admin.js <username> <password>");

@@ -11,7 +11,8 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "UNIK Academy - Empowering Communication. Transforming Personalities.",
-  description: "UNIK Academy offers comprehensive courses in Communication Skills, Public Speaking, Spoken English, Grammar, and Personality Development.",
+  description:
+    "UNIK Academy offers comprehensive courses in Communication Skills, Public Speaking, Spoken English, Grammar, and Personality Development.",
 };
 
 export default function RootLayout({
@@ -21,11 +22,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} antialiased min-h-screen flex flex-col`}>
+      <body
+        className={`${inter.variable} antialiased min-h-screen flex flex-col`}
+      >
         <Navigation />
-        <main className="flex-grow">
-          {children}
-        </main>
+        <main className="flex-grow">{children}</main>
         <Footer />
       </body>
     </html>

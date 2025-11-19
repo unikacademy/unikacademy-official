@@ -1,53 +1,53 @@
-import Link from 'next/link';
+import Link from "next/link";
 
 export default function Home() {
   const courses = [
     {
-      title: 'Communication Skills',
-      description: 'Master the art of effective communication',
+      title: "Communication Skills",
+      description: "Master the art of effective communication",
     },
     {
-      title: 'ABI',
-      description: 'Advanced Business Intelligence and communication',
+      title: "ABI",
+      description: "Advanced Business Intelligence and communication",
     },
     {
-      title: 'Public Speaking & Presentation Skills',
-      description: 'Build confidence and excel in public speaking',
+      title: "Public Speaking & Presentation Skills",
+      description: "Build confidence and excel in public speaking",
     },
     {
-      title: 'Spoken English & Grammar',
-      description: 'Improve your English fluency and grammar',
+      title: "Spoken English & Grammar",
+      description: "Improve your English fluency and grammar",
     },
     {
-      title: 'Personality Development',
-      description: 'Transform your personality and leadership skills',
+      title: "Personality Development",
+      description: "Transform your personality and leadership skills",
     },
   ];
 
   const pricingPlans = [
     {
-      type: '1-on-1 Sessions',
-      price: '12,000',
-      description: 'Personalized one-on-one coaching sessions',
+      type: "1-on-1 Sessions",
+      price: "12,000",
+      description: "Personalized one-on-one coaching sessions",
     },
     {
-      type: '1-to-2 Sessions',
-      price: '9,000',
-      description: 'Small group sessions with maximum attention',
+      type: "1-to-2 Sessions",
+      price: "9,000",
+      description: "Small group sessions with maximum attention",
     },
     {
-      type: '1-to-5 Group Sessions',
-      price: '6,000',
-      description: 'Interactive group learning experience',
+      type: "1-to-5 Group Sessions",
+      price: "6,000",
+      description: "Interactive group learning experience",
     },
   ];
 
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-primary to-primary-medium text-white py-20">
+      <section className="bg-linear-to-r from-primary to-primary-medium text-white py-20">
         <div className="container mx-auto px-4 text-center">
-          <h1 className="text-5xl md:text-6xl font-bold mb-4">UNIK</h1>
+          <h1 className="text-5xl md:text-6xl font-bold mb-4">UNIK Academy</h1>
           <p className="text-xl md:text-2xl mb-2 text-accent font-semibold">
             Empowering Communication.
           </p>
@@ -69,9 +69,13 @@ export default function Home() {
                 key={index}
                 className="bg-white rounded-lg shadow-lg p-8 border-t-4 border-accent hover:shadow-xl transition-shadow"
               >
-                <h3 className="text-2xl font-bold text-primary mb-4">{plan.type}</h3>
+                <h3 className="text-2xl font-bold text-primary mb-4">
+                  {plan.type}
+                </h3>
                 <div className="mb-4">
-                  <span className="text-4xl font-bold text-primary">₹{plan.price}</span>
+                  <span className="text-4xl font-bold text-primary">
+                    ₹{plan.price}
+                  </span>
                 </div>
                 <p className="text-gray-600 mb-6">{plan.description}</p>
                 <Link
@@ -98,7 +102,9 @@ export default function Home() {
                 key={index}
                 className="bg-white rounded-lg shadow-md p-6 border-l-4 border-accent hover:shadow-lg transition-shadow"
               >
-                <h3 className="text-xl font-bold text-primary mb-3">{course.title}</h3>
+                <h3 className="text-xl font-bold text-primary mb-3">
+                  {course.title}
+                </h3>
                 <p className="text-gray-600">{course.description}</p>
               </div>
             ))}
@@ -113,7 +119,8 @@ export default function Home() {
             Ready to Transform Your Communication Skills?
           </h2>
           <p className="text-xl mb-8 text-gray-200">
-            Join UNIK Academy today and take the first step towards personal and professional excellence.
+            Join UNIK Academy today and take the first step towards personal and
+            professional excellence.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link

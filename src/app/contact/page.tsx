@@ -1,45 +1,49 @@
-'use client';
+"use client";
 
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent } from "react";
 
 export default function Contact() {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    message: '',
+    name: "",
+    email: "",
+    phone: "",
+    message: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [submitStatus, setSubmitStatus] = useState<
+    "idle" | "success" | "error"
+  >("idle");
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setSubmitStatus('idle');
+    setSubmitStatus("idle");
 
     try {
-      const response = await fetch('/api/contact', {
-        method: 'POST',
+      const response = await fetch("/api/contact", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),
       });
 
       if (response.ok) {
-        setSubmitStatus('success');
-        setFormData({ name: '', email: '', phone: '', message: '' });
+        setSubmitStatus("success");
+        setFormData({ name: "", email: "", phone: "", message: "" });
       } else {
-        setSubmitStatus('error');
+        setSubmitStatus("error");
       }
     } catch (error) {
-      setSubmitStatus('error');
+      setSubmitStatus("error");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
@@ -60,7 +64,8 @@ export default function Contact() {
               Get in Touch
             </h2>
             <p className="text-gray-700 text-lg mb-8">
-              Have questions about our courses? Want to enroll? We'd love to hear from you!
+              Have questions about our courses? Want to enroll? We'd love to
+              hear from you!
             </p>
 
             <div className="space-y-6">
@@ -120,7 +125,10 @@ export default function Contact() {
           <div>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label htmlFor="name" className="block text-sm font-semibold text-primary mb-2">
+                <label
+                  htmlFor="name"
+                  className="block text-sm font-semibold text-primary mb-2"
+                >
                   Name *
                 </label>
                 <input
@@ -136,7 +144,10 @@ export default function Contact() {
               </div>
 
               <div>
-                <label htmlFor="email" className="block text-sm font-semibold text-primary mb-2">
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-semibold text-primary mb-2"
+                >
                   Email *
                 </label>
                 <input
@@ -152,7 +163,10 @@ export default function Contact() {
               </div>
 
               <div>
-                <label htmlFor="phone" className="block text-sm font-semibold text-primary mb-2">
+                <label
+                  htmlFor="phone"
+                  className="block text-sm font-semibold text-primary mb-2"
+                >
                   Phone
                 </label>
                 <input
@@ -167,7 +181,10 @@ export default function Contact() {
               </div>
 
               <div>
-                <label htmlFor="message" className="block text-sm font-semibold text-primary mb-2">
+                <label
+                  htmlFor="message"
+                  className="block text-sm font-semibold text-primary mb-2"
+                >
                   Message *
                 </label>
                 <textarea
@@ -182,13 +199,13 @@ export default function Contact() {
                 />
               </div>
 
-              {submitStatus === 'success' && (
+              {submitStatus === "success" && (
                 <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
-                  Thank you! Your message has been sent successfully.
+                  Thanks for submitting your details — we will connect with you as soon as possible!
                 </div>
               )}
 
-              {submitStatus === 'error' && (
+              {submitStatus === "error" && (
                 <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
                   There was an error sending your message. Please try again.
                 </div>
@@ -199,7 +216,7 @@ export default function Contact() {
                 disabled={isSubmitting}
                 className="w-full bg-primary text-white py-3 rounded-lg hover:bg-primary-medium transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isSubmitting ? 'Sending...' : 'Send Message'}
+                {isSubmitting ? "Sending..." : "Send Message"}
               </button>
             </form>
           </div>
@@ -208,4 +225,3 @@ export default function Contact() {
     </div>
   );
 }
-

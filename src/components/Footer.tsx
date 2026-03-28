@@ -14,7 +14,7 @@ export default function Footer() {
     "Public Speaking",
     "Spoken English",
     "Personality Development",
-    "ABI",
+    "Business Communication",
   ];
 
   return (

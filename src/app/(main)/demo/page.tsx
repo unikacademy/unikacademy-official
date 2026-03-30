@@ -18,10 +18,10 @@ export default function DemoPage() {
     setIsSubmitting(true);
     setSubmitStatus("idle");
     try {
-      const response = await fetch("/api/contact", {
+      const response = await fetch("/api/demo-booking", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...formData, message: `DEMO REQUEST | Course: ${formData.course} | ${formData.message}` }),
+        body: JSON.stringify(formData),
       });
       if (response.ok) {
         setSubmitStatus("success");

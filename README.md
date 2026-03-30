@@ -56,12 +56,17 @@ A modern, responsive web application for UNIK Academy built with Next.js 15, Typ
 4. Create an admin user:
 
    ```bash
-   # Make a POST request to /api/admin/create-admin
-   # Or use a tool like Postman/curl:
-   curl -X POST http://localhost:3000/api/admin/create-admin \
-     -H "Content-Type: application/json" \
-     -d '{"username":"admin","password":"yourpassword","secretKey":"unik-admin-secret-2025"}'
+   node scripts/create-admin.js
    ```
+
+   This script connects to MongoDB and creates the admin account. If the admin already exists, it will delete and recreate it.
+
+   Default credentials (edit `scripts/create-admin.js` to change):
+
+   | Field    | Value        |
+   | -------- | ------------ |
+   | Username | `admin`      |
+   | Password | `admin@2026` |
 
 5. Run the development server:
 
@@ -90,11 +95,14 @@ unik-academy/
 │   │   ├── Navigation.tsx
 │   │   └── Footer.tsx
 │   ├── lib/               # Utility functions
-│   │   └── mongodb.ts     # MongoDB connection
+│   │   ├── mongodb.ts     # MongoDB connection (cached)
+│   │   └── api.ts         # Shared API helpers (withDB, ok, err)
 │   └── models/            # Mongoose models
 │       ├── Contact.ts
 │       ├── Application.ts
 │       └── Admin.ts
+├── scripts/
+│   └── create-admin.js    # Admin user creation script
 ├── .env.local             # Environment variables
 └── package.json
 ```

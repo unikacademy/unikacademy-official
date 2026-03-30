@@ -1,13 +1,14 @@
 /**
  * Script to create an admin user
- * Usage: node scripts/create-admin.js <username> <password>
- *
+ * Usage: node scripts/create-admin.js
  */
 
-const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
+import mongoose from "mongoose";
+import bcrypt from "bcryptjs";
 
-const MONGODB_URI = "";
+const MONGODB_URI =
+  process.env.MONGODB_URI ||
+  "mongodb+srv://thitainfo:thitainfo@thitainfo.alekr.mongodb.net/unik-academy";
 
 const AdminSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
@@ -29,15 +30,14 @@ async function createAdmin(username, password) {
     await mongoose.connect(MONGODB_URI);
     console.log("Connected to MongoDB");
 
-    // Check if admin already exists
     const existingAdmin = await Admin.findOne({ username });
     if (existingAdmin) {
-      console.log(`Admin user "${username}" already exists.`);
-      await mongoose.connection.close();
-      return;
+      console.log(
+        `Admin "${username}" already exists. Deleting and recreating...`,
+      );
+      await Admin.deleteOne({ username });
     }
 
-    // Create new admin
     const admin = new Admin({ username, password });
     await admin.save();
     console.log(`Admin user "${username}" created successfully!`);
@@ -50,14 +50,7 @@ async function createAdmin(username, password) {
   }
 }
 
-// Get arguments from command line
 const username = "admin";
-const password = "admin@2025";
-
-if (!username || !password) {
-  console.error("Usage: node scripts/create-admin.js <username> <password>");
-  console.error("Or set MONGODB_URI environment variable if needed");
-  process.exit(1);
-}
+const password = "admin@2026";
 
 createAdmin(username, password);

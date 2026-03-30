@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const MONGODB_URI = process.env.MONGODB_URI || "";
+const MONGODB_URI = process.env.MONGODB_URI;
 
 if (!MONGODB_URI) {
   throw new Error(
@@ -14,14 +14,12 @@ interface MongooseCache {
 }
 
 declare global {
-  var mongoose: MongooseCache;
+  // eslint-disable-next-line no-var
+  var _mongooseCache: MongooseCache | undefined;
 }
 
-let cached: MongooseCache = global.mongoose;
-
-if (!cached) {
-  cached = global.mongoose = { conn: null, promise: null };
-}
+let cached: MongooseCache = global._mongooseCache ?? { conn: null, promise: null };
+global._mongooseCache = cached;
 
 async function connectDB() {
   if (cached.conn) {
@@ -29,13 +27,7 @@ async function connectDB() {
   }
 
   if (!cached.promise) {
-    const opts = {
-      bufferCommands: false,
-    };
-
-    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
-      return mongoose;
-    });
+    cached.promise = mongoose.connect(MONGODB_URI!, { bufferCommands: false });
   }
 
   try {

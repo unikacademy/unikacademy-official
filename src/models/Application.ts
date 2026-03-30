@@ -6,6 +6,7 @@ export interface IApplication extends Document {
   phone: string;
   position: string;
   message?: string;
+  status: 'not_read' | 'read' | 'shortlisted' | 'rejected';
   createdAt: Date;
 }
 
@@ -15,8 +16,9 @@ const ApplicationSchema: Schema = new Schema({
   phone: { type: String, required: true },
   position: { type: String, required: true },
   message: { type: String },
+  status: { type: String, enum: ['not_read', 'read', 'shortlisted', 'rejected'], default: 'not_read' },
   createdAt: { type: Date, default: Date.now },
 });
 
-export default mongoose.models.Application || mongoose.model<IApplication>('Application', ApplicationSchema);
-
+delete (mongoose.models as Record<string, unknown>).Application;
+export default mongoose.model<IApplication>('Application', ApplicationSchema);

@@ -1,20 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import connectDB from '@/lib/mongodb';
-import Contact from '@/models/Contact';
+import { withDB } from "@/lib/api";
+import { getAllContacts } from "./handler";
 
-export async function GET(request: NextRequest) {
-  try {
-    await connectDB();
-
-    const contacts = await Contact.find().sort({ createdAt: -1 });
-
-    return NextResponse.json(contacts, { status: 200 });
-  } catch (error) {
-    console.error('Error fetching contacts:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch contacts' },
-      { status: 500 }
-    );
-  }
+export async function GET() {
+  return withDB(() => getAllContacts(), "fetch contacts");
 }
-

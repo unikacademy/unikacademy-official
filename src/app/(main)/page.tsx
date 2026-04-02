@@ -1,94 +1,35 @@
 import Link from "next/link";
+import { CourseIcon } from "@/lib/courseIcons";
 
-export default function Home() {
-  const courses = [
-    {
-      title: "Communication Skills",
-      description: "Master the art of effective communication in personal and professional settings.",
-      icon: <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" /></svg>,
-    },
-    {
-      title: "Business Communication",
-      description: "Master professional business communication for meetings, emails, and executive interactions.",
-      icon: <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5M9 11.25v1.5M12 9v3.75m3-6v6" /></svg>,
-    },
-    {
-      title: "Public Speaking & Presentation",
-      description: "Build unshakeable confidence and excel on any stage or boardroom.",
-      icon: <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>,
-    },
-    {
-      title: "Spoken English & Grammar",
-      description: "Enhance English fluency, grammar precision, and articulate expression.",
-      icon: <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0118 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" /></svg>,
-    },
-    {
-      title: "Personality Development",
-      description: "Transform your personality, leadership presence, and interpersonal influence.",
-      icon: <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" /></svg>,
-    },
-    {
-      title: "Basic Communication",
-      description: "Start your journey with foundational communication skills for everyday confidence.",
-      icon: <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.383a14.406 14.406 0 01-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 10-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" /></svg>,
-    },
-    {
-      title: "Intermediate Communication",
-      description: "Level up with advanced techniques for professional and social settings.",
-      icon: <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" /></svg>,
-    },
-    {
-      title: "Advanced Communication",
-      description: "Master high-impact communication for leadership, negotiations, and executive presence.",
-      icon: <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" /></svg>,
-    },
-  ];
+interface DBCourse {
+  _id: string;
+  title: string;
+  description: string;
+  category: 'core' | 'pricing' | 'premium';
+  iconKey: string;
+  price: string;
+  features: string[];
+  featured: boolean;
+  order: number;
+}
 
-  const coursePricing = [
-    {
-      title: "Basic Communication",
-      price: "1,000",
-      description: "Perfect for beginners looking to build foundational communication skills.",
-      features: ["Core communication basics", "Beginner-friendly", "100% Live classes", "Weekend classes available", "Certificate"],
-    },
-    {
-      title: "Intermediate Communication",
-      price: "2,000",
-      description: "For those ready to refine and elevate their communication in professional contexts.",
-      features: ["Advanced techniques", "Professional scenarios", "100% Live classes", "Weekend classes available", "Certificate"],
-    },
-    {
-      title: "Advanced Communication",
-      price: "3,000",
-      description: "Executive-level mastery for leaders and high-performers.",
-      features: ["Leadership communication", "Negotiation skills", "100% Live classes", "Weekend classes available", "Certificate"],
-      featured: true,
-    },
-  ];
+async function getCourses(): Promise<DBCourse[]> {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000';
+    const res = await fetch(`${baseUrl}/api/courses`, { cache: 'no-store' });
+    if (!res.ok) return [];
+    return res.json();
+  } catch {
+    return [];
+  }
+}
 
-  const premiumPlans = [
-    {
-      subtitle: "1-on-5",
-      price: "6,000",
-      description: "Interactive group learning with peer engagement and collaborative exercises.",
-      features: ["60 Live sessions", "Up to 5 students", "Group activities", "Weekend classes available", "100% Live — no recordings"],
-      featured: false,
-    },
-    {
-      subtitle: "1-on-2",
-      price: "9,000",
-      description: "Focused small-group sessions with maximum personalized attention.",
-      features: ["60 Live sessions", "2 students", "Personalized focus", "Weekend classes available", "100% Live — no recordings"],
-      featured: true,
-    },
-    {
-      subtitle: "1-on-1",
-      price: "12,000",
-      description: "Exclusive one-on-one coaching tailored entirely to your goals.",
-      features: ["60 Live sessions", "Solo sessions", "Custom curriculum", "Weekend classes available", "100% Live — no recordings"],
-      featured: false,
-    },
-  ];
+export default async function Home() {
+  const allCourses = await getCourses();
+
+  const coreCourses  = allCourses.filter((c) => c.category === 'core');
+  const coursePricing = allCourses.filter((c) => c.category === 'pricing');
+  const premiumPlans  = allCourses.filter((c) => c.category === 'premium');
 
   const stats = [
     { value: "500+", label: "Students Trained" },
@@ -177,17 +118,21 @@ export default function Home() {
             <p className="text-[#64748B] max-w-xl mx-auto text-lg">Comprehensive programs designed to unlock your full communication potential.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-            {courses.map((course, index) => (
-              <div key={index} className="group bg-white rounded-2xl p-6 border border-[#E2E8F0] hover:border-[#c0a84f]/40 hover:shadow-[0_8px_32px_rgba(14,43,73,0.1)] transition-all duration-300 hover:-translate-y-1 cursor-default">
-                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#0e2b49]/8 to-[#133a67]/12 flex items-center justify-center text-[#0e2b49] mb-4 group-hover:from-[#c0a84f]/15 group-hover:to-[#d4bc72]/20 group-hover:text-[#c0a84f] transition-all duration-300">
-                  {course.icon}
+          {coreCourses.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+              {coreCourses.map((course) => (
+                <div key={course._id} className="group bg-white rounded-2xl p-6 border border-[#E2E8F0] hover:border-[#c0a84f]/40 hover:shadow-[0_8px_32px_rgba(14,43,73,0.1)] transition-all duration-300 hover:-translate-y-1 cursor-default">
+                  <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#0e2b49]/8 to-[#133a67]/12 flex items-center justify-center text-[#0e2b49] mb-4 group-hover:from-[#c0a84f]/15 group-hover:to-[#d4bc72]/20 group-hover:text-[#c0a84f] transition-all duration-300">
+                    <CourseIcon iconKey={course.iconKey} className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-base font-semibold text-[#0e2b49] mb-2" style={{ fontFamily: "Poppins, sans-serif" }}>{course.title}</h3>
+                  <p className="text-[#64748B] text-sm leading-relaxed">{course.description}</p>
                 </div>
-                <h3 className="text-base font-semibold text-[#0e2b49] mb-2" style={{ fontFamily: "Poppins, sans-serif" }}>{course.title}</h3>
-                <p className="text-[#64748B] text-sm leading-relaxed">{course.description}</p>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-center text-[#64748B]">Courses coming soon.</p>
+          )}
         </div>
       </section>
 
@@ -201,36 +146,40 @@ export default function Home() {
             <p className="text-[#64748B] max-w-xl mx-auto text-lg">Start small, grow big — accessible plans designed for anyone beginning their communication journey.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-7 max-w-5xl mx-auto">
-            {coursePricing.map((plan, index) => (
-              <div key={index} className={`relative rounded-2xl p-8 transition-all duration-300 hover:-translate-y-1 ${plan.featured ? "bg-gradient-to-br from-[#0e2b49] to-[#133a67] text-white shadow-[0_20px_60px_rgba(14,43,73,0.3)] scale-105" : "bg-[#F8FAFC] border border-[#E2E8F0] hover:border-[#c0a84f]/30 hover:shadow-[0_8px_32px_rgba(14,43,73,0.08)]"}`}>
-                {plan.featured && (
-                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
-                    <span className="px-4 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-[#c0a84f] to-[#d4bc72] text-[#0e2b49] shadow-lg whitespace-nowrap">Most Popular</span>
+          {coursePricing.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-7 max-w-5xl mx-auto">
+              {coursePricing.map((plan) => (
+                <div key={plan._id} className={`relative rounded-2xl p-8 transition-all duration-300 hover:-translate-y-1 ${plan.featured ? "bg-gradient-to-br from-[#0e2b49] to-[#133a67] text-white shadow-[0_20px_60px_rgba(14,43,73,0.3)] scale-105" : "bg-[#F8FAFC] border border-[#E2E8F0] hover:border-[#c0a84f]/30 hover:shadow-[0_8px_32px_rgba(14,43,73,0.08)]"}`}>
+                  {plan.featured && (
+                    <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
+                      <span className="px-4 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-[#c0a84f] to-[#d4bc72] text-[#0e2b49] shadow-lg whitespace-nowrap">Most Popular</span>
+                    </div>
+                  )}
+                  <h3 className={`text-xl font-bold mb-4 ${plan.featured ? "text-white" : "text-[#0e2b49]"}`} style={{ fontFamily: "Poppins, sans-serif" }}>{plan.title}</h3>
+                  <div className="flex items-baseline gap-1 mb-4">
+                    <span className={`text-sm font-medium ${plan.featured ? "text-white/60" : "text-[#64748B]"}`}>₹</span>
+                    <span className={`text-5xl font-bold ${plan.featured ? "text-white" : "text-[#0e2b49]"}`} style={{ fontFamily: "Poppins, sans-serif" }}>{plan.price}</span>
                   </div>
-                )}
-                <h3 className={`text-xl font-bold mb-4 ${plan.featured ? "text-white" : "text-[#0e2b49]"}`} style={{ fontFamily: "Poppins, sans-serif" }}>{plan.title}</h3>
-                <div className="flex items-baseline gap-1 mb-4">
-                  <span className={`text-sm font-medium ${plan.featured ? "text-white/60" : "text-[#64748B]"}`}>₹</span>
-                  <span className={`text-5xl font-bold ${plan.featured ? "text-white" : "text-[#0e2b49]"}`} style={{ fontFamily: "Poppins, sans-serif" }}>{plan.price}</span>
+                  <p className={`text-sm leading-relaxed mb-6 ${plan.featured ? "text-white/65" : "text-[#64748B]"}`}>{plan.description}</p>
+                  <ul className="space-y-2.5 mb-8">
+                    {plan.features.map((f, i) => (
+                      <li key={i} className="flex items-center gap-2.5">
+                        <div className={`flex-shrink-0 w-4 h-4 rounded-full flex items-center justify-center ${plan.featured ? "bg-[#c0a84f]/25" : "bg-[#c0a84f]/15"}`}>
+                          <svg className="w-2.5 h-2.5 text-[#c0a84f]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                        </div>
+                        <span className={`text-sm ${plan.featured ? "text-white/80" : "text-[#475569]"}`}>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <Link href="/contact" className={`block w-full text-center py-3.5 rounded-xl font-semibold text-sm transition-all duration-200 cursor-pointer ${plan.featured ? "bg-gradient-to-r from-[#c0a84f] to-[#d4bc72] text-[#0e2b49] hover:from-[#d4bc72] hover:to-[#c0a84f] shadow-lg" : "border-2 border-[#0e2b49] text-[#0e2b49] hover:bg-[#0e2b49] hover:text-white"}`}>
+                    Enroll Now
+                  </Link>
                 </div>
-                <p className={`text-sm leading-relaxed mb-6 ${plan.featured ? "text-white/65" : "text-[#64748B]"}`}>{plan.description}</p>
-                <ul className="space-y-2.5 mb-8">
-                  {plan.features.map((f, i) => (
-                    <li key={i} className="flex items-center gap-2.5">
-                      <div className={`flex-shrink-0 w-4 h-4 rounded-full flex items-center justify-center ${plan.featured ? "bg-[#c0a84f]/25" : "bg-[#c0a84f]/15"}`}>
-                        <svg className="w-2.5 h-2.5 text-[#c0a84f]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
-                      </div>
-                      <span className={`text-sm ${plan.featured ? "text-white/80" : "text-[#475569]"}`}>{f}</span>
-                    </li>
-                  ))}
-                </ul>
-                <Link href="/contact" className={`block w-full text-center py-3.5 rounded-xl font-semibold text-sm transition-all duration-200 cursor-pointer ${plan.featured ? "bg-gradient-to-r from-[#c0a84f] to-[#d4bc72] text-[#0e2b49] hover:from-[#d4bc72] hover:to-[#c0a84f] shadow-lg" : "border-2 border-[#0e2b49] text-[#0e2b49] hover:bg-[#0e2b49] hover:text-white"}`}>
-                  Enroll Now
-                </Link>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-center text-[#64748B]">Pricing plans coming soon.</p>
+          )}
         </div>
       </section>
 
@@ -305,60 +254,64 @@ export default function Home() {
             <p className="text-white/60 max-w-xl mx-auto text-lg">60 live sessions per plan — choose how you learn best.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-7 max-w-5xl mx-auto items-center">
-            {premiumPlans.map((plan, index) => (
-              <div key={index} className={`relative rounded-2xl p-8 transition-all duration-300 hover:-translate-y-2 ${
-                plan.featured
-                  ? "bg-gradient-to-br from-[#c0a84f] to-[#d4bc72] shadow-[0_24px_64px_rgba(192,168,79,0.4)] scale-105"
-                  : "bg-white/6 border border-white/12 hover:border-[#c0a84f]/50 hover:bg-white/10 backdrop-blur-sm"
-              }`}>
-                {plan.featured && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                    <span className="px-5 py-1.5 rounded-full text-xs font-bold bg-[#0e2b49] text-[#c0a84f] shadow-xl whitespace-nowrap tracking-wide uppercase">
-                      Most Popular
-                    </span>
-                  </div>
-                )}
-
-                {/* Subtitle */}
-                <div className="mb-5">
-                  <h3 className={`text-4xl font-bold mb-0.5 ${plan.featured ? "text-[#0e2b49]" : "text-[#c0a84f]"}`} style={{ fontFamily: "Poppins, sans-serif" }}>
-                    {plan.subtitle}
-                  </h3>
-                  <p className={`text-xs font-semibold uppercase tracking-widest ${plan.featured ? "text-[#0e2b49]/60" : "text-white/40"}`}>session format</p>
-                </div>
-
-                {/* Price */}
-                <div className={`flex items-baseline gap-1 mb-5 pb-5 border-b ${plan.featured ? "border-[#0e2b49]/15" : "border-white/10"}`}>
-                  <span className={`text-lg font-semibold ${plan.featured ? "text-[#0e2b49]/70" : "text-white/60"}`}>₹</span>
-                  <span className={`text-5xl font-bold ${plan.featured ? "text-[#0e2b49]" : "text-white"}`} style={{ fontFamily: "Poppins, sans-serif" }}>{plan.price}</span>
-                </div>
-
-                <p className={`text-sm leading-relaxed mb-6 ${plan.featured ? "text-[#0e2b49]/70" : "text-white/55"}`}>{plan.description}</p>
-
-                <ul className="space-y-3 mb-8">
-                  {plan.features.map((f, i) => (
-                    <li key={i} className="flex items-center gap-3">
-                      <div className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center ${plan.featured ? "bg-[#0e2b49]/15" : "bg-[#c0a84f]/20"}`}>
-                        <svg className={`w-3 h-3 ${plan.featured ? "text-[#0e2b49]" : "text-[#c0a84f]"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                        </svg>
-                      </div>
-                      <span className={`text-sm font-medium ${plan.featured ? "text-[#0e2b49]" : "text-white/75"}`}>{f}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <Link href="/contact" className={`block w-full text-center py-4 rounded-xl font-bold text-sm transition-all duration-200 cursor-pointer ${
+          {premiumPlans.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-7 max-w-5xl mx-auto items-center">
+              {premiumPlans.map((plan) => (
+                <div key={plan._id} className={`relative rounded-2xl p-8 transition-all duration-300 hover:-translate-y-2 ${
                   plan.featured
-                    ? "bg-[#0e2b49] text-[#c0a84f] hover:bg-[#133a67] shadow-lg"
-                    : "bg-gradient-to-r from-[#c0a84f] to-[#d4bc72] text-[#0e2b49] hover:from-[#d4bc72] hover:to-[#c0a84f] shadow-[0_4px_20px_rgba(192,168,79,0.3)] hover:shadow-[0_8px_28px_rgba(192,168,79,0.5)]"
+                    ? "bg-gradient-to-br from-[#c0a84f] to-[#d4bc72] shadow-[0_24px_64px_rgba(192,168,79,0.4)] scale-105"
+                    : "bg-white/6 border border-white/12 hover:border-[#c0a84f]/50 hover:bg-white/10 backdrop-blur-sm"
                 }`}>
-                  Enroll Now
-                </Link>
-              </div>
-            ))}
-          </div>
+                  {plan.featured && (
+                    <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                      <span className="px-5 py-1.5 rounded-full text-xs font-bold bg-[#0e2b49] text-[#c0a84f] shadow-xl whitespace-nowrap tracking-wide uppercase">
+                        Most Popular
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Title (used as session format label) */}
+                  <div className="mb-5">
+                    <h3 className={`text-4xl font-bold mb-0.5 ${plan.featured ? "text-[#0e2b49]" : "text-[#c0a84f]"}`} style={{ fontFamily: "Poppins, sans-serif" }}>
+                      {plan.title}
+                    </h3>
+                    <p className={`text-xs font-semibold uppercase tracking-widest ${plan.featured ? "text-[#0e2b49]/60" : "text-white/40"}`}>session format</p>
+                  </div>
+
+                  {/* Price */}
+                  <div className={`flex items-baseline gap-1 mb-5 pb-5 border-b ${plan.featured ? "border-[#0e2b49]/15" : "border-white/10"}`}>
+                    <span className={`text-lg font-semibold ${plan.featured ? "text-[#0e2b49]/70" : "text-white/60"}`}>₹</span>
+                    <span className={`text-5xl font-bold ${plan.featured ? "text-[#0e2b49]" : "text-white"}`} style={{ fontFamily: "Poppins, sans-serif" }}>{plan.price}</span>
+                  </div>
+
+                  <p className={`text-sm leading-relaxed mb-6 ${plan.featured ? "text-[#0e2b49]/70" : "text-white/55"}`}>{plan.description}</p>
+
+                  <ul className="space-y-3 mb-8">
+                    {plan.features.map((f, i) => (
+                      <li key={i} className="flex items-center gap-3">
+                        <div className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center ${plan.featured ? "bg-[#0e2b49]/15" : "bg-[#c0a84f]/20"}`}>
+                          <svg className={`w-3 h-3 ${plan.featured ? "text-[#0e2b49]" : "text-[#c0a84f]"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                          </svg>
+                        </div>
+                        <span className={`text-sm font-medium ${plan.featured ? "text-[#0e2b49]" : "text-white/75"}`}>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <Link href="/contact" className={`block w-full text-center py-4 rounded-xl font-bold text-sm transition-all duration-200 cursor-pointer ${
+                    plan.featured
+                      ? "bg-[#0e2b49] text-[#c0a84f] hover:bg-[#133a67] shadow-lg"
+                      : "bg-gradient-to-r from-[#c0a84f] to-[#d4bc72] text-[#0e2b49] hover:from-[#d4bc72] hover:to-[#c0a84f] shadow-[0_4px_20px_rgba(192,168,79,0.3)] hover:shadow-[0_8px_28px_rgba(192,168,79,0.5)]"
+                  }`}>
+                    Enroll Now
+                  </Link>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-center text-white/50">Premium plans coming soon.</p>
+          )}
 
           {/* Bottom trust line */}
           <p className="text-center text-white/35 text-sm mt-10">

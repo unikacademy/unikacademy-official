@@ -148,10 +148,30 @@ h1, h2, h3, h4, h5, h6 {
     outline-offset: 3px;
   }
 
+  /* Slide-in from right (slide-over panel) */
+  @keyframes slideInRight {
+    from { transform: translateX(100%); }
+    to   { transform: translateX(0); }
+  }
+  .animate-slide-in-right {
+    animation: slideInRight 0.25s ease-out forwards;
+  }
+
+  /* Toast slide up */
+  @keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-slide-up {
+    animation: fadeSlideUp 0.22s ease-out forwards;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .animate-fade-in,
     .animate-float,
-    .gold-shimmer {
+    .gold-shimmer,
+    .animate-slide-in-right,
+    .animate-fade-slide-up {
       animation: none;
     }
     .card-hover:hover {

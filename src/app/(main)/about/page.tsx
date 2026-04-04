@@ -5,21 +5,22 @@ export default function About() {
         <h1 className="text-5xl font-bold text-primary text-center mb-12">
           About Us
         </h1>
-        
+
         <div className="prose prose-lg max-w-none">
           <section className="mb-12">
             <h2 className="text-3xl font-bold text-primary-medium mb-6">
               Welcome to UNIK Academy
             </h2>
             <p className="text-gray-700 text-lg leading-relaxed mb-4">
-              UNIK Academy is a premier educational institution dedicated to empowering individuals
-              through effective communication and personality development. We believe that strong
-              communication skills are the foundation of personal and professional success.
+              UNIK Academy is a premier educational institution dedicated to
+              empowering individuals through effective communication and
+              personality development. We believe that strong communication
+              skills are the foundation of personal and professional success.
             </p>
             <p className="text-gray-700 text-lg leading-relaxed mb-4">
-              Our mission is to transform personalities by providing comprehensive training in
-              communication skills, public speaking, English language proficiency, and overall
-              personality development.
+              Our mission is to transform personalities by providing
+              comprehensive training in communication skills, public speaking,
+              English language proficiency, and overall personality development.
             </p>
           </section>
 
@@ -28,9 +29,10 @@ export default function About() {
               Our Vision
             </h2>
             <p className="text-gray-700 text-lg leading-relaxed mb-4">
-              To become the leading academy for communication skills and personality development,
-              empowering individuals to achieve their full potential and excel in their personal
-              and professional endeavors.
+              To become the leading academy for communication skills and
+              personality development, empowering individuals to achieve their
+              full potential and excel in their personal and professional
+              endeavors.
             </p>
           </section>
 
@@ -41,15 +43,24 @@ export default function About() {
             <ul className="space-y-4 text-gray-700 text-lg">
               <li className="flex items-start">
                 <span className="text-accent mr-3 text-xl">✓</span>
-                <span>Expert instructors with years of experience in communication training</span>
+                <span>
+                  Expert instructors with years of experience in communication
+                  training
+                </span>
               </li>
               <li className="flex items-start">
                 <span className="text-accent mr-3 text-xl">✓</span>
-                <span>Personalized attention through flexible session formats (1-on-1, small groups)</span>
+                <span>
+                  Personalized attention through flexible session formats
+                  (1-on-1, small groups)
+                </span>
               </li>
               <li className="flex items-start">
                 <span className="text-accent mr-3 text-xl">✓</span>
-                <span>Comprehensive curriculum covering all aspects of communication and personality</span>
+                <span>
+                  Comprehensive curriculum covering all aspects of communication
+                  and personality
+                </span>
               </li>
               <li className="flex items-start">
                 <span className="text-accent mr-3 text-xl">✓</span>
@@ -68,27 +79,39 @@ export default function About() {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-bold text-primary mb-2">Communication Skills</h3>
+                <h3 className="text-xl font-bold text-primary mb-2">
+                  Communication Skills
+                </h3>
                 <p className="text-gray-600">
-                  Master the fundamentals of effective communication in personal and professional settings.
+                  Master the fundamentals of effective communication in personal
+                  and professional settings.
                 </p>
               </div>
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-bold text-primary mb-2">Public Speaking & Presentation</h3>
+                <h3 className="text-xl font-bold text-primary mb-2">
+                  Public Speaking & Presentation
+                </h3>
                 <p className="text-gray-600">
-                  Build confidence and excel in public speaking and professional presentations.
+                  Build confidence and excel in public speaking and professional
+                  presentations.
                 </p>
               </div>
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-bold text-primary mb-2">Spoken English & Grammar</h3>
+                <h3 className="text-xl font-bold text-primary mb-2">
+                  Spoken English & Grammar
+                </h3>
                 <p className="text-gray-600">
-                  Improve your English fluency, grammar, and overall language proficiency.
+                  Improve your English fluency, grammar, and overall language
+                  proficiency.
                 </p>
               </div>
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-bold text-primary mb-2">Personality Development</h3>
+                <h3 className="text-xl font-bold text-primary mb-2">
+                  Personality Development
+                </h3>
                 <p className="text-gray-600">
-                  Transform your personality and develop essential leadership and interpersonal skills.
+                  Transform your personality and develop essential leadership
+                  and interpersonal skills.
                 </p>
               </div>
             </div>
@@ -113,4 +136,3 @@ export default function About() {
     </div>
   );
 }
-

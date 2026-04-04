@@ -1,7 +1,12 @@
-import DemoBooking from '@/models/DemoBooking';
-import { ok } from '@/lib/api';
+import { supabaseAdmin, toRecords } from "@/lib/supabase-admin";
+import { ok } from "@/lib/api";
 
 export async function getAllDemoBookings() {
-  const bookings = await DemoBooking.find().sort({ createdAt: -1 });
-  return ok(bookings);
+  const { data, error } = await supabaseAdmin
+    .from("demo_bookings")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+  return ok(toRecords(data ?? []));
 }

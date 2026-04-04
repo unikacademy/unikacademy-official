@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import connectDB from "@/lib/mongodb";
 
 export function ok(data: unknown, status = 200) {
   return NextResponse.json(data, { status });
@@ -14,7 +13,6 @@ export async function withDB(
   errorLabel = "operation",
 ): Promise<NextResponse> {
   try {
-    await connectDB();
     return await fn();
   } catch (error) {
     console.error(`Error during ${errorLabel}:`, error);

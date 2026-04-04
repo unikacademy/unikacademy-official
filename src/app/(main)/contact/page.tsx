@@ -64,8 +64,8 @@ export default function Contact() {
               Get in Touch
             </h2>
             <p className="text-gray-700 text-lg mb-8">
-              Have questions about our courses? Want to enroll? We'd love to
-              hear from you!
+              Have questions about our courses? Want to enroll? We&apos;d love
+              to hear from you!
             </p>
 
             <div className="space-y-6">

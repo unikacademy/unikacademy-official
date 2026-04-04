@@ -1,4 +1,4 @@
-import Application from "@/models/Application";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 import { ok, err } from "@/lib/api";
 
 export async function submitApplication(body: {
@@ -14,7 +14,11 @@ export async function submitApplication(body: {
     return err("Name, email, phone, and position are required", 400);
   }
 
-  await new Application({ name, email, phone, position, message }).save();
+  const { error } = await supabaseAdmin
+    .from("applications")
+    .insert({ name, email, phone, position, message });
+
+  if (error) throw error;
 
   return ok({ message: "Application submitted successfully" }, 201);
 }

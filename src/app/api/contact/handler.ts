@@ -1,4 +1,4 @@
-import Contact from "@/models/Contact";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 import { ok, err } from "@/lib/api";
 
 export async function submitContact(body: {
@@ -13,7 +13,11 @@ export async function submitContact(body: {
     return err("Name, email, and message are required", 400);
   }
 
-  await new Contact({ name, email, phone, message }).save();
+  const { error } = await supabaseAdmin
+    .from("contacts")
+    .insert({ name, email, phone, message });
+
+  if (error) throw error;
 
   return ok({ message: "Contact form submitted successfully" }, 201);
 }

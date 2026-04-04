@@ -4,7 +4,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "UNIK Academy - Empowering Communication. Transforming Personalities.",
+  title: "UNIK Academy - Empowering Communication | Transforming Personalities",
   description:
     "UNIK Academy offers comprehensive courses in Communication Skills, Public Speaking, Spoken English, Grammar, and Personality Development.",
 };

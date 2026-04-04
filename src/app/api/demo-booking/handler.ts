@@ -1,5 +1,5 @@
-import DemoBooking from '@/models/DemoBooking';
-import { ok, err } from '@/lib/api';
+import { supabaseAdmin } from "@/lib/supabase-admin";
+import { ok, err } from "@/lib/api";
 
 export async function submitDemoBooking(body: {
   name?: string;
@@ -11,10 +11,14 @@ export async function submitDemoBooking(body: {
   const { name, email, phone, course, message } = body;
 
   if (!name || !phone || !course) {
-    return err('Name, phone, and course are required', 400);
+    return err("Name, phone, and course are required", 400);
   }
 
-  await new DemoBooking({ name, email, phone, course, message }).save();
+  const { error } = await supabaseAdmin
+    .from("demo_bookings")
+    .insert({ name, email, phone, course, message });
 
-  return ok({ message: 'Demo booking submitted successfully' }, 201);
+  if (error) throw error;
+
+  return ok({ message: "Demo booking submitted successfully" }, 201);
 }

@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { supabase } from "@/lib/supabase";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -1085,11 +1086,13 @@ export default function AdminDashboard() {
   }, [activeSection]);
 
   useEffect(() => {
-    if (!localStorage.getItem("adminAuth")) {
-      router.push("/admin/login");
-      return;
-    }
-    fetchAll();
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        router.push("/admin/login");
+        return;
+      }
+      fetchAll();
+    });
   }, [router]);
 
   const fetchAll = async (silent = false) => {
@@ -1117,8 +1120,8 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("adminAuth");
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     router.push("/admin/login");
   };
 

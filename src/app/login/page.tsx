@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { getSupabase } from "@/lib/supabase";
 
 type Provider = "github" | "google";
@@ -146,6 +147,18 @@ export default function LoginPage() {
                 Terms of Service
               </a>
             </p>
+
+            <div className="mt-4 text-center">
+              <Link
+                href="/"
+                className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-primary transition font-medium"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Back to home
+              </Link>
+            </div>
           </div>
         </div>
       </div>

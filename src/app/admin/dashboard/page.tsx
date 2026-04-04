@@ -2655,8 +2655,8 @@ export default function AdminDashboard() {
         />
       )}
 
-      {jobModalOpen && <JobModal />}
-      {courseModalOpen && <CourseModal />}
+      {jobModalOpen && JobModal()}
+      {courseModalOpen && CourseModal()}
 
       <SlideOver
         item={detailItem}

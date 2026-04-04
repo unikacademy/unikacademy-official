@@ -1086,9 +1086,9 @@ export default function AdminDashboard() {
   }, [activeSection]);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        router.push("/admin/login");
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) {
+        router.push("/login");
         return;
       }
       fetchAll();
@@ -1122,7 +1122,7 @@ export default function AdminDashboard() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    router.push("/admin/login");
+    router.push("/login");
   };
 
   const updateStatus = useCallback(

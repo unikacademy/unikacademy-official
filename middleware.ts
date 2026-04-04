@@ -1,0 +1,64 @@
+import { createServerClient } from "@supabase/ssr";
+import { NextResponse, type NextRequest } from "next/server";
+
+export async function middleware(request: NextRequest) {
+  let response = NextResponse.next({ request });
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value),
+          );
+          response = NextResponse.next({ request });
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options),
+          );
+        },
+      },
+    },
+  );
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { pathname } = request.nextUrl;
+  const adminEmail = process.env.ADMIN_EMAIL;
+  const isAdmin = user?.email === adminEmail;
+
+  // Protect /admin/* — must be authenticated AND be the admin email
+  if (pathname.startsWith("/admin")) {
+    if (!user) {
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
+    if (!isAdmin) {
+      return NextResponse.redirect(new URL("/user/dashboard", request.url));
+    }
+  }
+
+  // Protect /user/* — must be authenticated
+  if (pathname.startsWith("/user")) {
+    if (!user) {
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
+  }
+
+  // Redirect already-logged-in users away from /login
+  if (pathname === "/login" && user) {
+    const destination = isAdmin ? "/admin/dashboard" : "/user/dashboard";
+    return NextResponse.redirect(new URL(destination, request.url));
+  }
+
+  return response;
+}
+
+export const config = {
+  matcher: ["/admin/:path*", "/user/:path*", "/login"],
+};

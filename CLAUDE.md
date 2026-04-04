@@ -50,3 +50,15 @@ UNIK Academy is a Next.js 15 App Router application — a course/academy marketi
 **Styling:** Tailwind CSS v4 with the new `@theme` inline syntax — no `tailwind.config.js`. Custom CSS variables and animations are defined in `src/app/globals.css`. Color scheme: primary dark blue `#0e2b49`, accent gold `#c0a84f`.
 
 **Path alias:** `@/*` maps to `src/*`.
+
+## Project Structure Rules
+
+All code must be placed in one of three categories:
+
+- **Users** — All user-related logic, components, APIs, and files must go inside the `Users` folder only.
+- **Admins** — All admin-related work (APIs, components, utilities) must go inside the `Admins` folder.
+- **Website** — All general website-related code must go inside the `Website` folder.
+
+## Code Quality Rules
+
+- **DRY (Don't Repeat Yourself):** If the same code appears more than once, extract it into a reusable component or utility. Never duplicate logic — always create a shared abstraction instead.

@@ -96,10 +96,10 @@ export default async function Home() {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
-                href="/contact"
+                href="/demo"
                 className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-semibold text-[#0e2b49] bg-gradient-to-r from-[#c0a84f] to-[#d4bc72] hover:from-[#d4bc72] hover:to-[#c0a84f] transition-all duration-200 shadow-[0_4px_24px_rgba(192,168,79,0.35)] hover:shadow-[0_8px_32px_rgba(192,168,79,0.5)] hover:-translate-y-0.5 cursor-pointer text-base"
               >
-                Start Your Journey
+                Book Free Demo Session
                 <svg
                   className="w-4 h-4"
                   fill="none"
@@ -739,6 +739,29 @@ export default async function Home() {
           </div>
         </div>
       </section>
+
+      {/* ─── Sticky Mobile Demo CTA ─── */}
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-50 px-4 pb-4 pt-2 bg-gradient-to-t from-[#0e2b49]/95 to-[#0e2b49]/0 backdrop-blur-sm pointer-events-none">
+        <Link
+          href="/demo"
+          className="pointer-events-auto flex items-center justify-center gap-2.5 w-full py-4 rounded-2xl font-bold text-[#0e2b49] bg-gradient-to-r from-[#c0a84f] to-[#d4bc72] shadow-[0_8px_32px_rgba(192,168,79,0.5)] text-base"
+        >
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2.5}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"
+            />
+          </svg>
+          Book Your Free Demo Session
+        </Link>
+      </div>
 
       {/* ─── CTA Section ─── */}
       <section className="relative overflow-hidden py-24 bg-[#0e2b49]">

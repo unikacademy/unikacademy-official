@@ -1,3 +1,24 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Terms & Conditions",
+  description:
+    "Read UNIK Academy's terms and conditions governing the use of our website, services, and course enrollment.",
+  alternates: { canonical: "https://www.unikacademy.in/terms" },
+  openGraph: {
+    title: "Terms & Conditions | UNIK Academy",
+    description:
+      "Read UNIK Academy's terms and conditions governing the use of our website, services, and course enrollment.",
+    url: "https://www.unikacademy.in/terms",
+    type: "website",
+  },
+  twitter: {
+    title: "Terms & Conditions | UNIK Academy",
+    description:
+      "Read UNIK Academy's terms and conditions governing the use of our website, services, and course enrollment.",
+  },
+};
+
 export default function Terms() {
   return (
     <div className="min-h-screen py-16">
@@ -58,9 +79,9 @@ export default function Terms() {
               Course fees are as listed on our website:
             </p>
             <ul className="list-disc pl-6 text-gray-700 space-y-2">
-              <li>1-on-1 Sessions: ₹12,000</li>
-              <li>1-to-2 Sessions: ₹9,000</li>
-              <li>1-to-5 Group Sessions: ₹6,000</li>
+              <li>1-on-1 Sessions: ₹11,999</li>
+              <li>1-to-2 Sessions: ₹8,999</li>
+              <li>1-to-5 Group Sessions: ₹5,999</li>
             </ul>
             <p className="text-gray-700 mt-4">
               Payment terms and refund policies will be communicated at the time

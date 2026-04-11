@@ -1,5 +1,34 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { CourseIcon } from "@/lib/courseIcons";
+
+export const metadata: Metadata = {
+  title: "UNIK Academy – Communication & Personality Development",
+  description:
+    "Join UNIK Academy for expert-led courses in Communication Skills, Public Speaking, Spoken English & Personality Development. Book a free demo today.",
+  alternates: { canonical: "https://www.unikacademy.in/" },
+  openGraph: {
+    title: "UNIK Academy – Communication & Personality Development",
+    description:
+      "Join UNIK Academy for expert-led courses in Communication Skills, Public Speaking, Spoken English & Personality Development. Book a free demo today.",
+    url: "https://www.unikacademy.in/",
+    type: "website",
+  },
+  twitter: {
+    title: "UNIK Academy – Communication & Personality Development",
+    description:
+      "Join UNIK Academy for expert-led courses in Communication Skills, Public Speaking, Spoken English & Personality Development. Book a free demo today.",
+  },
+};
+
+// Charm pricing: round thousands become X999 (e.g. 12000 → 11,999)
+function charmPrice(price: string): string {
+  const num = parseInt(price.replace(/,/g, ""), 10);
+  if (!isNaN(num) && num > 0 && num % 1000 === 0) {
+    return (num - 1).toLocaleString("en-IN");
+  }
+  return price;
+}
 
 interface DBCourse {
   _id: string;
@@ -259,7 +288,7 @@ export default async function Home() {
                       className={`text-5xl font-bold ${plan.featured ? "text-white" : "text-[#0e2b49]"}`}
                       style={{ fontFamily: "Poppins, sans-serif" }}
                     >
-                      {plan.price}
+                      {charmPrice(plan.price)}
                     </span>
                   </div>
                   <p
@@ -522,7 +551,7 @@ export default async function Home() {
                       className={`text-5xl font-bold ${plan.featured ? "text-[#0e2b49]" : "text-white"}`}
                       style={{ fontFamily: "Poppins, sans-serif" }}
                     >
-                      {plan.price}
+                      {charmPrice(plan.price)}
                     </span>
                   </div>
 
@@ -723,7 +752,7 @@ export default async function Home() {
                     <span className="text-white/50 text-sm">Session fee</span>
                     <div className="flex items-center gap-2">
                       <span className="text-white/40 line-through text-sm">
-                        ₹500
+                        ₹499
                       </span>
                       <span
                         className="text-[#c0a84f] font-bold text-lg"
@@ -762,6 +791,183 @@ export default async function Home() {
           Book Your Free Demo Session
         </Link>
       </div>
+
+      {/* ─── Testimonials ─── */}
+      <section className="py-20 bg-[#F8FAFC]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+          {/* Header */}
+          <div className="text-center mb-14">
+            <p className="text-xs font-semibold text-[#c0a84f] uppercase tracking-widest mb-3">
+              Student Stories
+            </p>
+            <h2
+              className="text-3xl md:text-4xl font-bold text-[#0e2b49] mb-5"
+              style={{ fontFamily: "Poppins, sans-serif" }}
+            >
+              Real Results from Real Students
+            </h2>
+            <p className="text-[#64748B] text-lg max-w-xl mx-auto mb-8">
+              Hundreds of students across India have transformed their confidence,
+              career, and communication with UNIK Academy.
+            </p>
+            {/* Stats row */}
+            <div className="inline-flex flex-wrap justify-center gap-6">
+              {[
+                { value: "500+", label: "Students Trained" },
+                { value: "4.9★", label: "Average Rating" },
+                { value: "95%", label: "Recommend Us" },
+              ].map((stat) => (
+                <div
+                  key={stat.label}
+                  className="flex items-center gap-2.5 bg-white border border-[#E2E8F0] rounded-full px-5 py-2 shadow-sm"
+                >
+                  <span
+                    className="text-[#c0a84f] font-bold text-base"
+                    style={{ fontFamily: "Poppins, sans-serif" }}
+                  >
+                    {stat.value}
+                  </span>
+                  <span className="text-[#64748B] text-sm">{stat.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Cards grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[
+              {
+                name: "Priya Sharma",
+                initials: "PS",
+                avatarFrom: "#c0a84f",
+                avatarTo: "#d4bc72",
+                course: "Communication Skills",
+                city: "Delhi",
+                rating: 5,
+                review:
+                  "My confidence in meetings has completely transformed. Before joining UNIK, I would avoid speaking up. Now I lead team discussions and even presented to senior management. Absolutely worth every rupee.",
+              },
+              {
+                name: "Rahul Verma",
+                initials: "RV",
+                avatarFrom: "#0e2b49",
+                avatarTo: "#133a67",
+                course: "Public Speaking",
+                city: "Mumbai",
+                rating: 5,
+                review:
+                  "I used to freeze during presentations. After just 8 weeks with UNIK Academy, I gave a TEDx talk at my college. The instructor's personalised feedback made all the difference — this isn't just a course, it's a transformation.",
+              },
+              {
+                name: "Anjali Mehta",
+                initials: "AM",
+                avatarFrom: "#c0a84f",
+                avatarTo: "#0e2b49",
+                course: "Spoken English",
+                city: "Pune",
+                rating: 5,
+                review:
+                  "My spoken English improved so much in just 6 weeks. My grammar is cleaner, my accent is neutral, and I no longer hesitate mid-sentence. My manager noticed the change immediately and praised me in front of the whole team.",
+              },
+              {
+                name: "Vikram Singh",
+                initials: "VS",
+                avatarFrom: "#133a67",
+                avatarTo: "#c0a84f",
+                course: "Personality Development",
+                city: "Jaipur",
+                rating: 5,
+                review:
+                  "This course changed how I carry myself entirely. My body language, eye contact, and the way I introduce myself — everything improved. I attended three job interviews after the course and got offers from all three.",
+              },
+              {
+                name: "Sneha Patel",
+                initials: "SP",
+                avatarFrom: "#c0a84f",
+                avatarTo: "#133a67",
+                course: "Business Communication",
+                city: "Ahmedabad",
+                rating: 5,
+                review:
+                  "Got promoted within 3 months of completing the Business Communication course. My emails are sharper, my client calls are more persuasive, and my boss specifically said my communication skills stood out during the review.",
+              },
+              {
+                name: "Arjun Nair",
+                initials: "AN",
+                avatarFrom: "#0e2b49",
+                avatarTo: "#c0a84f",
+                course: "Communication Skills",
+                city: "Bangalore",
+                rating: 5,
+                review:
+                  "The 1-on-1 sessions are incredibly personal and effective. My instructor understood exactly where I was struggling and focused on that. I went from being the quietest person in the room to someone others come to for communication advice.",
+              },
+            ].map((t) => (
+              <div
+                key={t.name}
+                className="group bg-white rounded-2xl p-7 border border-[#E2E8F0] hover:border-[#c0a84f]/40 hover:shadow-[0_12px_40px_rgba(14,43,73,0.10)] hover:-translate-y-1 transition-all duration-300"
+              >
+                {/* Quote icon */}
+                <svg
+                  className="w-8 h-8 text-[#c0a84f]/25 mb-4 group-hover:text-[#c0a84f]/40 transition-colors duration-300"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
+                </svg>
+
+                {/* Stars */}
+                <div className="flex gap-0.5 mb-4" aria-label={`${t.rating} out of 5 stars`}>
+                  {Array.from({ length: t.rating }).map((_, i) => (
+                    <svg
+                      key={i}
+                      className="w-4 h-4 text-[#c0a84f]"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                      aria-hidden="true"
+                    >
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                  ))}
+                </div>
+
+                {/* Review text */}
+                <p className="text-[#475569] text-sm leading-relaxed mb-6 italic">
+                  &ldquo;{t.review}&rdquo;
+                </p>
+
+                {/* Divider */}
+                <div className="border-t border-[#F1F5F9] pt-5 flex items-center gap-3">
+                  {/* Avatar */}
+                  <div
+                    className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-sm"
+                    style={{
+                      background: `linear-gradient(135deg, ${t.avatarFrom}, ${t.avatarTo})`,
+                    }}
+                    aria-hidden="true"
+                  >
+                    {t.initials}
+                  </div>
+                  <div>
+                    <p
+                      className="text-[#0e2b49] font-semibold text-sm"
+                      style={{ fontFamily: "Poppins, sans-serif" }}
+                    >
+                      {t.name}
+                    </p>
+                    <p className="text-[#94A3B8] text-xs mt-0.5">
+                      {t.course} · {t.city}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+        </div>
+      </section>
 
       {/* ─── CTA Section ─── */}
       <section className="relative overflow-hidden py-24 bg-[#0e2b49]">

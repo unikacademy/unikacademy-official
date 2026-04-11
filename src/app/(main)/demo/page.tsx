@@ -289,7 +289,7 @@ export default function DemoPage() {
               {/* Price callout */}
               <div className="mt-8 flex items-center gap-4 bg-gradient-to-r from-[#0e2b49] to-[#133a67] rounded-2xl p-5">
                 <div className="flex-shrink-0">
-                  <div className="text-white/40 text-sm line-through">₹500</div>
+                  <div className="text-white/40 text-sm line-through">₹499</div>
                   <div
                     className="text-[#c0a84f] font-bold text-3xl"
                     style={{ fontFamily: "Poppins, sans-serif" }}
@@ -467,6 +467,61 @@ export default function DemoPage() {
                 </form>
               )}
             </div>
+          </div>
+        </div>
+      </section>
+      {/* ─── FAQ ─── */}
+      <section className="py-16 bg-[#F8FAFC]">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-10">
+            <p className="text-xs font-semibold text-[#c0a84f] uppercase tracking-widest mb-3">
+              Got Questions?
+            </p>
+            <h2
+              className="text-3xl font-bold text-[#0e2b49]"
+              style={{ fontFamily: "Poppins, sans-serif" }}
+            >
+              Frequently Asked Questions
+            </h2>
+          </div>
+          <div className="space-y-4">
+            {[
+              {
+                q: "Who is the demo session for?",
+                a: "Anyone who wants to improve their communication, spoken English, public speaking, or personality. Whether you are a student, working professional, or homemaker — our demo is open to all.",
+              },
+              {
+                q: "Do I need to pay anything for the demo?",
+                a: "Absolutely not. The demo session is 100% free with no hidden charges and zero commitment to enroll afterwards.",
+              },
+              {
+                q: "How will UNIK Academy contact me after I submit the form?",
+                a: "We will reach out via phone or WhatsApp within 24 hours to confirm your slot and share the session link.",
+              },
+              {
+                q: "Is the session online or in-person?",
+                a: "The demo is conducted online via video call, so you can join from anywhere in India — no travel needed.",
+              },
+              {
+                q: "What happens after the demo?",
+                a: "After your demo session, you will receive a personalised course recommendation and pricing details. There is no pressure to enroll — you decide at your own pace.",
+              },
+            ].map((faq, i) => (
+              <div
+                key={i}
+                className="bg-white rounded-2xl border border-[#E2E8F0] p-6"
+              >
+                <p
+                  className="text-[#0e2b49] font-semibold mb-2 text-sm"
+                  style={{ fontFamily: "Poppins, sans-serif" }}
+                >
+                  {faq.q}
+                </p>
+                <p className="text-[#64748B] text-sm leading-relaxed">
+                  {faq.a}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       </section>

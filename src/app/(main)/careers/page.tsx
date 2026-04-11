@@ -1,4 +1,24 @@
+import type { Metadata } from "next";
 import { CareersClient } from "./CareersClient";
+
+export const metadata: Metadata = {
+  title: "Careers",
+  description:
+    "Explore job opportunities at UNIK Academy. Join our team of passionate educators and help students master communication and personality development.",
+  alternates: { canonical: "https://www.unikacademy.in/careers" },
+  openGraph: {
+    title: "Careers at UNIK Academy | Join Our Team",
+    description:
+      "Explore job opportunities at UNIK Academy. Join our team of passionate educators and help students master communication and personality development.",
+    url: "https://www.unikacademy.in/careers",
+    type: "website",
+  },
+  twitter: {
+    title: "Careers at UNIK Academy | Join Our Team",
+    description:
+      "Explore job opportunities at UNIK Academy. Join our team of passionate educators and help students master communication and personality development.",
+  },
+};
 
 interface Job {
   _id: string;

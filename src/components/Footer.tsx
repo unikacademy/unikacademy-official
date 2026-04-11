@@ -7,6 +7,7 @@ export default function Footer() {
     { href: "/careers", label: "Careers" },
     { href: "/contact", label: "Contact" },
     { href: "/terms", label: "Terms & Conditions" },
+    { href: "/privacy-policy", label: "Privacy Policy" },
   ];
 
   const courses = [
@@ -96,12 +97,12 @@ export default function Footer() {
 
           {/* Quick Links */}
           <div>
-            <h4
+            <p
               className="text-sm font-semibold text-white uppercase tracking-widest mb-5"
               style={{ fontFamily: "Poppins, sans-serif" }}
             >
               Quick Links
-            </h4>
+            </p>
             <ul className="space-y-2.5">
               {quickLinks.map((link) => (
                 <li key={link.href}>
@@ -119,12 +120,12 @@ export default function Footer() {
 
           {/* Courses */}
           <div>
-            <h4
+            <p
               className="text-sm font-semibold text-white uppercase tracking-widest mb-5"
               style={{ fontFamily: "Poppins, sans-serif" }}
             >
               Our Courses
-            </h4>
+            </p>
             <ul className="space-y-2.5">
               {courses.map((course) => (
                 <li
@@ -140,12 +141,12 @@ export default function Footer() {
 
           {/* CTA Column */}
           <div>
-            <h4
+            <p
               className="text-sm font-semibold text-white uppercase tracking-widest mb-5"
               style={{ fontFamily: "Poppins, sans-serif" }}
             >
               Get Started
-            </h4>
+            </p>
             <p className="text-sm text-white/60 leading-relaxed mb-5">
               Ready to transform your communication skills? Take the first step
               today.
@@ -164,7 +165,21 @@ export default function Footer() {
           <p className="text-sm text-white/40">
             &copy; {new Date().getFullYear()} UNIK Academy. All rights reserved.
           </p>
-          <p className="text-sm text-white/40">Created with love</p>
+          <div className="flex items-center gap-4">
+            <Link
+              href="/privacy-policy"
+              className="text-sm text-white/40 hover:text-[#c0a84f] transition-colors duration-200"
+            >
+              Privacy Policy
+            </Link>
+            <span className="text-white/20">·</span>
+            <Link
+              href="/terms"
+              className="text-sm text-white/40 hover:text-[#c0a84f] transition-colors duration-200"
+            >
+              Terms & Conditions
+            </Link>
+          </div>
         </div>
       </div>
     </footer>

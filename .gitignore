@@ -48,3 +48,30 @@ next-env.d.ts
 .copilot
 CLAUDE.md
 /CLAUDE.md
+
+# SEO audit tools
+squirrel.toml
+*.db
+.squirrel/
+
+# Design system / skill outputs
+design-system/
+
+# OS & editor
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Logs
+*.log
+logs/
+
+# Temp & cache
+*.tmp
+*.cache
+.turbo/

@@ -1,3 +1,24 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "About Us",
+  description:
+    "Learn about UNIK Academy's mission to empower individuals through expert communication and personality development training in India.",
+  alternates: { canonical: "https://www.unikacademy.in/about" },
+  openGraph: {
+    title: "About Us | UNIK Academy",
+    description:
+      "Learn about UNIK Academy's mission to empower individuals through expert communication and personality development training in India.",
+    url: "https://www.unikacademy.in/about",
+    type: "website",
+  },
+  twitter: {
+    title: "About Us | UNIK Academy",
+    description:
+      "Learn about UNIK Academy's mission to empower individuals through expert communication and personality development training in India.",
+  },
+};
+
 export default function About() {
   return (
     <div className="min-h-screen py-16">

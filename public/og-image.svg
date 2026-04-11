@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <!-- Background gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0e2b49;stop-opacity:1" />
+      <stop offset="60%" style="stop-color:#133a67;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0a2240;stop-opacity:1" />
+    </linearGradient>
+
+    <!-- Gold gradient for accent elements -->
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#c0a84f;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#d4bc72;stop-opacity:1" />
+    </linearGradient>
+
+    <!-- Gold gradient horizontal for line -->
+    <linearGradient id="goldLine" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#c0a84f;stop-opacity:0" />
+      <stop offset="20%" style="stop-color:#c0a84f;stop-opacity:1" />
+      <stop offset="80%" style="stop-color:#d4bc72;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#d4bc72;stop-opacity:0" />
+    </linearGradient>
+
+    <!-- Glow filter -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Soft blur for orbs -->
+    <filter id="blur1">
+      <feGaussianBlur stdDeviation="60"/>
+    </filter>
+    <filter id="blur2">
+      <feGaussianBlur stdDeviation="80"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bgGrad)" />
+
+  <!-- Decorative orbs -->
+  <circle cx="100" cy="100" r="220" fill="#c0a84f" opacity="0.06" filter="url(#blur1)" />
+  <circle cx="1100" cy="530" r="280" fill="#133a67" opacity="0.5" filter="url(#blur2)" />
+  <circle cx="1050" cy="80" r="180" fill="#c0a84f" opacity="0.05" filter="url(#blur1)" />
+
+  <!-- Dot grid pattern (subtle) -->
+  <pattern id="dots" x="0" y="0" width="28" height="28" patternUnits="userSpaceOnUse">
+    <circle cx="1" cy="1" r="1" fill="white" opacity="0.04" />
+  </pattern>
+  <rect width="1200" height="630" fill="url(#dots)" />
+
+  <!-- Top accent bar -->
+  <rect x="0" y="0" width="1200" height="4" fill="url(#goldLine)" />
+
+  <!-- Logo box -->
+  <rect x="80" y="215" width="72" height="72" rx="16" fill="url(#goldGrad)" />
+  <text x="116" y="267" font-family="Arial, sans-serif" font-size="36" font-weight="bold" fill="#0e2b49" text-anchor="middle">U</text>
+
+  <!-- UNIK Academy wordmark -->
+  <text x="170" y="258" font-family="Arial, sans-serif" font-size="52" font-weight="bold" fill="white" letter-spacing="2">UNIK</text>
+  <text x="170" y="275" font-family="Arial, sans-serif" font-size="52" font-weight="bold" fill="url(#goldGrad)" letter-spacing="2">
+    <tspan dy="42">Academy</tspan>
+  </text>
+
+  <!-- Divider line -->
+  <rect x="80" y="340" width="520" height="2" rx="1" fill="url(#goldGrad)" opacity="0.6" />
+
+  <!-- Tagline -->
+  <text x="80" y="385" font-family="Arial, sans-serif" font-size="22" fill="white" opacity="0.75" letter-spacing="1">Empowering Communication</text>
+  <text x="80" y="418" font-family="Arial, sans-serif" font-size="22" fill="white" opacity="0.75" letter-spacing="1">Transforming Personalities</text>
+
+  <!-- Pill badge -->
+  <rect x="80" y="455" width="320" height="44" rx="22" fill="#c0a84f" opacity="0.15" />
+  <rect x="80" y="455" width="320" height="44" rx="22" fill="none" stroke="#c0a84f" stroke-width="1.5" opacity="0.4" />
+  <circle cx="114" cy="477" r="6" fill="#c0a84f" />
+  <text x="132" y="483" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#c0a84f" letter-spacing="2">FREE DEMO SESSION</text>
+
+  <!-- Right side decorative card -->
+  <rect x="720" y="140" width="400" height="350" rx="24" fill="white" opacity="0.04" />
+  <rect x="720" y="140" width="400" height="350" rx="24" fill="none" stroke="white" stroke-width="1" opacity="0.1" />
+
+  <!-- Stats inside card -->
+  <!-- Stat 1 -->
+  <rect x="748" y="175" width="160" height="130" rx="16" fill="white" opacity="0.05" />
+  <text x="828" y="237" font-family="Arial, sans-serif" font-size="38" font-weight="bold" fill="url(#goldGrad)" text-anchor="middle" filter="url(#glow)">30</text>
+  <text x="828" y="262" font-family="Arial, sans-serif" font-size="13" fill="white" opacity="0.5" text-anchor="middle">min live session</text>
+  <text x="828" y="284" font-family="Arial, sans-serif" font-size="13" fill="#c0a84f" opacity="0.9" text-anchor="middle">FREE</text>
+
+  <!-- Stat 2 -->
+  <rect x="932" y="175" width="160" height="130" rx="16" fill="white" opacity="0.05" />
+  <text x="1012" y="237" font-family="Arial, sans-serif" font-size="38" font-weight="bold" fill="url(#goldGrad)" text-anchor="middle">1:1</text>
+  <text x="1012" y="262" font-family="Arial, sans-serif" font-size="13" fill="white" opacity="0.5" text-anchor="middle">personal attention</text>
+  <text x="1012" y="284" font-family="Arial, sans-serif" font-size="13" fill="#c0a84f" opacity="0.9" text-anchor="middle">LIVE</text>
+
+  <!-- Stat 3 -->
+  <rect x="748" y="325" width="160" height="130" rx="16" fill="white" opacity="0.05" />
+  <text x="828" y="387" font-family="Arial, sans-serif" font-size="32" font-weight="bold" fill="url(#goldGrad)" text-anchor="middle">Expert</text>
+  <text x="828" y="417" font-family="Arial, sans-serif" font-size="13" fill="white" opacity="0.5" text-anchor="middle">instructors</text>
+  <text x="828" y="439" font-family="Arial, sans-serif" font-size="13" fill="#c0a84f" opacity="0.9" text-anchor="middle">CERTIFIED</text>
+
+  <!-- Stat 4 -->
+  <rect x="932" y="325" width="160" height="130" rx="16" fill="white" opacity="0.05" />
+  <text x="1012" y="387" font-family="Arial, sans-serif" font-size="32" font-weight="bold" fill="url(#goldGrad)" text-anchor="middle">Flex</text>
+  <text x="1012" y="417" font-family="Arial, sans-serif" font-size="13" fill="white" opacity="0.5" text-anchor="middle">your schedule</text>
+  <text x="1012" y="439" font-family="Arial, sans-serif" font-size="13" fill="#c0a84f" opacity="0.9" text-anchor="middle">ONLINE</text>
+
+  <!-- Website URL bottom -->
+  <text x="600" y="592" font-family="Arial, sans-serif" font-size="18" fill="white" opacity="0.35" text-anchor="middle" letter-spacing="1">www.unikacademy.in</text>
+
+  <!-- Bottom accent bar -->
+  <rect x="0" y="626" width="1200" height="4" fill="url(#goldLine)" />
+</svg>

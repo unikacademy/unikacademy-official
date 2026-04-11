@@ -39,7 +39,10 @@ export default function Navigation() {
             className="flex items-center gap-2.5 group"
             aria-label="UNIK Academy Home"
           >
-            <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-[#c0a84f] to-[#d4bc72] shadow-md group-hover:shadow-[0_0_16px_rgba(192,168,79,0.45)] transition-all duration-300">
+            <div
+              aria-hidden="true"
+              className="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-[#c0a84f] to-[#d4bc72] shadow-md group-hover:shadow-[0_0_16px_rgba(192,168,79,0.45)] transition-all duration-300"
+            >
               <span
                 className="text-[#0e2b49] font-bold text-sm"
                 style={{ fontFamily: "Poppins, sans-serif" }}
@@ -47,7 +50,7 @@ export default function Navigation() {
                 U
               </span>
             </div>
-            <div className="flex flex-col leading-tight">
+            <div aria-hidden="true" className="flex flex-col leading-tight">
               <span
                 className="text-lg font-bold tracking-wide text-white group-hover:text-[#c0a84f] transition-colors duration-200"
                 style={{ fontFamily: "Poppins, sans-serif" }}

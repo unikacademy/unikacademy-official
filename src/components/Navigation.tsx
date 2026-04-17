@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 
 export default function Navigation() {
   const pathname = usePathname();
@@ -17,7 +18,7 @@ export default function Navigation() {
 
   const navLinks = [
     { href: "/", label: "Home" },
-    { href: "/demo", label: "Free Demo", highlight: true },
+    { href: "/demo", label: "Free Demo" },
     { href: "/careers", label: "We're Hiring" },
     { href: "/about", label: "About Us" },
     { href: "/contact", label: "Contact Us" },
@@ -68,29 +69,32 @@ export default function Navigation() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-1">
-            {navLinks.map((link) =>
-              link.highlight ? (
+            {navLinks.map((link) => {
+              const isActive = pathname === link.href;
+              return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="ml-2 px-5 py-2 rounded-lg text-sm font-semibold bg-gradient-to-r from-[#c0a84f] to-[#d4bc72] text-[#0e2b49] hover:from-[#d4bc72] hover:to-[#c0a84f] transition-all duration-200 shadow-md hover:shadow-[0_4px_16px_rgba(192,168,79,0.4)] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c0a84f]"
-                >
-                  {link.label}
-                </Link>
-              ) : (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`relative px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c0a84f] group/link ${
-                    pathname === link.href
+                  data-magnetic={link.href === "/demo" ? "" : undefined}
+                  className={`relative px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c0a84f] overflow-hidden group/link ${
+                    isActive
                       ? "text-[#0e2b49] bg-gradient-to-r from-[#c0a84f] to-[#d4bc72] shadow-md"
-                      : "text-white/85 hover:text-[#0e2b49] hover:bg-gradient-to-r hover:from-[#c0a84f] hover:to-[#d4bc72] hover:shadow-md"
+                      : "text-white/85 hover:text-white"
                   }`}
                 >
                   {link.label}
+                  {!isActive && (
+                    <motion.span
+                      className="absolute bottom-1 left-3 right-3 h-[1.5px] bg-gradient-to-r from-[#c0a84f] to-[#d4bc72] rounded-full"
+                      initial={{ scaleX: 0 }}
+                      whileHover={{ scaleX: 1 }}
+                      transition={{ duration: 0.22, ease: "easeOut" }}
+                      style={{ transformOrigin: "left", originX: 0 }}
+                    />
+                  )}
                 </Link>
-              ),
-            )}
+              );
+            })}
           </div>
 
           {/* Mobile Menu Button */}

@@ -32,6 +32,11 @@ html {
   scroll-behavior: smooth;
 }
 
+html,
+body {
+  overflow-x: clip; /* clip doesn't break position:sticky unlike overflow:hidden */
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
@@ -39,6 +44,8 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Prevent 300ms tap delay on mobile */
+  touch-action: manipulation;
 }
 
 h1,
@@ -50,6 +57,12 @@ h6 {
   font-family: "Poppins", Arial, Helvetica, sans-serif;
   font-weight: 700;
   line-height: 1.2;
+}
+
+/* Hide native cursor when custom cursor is active */
+body.has-custom-cursor,
+body.has-custom-cursor * {
+  cursor: none !important;
 }
 
 @layer utilities {
@@ -202,6 +215,17 @@ h6 {
     animation: fadeSlideUp 0.22s ease-out forwards;
   }
 
+  /* Infinite marquee — testimonials */
+  @keyframes marqueeLeft {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  @keyframes marqueeRight {
+    from { transform: translateX(-50%); }
+    to   { transform: translateX(0); }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .animate-fade-in,
     .animate-float,
@@ -212,6 +236,10 @@ h6 {
     }
     .card-hover:hover {
       transform: none;
+    }
+    [style*="marqueeLeft"],
+    [style*="marqueeRight"] {
+      animation: none !important;
     }
   }
 }

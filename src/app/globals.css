@@ -59,12 +59,6 @@ h6 {
   line-height: 1.2;
 }
 
-/* Hide native cursor when custom cursor is active */
-body.has-custom-cursor,
-body.has-custom-cursor * {
-  cursor: none !important;
-}
-
 @layer utilities {
   .text-primary {
     color: #0e2b49;
@@ -217,13 +211,21 @@ body.has-custom-cursor * {
 
   /* Infinite marquee — testimonials */
   @keyframes marqueeLeft {
-    from { transform: translateX(0); }
-    to   { transform: translateX(-50%); }
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
   }
 
   @keyframes marqueeRight {
-    from { transform: translateX(-50%); }
-    to   { transform: translateX(0); }
+    from {
+      transform: translateX(-50%);
+    }
+    to {
+      transform: translateX(0);
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {

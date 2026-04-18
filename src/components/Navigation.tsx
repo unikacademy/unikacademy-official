@@ -72,27 +72,45 @@ export default function Navigation() {
             {navLinks.map((link) => {
               const isActive = pathname === link.href;
               return (
-                <Link
+                <motion.div
                   key={link.href}
-                  href={link.href}
-                  data-magnetic={link.href === "/demo" ? "" : undefined}
-                  className={`relative px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c0a84f] overflow-hidden group/link ${
-                    isActive
-                      ? "text-[#0e2b49] bg-gradient-to-r from-[#c0a84f] to-[#d4bc72] shadow-md"
-                      : "text-white/85 hover:text-white"
-                  }`}
+                  className="relative"
+                  whileHover="hovered"
+                  initial="rest"
+                  animate="rest"
                 >
-                  {link.label}
+                  <Link
+                    href={link.href}
+                    className={`relative block px-4 py-2 rounded-lg text-sm font-semibold transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c0a84f] ${
+                      isActive
+                        ? "text-[#0e2b49] bg-gradient-to-r from-[#c0a84f] to-[#d4bc72] shadow-md"
+                        : "text-white/80 hover:text-[#c0a84f]"
+                    }`}
+                  >
+                    {!isActive && (
+                      <motion.span
+                        className="absolute inset-0 rounded-lg bg-[#c0a84f]/10"
+                        variants={{
+                          rest: { opacity: 0 },
+                          hovered: { opacity: 1 },
+                        }}
+                        transition={{ duration: 0.18 }}
+                      />
+                    )}
+                    <span className="relative">{link.label}</span>
+                  </Link>
                   {!isActive && (
                     <motion.span
-                      className="absolute bottom-1 left-3 right-3 h-[1.5px] bg-gradient-to-r from-[#c0a84f] to-[#d4bc72] rounded-full"
-                      initial={{ scaleX: 0 }}
-                      whileHover={{ scaleX: 1 }}
+                      className="absolute bottom-0.5 left-3 right-3 h-[2px] rounded-full bg-gradient-to-r from-[#c0a84f] via-[#d4bc72] to-[#c0a84f]"
+                      variants={{
+                        rest: { scaleX: 0, opacity: 0 },
+                        hovered: { scaleX: 1, opacity: 1 },
+                      }}
                       transition={{ duration: 0.22, ease: "easeOut" }}
-                      style={{ transformOrigin: "left", originX: 0 }}
+                      style={{ originX: 0.5 }}
                     />
                   )}
-                </Link>
+                </motion.div>
               );
             })}
           </div>
@@ -143,7 +161,7 @@ export default function Navigation() {
               className={`flex items-center px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c0a84f] ${
                 pathname === link.href
                   ? "text-[#c0a84f] bg-white/10 border-l-2 border-[#c0a84f]"
-                  : "text-white/85 hover:text-white hover:bg-white/8"
+                  : "text-white/85 hover:text-[#c0a84f] hover:bg-white/8"
               }`}
               onClick={() => setIsMenuOpen(false)}
             >

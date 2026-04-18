@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, FormEvent } from "react";
+import { validateName, validatePhone } from "@/lib/validation";
 
 export default function DemoPage() {
   const [formData, setFormData] = useState({
@@ -14,9 +15,25 @@ export default function DemoPage() {
   const [submitStatus, setSubmitStatus] = useState<
     "idle" | "success" | "error"
   >("idle");
+  const [validationError, setValidationError] = useState("");
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    setValidationError("");
+    const nameErr = validateName(formData.name);
+    if (nameErr) {
+      setValidationError(nameErr);
+      return;
+    }
+    const phoneErr = validatePhone(formData.phone);
+    if (phoneErr) {
+      setValidationError(phoneErr);
+      return;
+    }
+    if (!formData.course) {
+      setValidationError("Please select a course of interest.");
+      return;
+    }
     setIsSubmitting(true);
     setSubmitStatus("idle");
     try {
@@ -445,6 +462,11 @@ export default function DemoPage() {
                     />
                   </div>
 
+                  {validationError && (
+                    <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm">
+                      {validationError}
+                    </div>
+                  )}
                   {submitStatus === "error" && (
                     <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm">
                       Something went wrong. Please try again or call us

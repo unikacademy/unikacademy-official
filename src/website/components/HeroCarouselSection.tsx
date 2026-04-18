@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { CourseIcon } from "@/lib/courseIcons";
+import { validateName, validatePhone } from "@/lib/validation";
 
 const HeroScene = dynamic(() => import("./hero/HeroScene"), {
   ssr: false,
@@ -99,6 +100,7 @@ export default function HeroCarouselSection({ courses }: Props) {
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [errors, setErrors] = useState<{ name?: string; phone?: string }>({});
   const [formStatus, setFormStatus] = useState<
     "idle" | "loading" | "success" | "error"
   >("idle");
@@ -153,7 +155,13 @@ export default function HeroCarouselSection({ courses }: Props) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!name.trim() || !phone.trim()) return;
+    const nameErr = validateName(name);
+    const phoneErr = validatePhone(phone);
+    if (nameErr || phoneErr) {
+      setErrors({ name: nameErr ?? undefined, phone: phoneErr ?? undefined });
+      return;
+    }
+    setErrors({});
     setFormStatus("loading");
     try {
       const res = await fetch("/api/demo-booking", {
@@ -162,7 +170,7 @@ export default function HeroCarouselSection({ courses }: Props) {
         body: JSON.stringify({
           name: name.trim(),
           phone: phone.trim(),
-          course: "",
+          course: "Quick Demo Request",
         }),
       });
       if (!res.ok) throw new Error();
@@ -393,32 +401,50 @@ export default function HeroCarouselSection({ courses }: Props) {
                     {/* CTA */}
                     <Link
                       href="/demo"
-                      className="inline-flex items-center gap-2.5 group"
+                      className="group relative flex items-center justify-between w-full px-5 py-4 mt-2 transition-all duration-250"
+                      style={{
+                        background: "rgba(192,168,79,0.08)",
+                        border: "1px solid rgba(192,168,79,0.35)",
+                        borderRadius: "6px",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background =
+                          "rgba(192,168,79,0.18)";
+                        e.currentTarget.style.borderColor =
+                          "rgba(192,168,79,0.7)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background =
+                          "rgba(192,168,79,0.08)";
+                        e.currentTarget.style.borderColor =
+                          "rgba(192,168,79,0.35)";
+                      }}
                     >
-                      <span className="text-[#c0a84f] text-sm font-semibold group-hover:text-[#d4bc72] transition-colors">
+                      {/* Corner accents */}
+                      <span className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-[#c0a84f] rounded-tl-sm" />
+                      <span className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-[#c0a84f] rounded-tr-sm" />
+                      <span className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-[#c0a84f] rounded-bl-sm" />
+                      <span className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-[#c0a84f] rounded-br-sm" />
+
+                      <span
+                        className="text-[#c0a84f] text-sm font-bold tracking-wide"
+                        style={{ fontFamily: "Poppins, sans-serif" }}
+                      >
                         Enroll Now
                       </span>
-                      <div
-                        className="w-7 h-7 rounded-full flex items-center justify-center transition-all duration-300 group-hover:translate-x-1"
-                        style={{
-                          background: "rgba(192,168,79,0.15)",
-                          border: "1px solid rgba(192,168,79,0.3)",
-                        }}
+                      <svg
+                        className="w-4 h-4 text-[#c0a84f] transition-transform duration-200 group-hover:translate-x-1"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2.5}
                       >
-                        <svg
-                          className="w-3 h-3 text-[#c0a84f]"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                          strokeWidth={2.5}
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
-                          />
-                        </svg>
-                      </div>
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
+                        />
+                      </svg>
                     </Link>
                   </div>
                 ))}
@@ -614,10 +640,12 @@ export default function HeroCarouselSection({ courses }: Props) {
                         <div className="relative">
                           <input
                             type="text"
-                            placeholder="Rahul Sharma"
+                            placeholder="Enter your name"
                             value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            required
+                            onChange={(e) => {
+                              setName(e.target.value);
+                              setErrors((p) => ({ ...p, name: undefined }));
+                            }}
                             className="w-full px-4 py-3.5 rounded-xl text-white placeholder:text-white/25 text-sm focus:outline-none transition-all duration-200"
                             style={{
                               background: "rgba(255,255,255,0.07)",
@@ -640,6 +668,11 @@ export default function HeroCarouselSection({ courses }: Props) {
                             }}
                           />
                         </div>
+                        {errors.name && (
+                          <p className="text-red-400 text-xs mt-1.5">
+                            {errors.name}
+                          </p>
+                        )}
                       </div>
 
                       {/* Phone */}
@@ -655,10 +688,13 @@ export default function HeroCarouselSection({ courses }: Props) {
                           </div>
                           <input
                             type="tel"
-                            placeholder="98765 43210"
+                            placeholder="10-digit mobile number"
                             value={phone}
-                            onChange={(e) => setPhone(e.target.value)}
-                            required
+                            onChange={(e) => {
+                              setPhone(e.target.value);
+                              setErrors((p) => ({ ...p, phone: undefined }));
+                            }}
+                            maxLength={10}
                             className="w-full pl-[80px] pr-4 py-3.5 rounded-xl text-white placeholder:text-white/25 text-sm focus:outline-none transition-all duration-200"
                             style={{
                               background: "rgba(255,255,255,0.07)",
@@ -681,6 +717,11 @@ export default function HeroCarouselSection({ courses }: Props) {
                             }}
                           />
                         </div>
+                        {errors.phone && (
+                          <p className="text-red-400 text-xs mt-1.5">
+                            {errors.phone}
+                          </p>
+                        )}
                       </div>
 
                       {formStatus === "error" && (

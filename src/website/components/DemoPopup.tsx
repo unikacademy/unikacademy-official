@@ -2,28 +2,28 @@
 
 import { useState, useEffect, FormEvent } from "react";
 import { usePathname } from "next/navigation";
+import { validateName, validatePhone } from "@/lib/validation";
 
 const STORAGE_KEY = "unik_demo_popup_dismissed";
 const DISMISS_DURATION_MS = 3 * 24 * 60 * 60 * 1000; // 3 days
 const SHOW_DELAY_MS = 2500;
 
-const COURSES = [
-  "Communication Skills",
-  "Business Communication",
-  "Public Speaking & Presentation",
-  "Spoken English & Grammar",
-  "Personality Development",
-  "Basic Communication",
-  "Intermediate Communication",
-  "Advanced Communication",
-];
-
 export default function DemoPopup() {
   const pathname = usePathname();
   const [visible, setVisible] = useState(false);
-  const [formData, setFormData] = useState({ name: "", phone: "", course: "" });
+  const [formData, setFormData] = useState({
+    name: "",
+    phone: "",
+    course: "Quick Demo Request",
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle");
+  const [submitStatus, setSubmitStatus] = useState<
+    "idle" | "success" | "error"
+  >("idle");
+  const [fieldErrors, setFieldErrors] = useState<{
+    name?: string;
+    phone?: string;
+  }>({});
 
   useEffect(() => {
     // Never show on the demo page itself
@@ -45,13 +45,23 @@ export default function DemoPopup() {
   };
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    const nameErr = validateName(formData.name);
+    const phoneErr = validatePhone(formData.phone);
+    if (nameErr || phoneErr) {
+      setFieldErrors({
+        name: nameErr ?? undefined,
+        phone: phoneErr ?? undefined,
+      });
+      return;
+    }
+    setFieldErrors({});
     setIsSubmitting(true);
     setSubmitStatus("idle");
     try {
@@ -109,8 +119,18 @@ export default function DemoPopup() {
               aria-label="Close popup"
               className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors text-white/70 hover:text-white cursor-pointer"
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
 
@@ -138,7 +158,8 @@ export default function DemoPopup() {
                 Session
               </h2>
               <p className="text-white/55 text-sm mt-1">
-                30-min live 1-on-1 session — pick your slot, we&apos;ll confirm within 24 hrs.
+                30-min live 1-on-1 session — pick your slot, we&apos;ll confirm
+                within 24 hrs.
               </p>
             </div>
           </div>
@@ -148,11 +169,24 @@ export default function DemoPopup() {
             {submitStatus === "success" ? (
               <div className="text-center py-6">
                 <div className="w-14 h-14 rounded-full bg-linear-to-br from-[#c0a84f] to-[#d4bc72] flex items-center justify-center mx-auto mb-4 shadow-lg">
-                  <svg className="w-7 h-7 text-[#0e2b49]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                  <svg
+                    className="w-7 h-7 text-[#0e2b49]"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2.5}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M4.5 12.75l6 6 9-13.5"
+                    />
                   </svg>
                 </div>
-                <h3 className="text-lg font-bold text-[#0e2b49] mb-1" style={{ fontFamily: "Poppins, sans-serif" }}>
+                <h3
+                  className="text-lg font-bold text-[#0e2b49] mb-1"
+                  style={{ fontFamily: "Poppins, sans-serif" }}
+                >
                   Demo Booked!
                 </h3>
                 <p className="text-[#64748B] text-sm">
@@ -162,7 +196,10 @@ export default function DemoPopup() {
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label htmlFor="popup-name" className="block text-xs font-semibold text-[#0e2b49] mb-1.5">
+                  <label
+                    htmlFor="popup-name"
+                    className="block text-xs font-semibold text-[#0e2b49] mb-1.5"
+                  >
                     Full Name *
                   </label>
                   <input
@@ -175,41 +212,35 @@ export default function DemoPopup() {
                     placeholder="Your full name"
                     className="w-full px-4 py-2.5 border border-[#E2E8F0] rounded-xl bg-[#F8FAFC] text-[#0e2b49] placeholder-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#c0a84f]/50 focus:border-[#c0a84f] transition-colors text-sm"
                   />
+                  {fieldErrors.name && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {fieldErrors.name}
+                    </p>
+                  )}
                 </div>
                 <div>
-                  <label htmlFor="popup-phone" className="block text-xs font-semibold text-[#0e2b49] mb-1.5">
+                  <label
+                    htmlFor="popup-phone"
+                    className="block text-xs font-semibold text-[#0e2b49] mb-1.5"
+                  >
                     Phone Number *
                   </label>
                   <input
                     type="tel"
                     id="popup-phone"
                     name="phone"
-                    required
+                    maxLength={10}
                     value={formData.phone}
                     onChange={handleChange}
-                    placeholder="Your phone number"
+                    placeholder="10-digit mobile number"
                     className="w-full px-4 py-2.5 border border-[#E2E8F0] rounded-xl bg-[#F8FAFC] text-[#0e2b49] placeholder-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#c0a84f]/50 focus:border-[#c0a84f] transition-colors text-sm"
                   />
+                  {fieldErrors.phone && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {fieldErrors.phone}
+                    </p>
+                  )}
                 </div>
-                <div>
-                  <label htmlFor="popup-course" className="block text-xs font-semibold text-[#0e2b49] mb-1.5">
-                    Course of Interest *
-                  </label>
-                  <select
-                    id="popup-course"
-                    name="course"
-                    required
-                    value={formData.course}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2.5 border border-[#E2E8F0] rounded-xl bg-[#F8FAFC] text-[#0e2b49] focus:outline-none focus:ring-2 focus:ring-[#c0a84f]/50 focus:border-[#c0a84f] transition-colors text-sm cursor-pointer"
-                  >
-                    <option value="">Select a course</option>
-                    {COURSES.map((c) => (
-                      <option key={c} value={c}>{c}</option>
-                    ))}
-                  </select>
-                </div>
-
                 {submitStatus === "error" && (
                   <p className="text-red-500 text-xs bg-red-50 border border-red-100 rounded-xl px-4 py-2.5">
                     Something went wrong. Please try again.

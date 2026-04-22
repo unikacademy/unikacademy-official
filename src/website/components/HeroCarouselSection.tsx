@@ -294,10 +294,11 @@ export default function HeroCarouselSection({ courses }: Props) {
                 style={{
                   display: "flex",
                   transform: `translateX(-${current * 100}%)`,
+                  willChange: "transform",
                   transition:
                     reducedMotion || isJumping
                       ? "none"
-                      : "transform 600ms cubic-bezier(0.77, 0, 0.175, 1)",
+                      : "transform 700ms cubic-bezier(0.16, 1, 0.3, 1)",
                 }}
               >
                 {displaySlides.map((slide, i) => (

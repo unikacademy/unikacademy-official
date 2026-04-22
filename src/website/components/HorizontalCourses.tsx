@@ -40,11 +40,12 @@ export default function HorizontalCourses({ courses }: Props) {
           start: "top top",
           end: () => `+=${scrollAmount}`,
           pin: true,
-          scrub: 1.2,
+          scrub: 2.5,
           anticipatePin: 1,
           animation: gsap.to(track, {
             x: -scrollAmount,
             ease: "none",
+            force3D: true,
           }),
         });
 
@@ -59,7 +60,7 @@ export default function HorizontalCourses({ courses }: Props) {
   if (courses.length === 0) return null;
 
   return (
-    <section ref={sectionRef} className="bg-[#F8FAFC] overflow-hidden">
+    <section ref={sectionRef} className="bg-[#F8FAFC] md:overflow-hidden">
       {/* Header — stays visible while track scrolls */}
       <div className="pt-14 md:pt-20 pb-10 px-6 md:px-12 max-w-7xl mx-auto">
         <p className="text-xs font-semibold text-[#c0a84f] uppercase tracking-widest mb-3">
@@ -76,7 +77,8 @@ export default function HorizontalCourses({ courses }: Props) {
             <div className="w-14 h-1 bg-gradient-to-r from-[#c0a84f] to-[#d4bc72] rounded-full" />
           </div>
           <p className="text-[#64748B] text-lg max-w-sm md:text-right leading-relaxed">
-            Comprehensive programs that unlock your full communication potential.
+            Comprehensive programs that unlock your full communication
+            potential.
           </p>
         </div>
 
@@ -99,41 +101,43 @@ export default function HorizontalCourses({ courses }: Props) {
         </div>
       </div>
 
-      {/* Horizontal track */}
-      <div
-        ref={trackRef}
-        className="flex gap-5 px-6 md:px-12 pb-16"
-        style={{ width: "max-content" }}
-      >
-        {courses.map((course, i) => (
-          <div
-            key={course._id}
-            className="flex-shrink-0 w-[280px] md:w-[320px] group bg-white rounded-2xl p-7 border border-[#E2E8F0] hover:border-[#c0a84f]/50 hover:shadow-[0_12px_48px_rgba(14,43,73,0.1)] transition-all duration-300 cursor-default"
-          >
-            {/* Course number */}
-            <div className="text-[#c0a84f]/40 text-xs font-mono font-bold mb-4 uppercase tracking-widest">
-              {String(i + 1).padStart(2, "0")}
-            </div>
-
-            {/* Icon */}
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#0e2b49]/8 to-[#133a67]/12 flex items-center justify-center text-[#0e2b49] mb-5 group-hover:from-[#c0a84f]/15 group-hover:to-[#d4bc72]/20 group-hover:text-[#c0a84f] transition-all duration-300">
-              <CourseIcon iconKey={course.iconKey} className="w-6 h-6" />
-            </div>
-
-            <h3
-              className="text-lg font-semibold text-[#0e2b49] mb-3 leading-snug"
-              style={{ fontFamily: "Poppins, sans-serif" }}
+      {/* Horizontal track — swipe on mobile, GSAP-pinned on desktop */}
+      <div className="overflow-x-auto md:overflow-visible [scrollbar-width:none] [&::-webkit-scrollbar]:hidden scroll-smooth">
+        <div
+          ref={trackRef}
+          className="flex gap-5 px-6 md:px-12 pb-16"
+          style={{ width: "max-content", willChange: "transform" }}
+        >
+          {courses.map((course, i) => (
+            <div
+              key={course._id}
+              className="flex-shrink-0 w-[280px] md:w-[320px] group bg-white rounded-2xl p-7 border border-[#E2E8F0] hover:border-[#c0a84f]/50 hover:shadow-[0_12px_48px_rgba(14,43,73,0.1)] transition-all duration-300 cursor-default"
             >
-              {course.title}
-            </h3>
-            <p className="text-[#64748B] text-sm leading-relaxed">
-              {course.description}
-            </p>
+              {/* Course number */}
+              <div className="text-[#c0a84f]/40 text-xs font-mono font-bold mb-4 uppercase tracking-widest">
+                {String(i + 1).padStart(2, "0")}
+              </div>
 
-            {/* Bottom accent line */}
-            <div className="mt-6 w-0 h-[2px] bg-gradient-to-r from-[#c0a84f] to-[#d4bc72] rounded-full group-hover:w-12 transition-all duration-500" />
-          </div>
-        ))}
+              {/* Icon */}
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#0e2b49]/8 to-[#133a67]/12 flex items-center justify-center text-[#0e2b49] mb-5 group-hover:from-[#c0a84f]/15 group-hover:to-[#d4bc72]/20 group-hover:text-[#c0a84f] transition-all duration-300">
+                <CourseIcon iconKey={course.iconKey} className="w-6 h-6" />
+              </div>
+
+              <h3
+                className="text-lg font-semibold text-[#0e2b49] mb-3 leading-snug"
+                style={{ fontFamily: "Poppins, sans-serif" }}
+              >
+                {course.title}
+              </h3>
+              <p className="text-[#64748B] text-sm leading-relaxed">
+                {course.description}
+              </p>
+
+              {/* Bottom accent line */}
+              <div className="mt-6 w-0 h-[2px] bg-gradient-to-r from-[#c0a84f] to-[#d4bc72] rounded-full group-hover:w-12 transition-all duration-500" />
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );

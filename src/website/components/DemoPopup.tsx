@@ -105,7 +105,7 @@ export default function DemoPopup() {
           {/* Header */}
           <div className="relative bg-[#0e2b49] px-6 pt-6 pb-5">
             <div
-              className="absolute inset-0 opacity-[0.06]"
+              className="absolute inset-0 opacity-[0.06] pointer-events-none"
               style={{
                 backgroundImage:
                   "radial-gradient(circle at 1px 1px, white 1px, transparent 0)",

@@ -101,7 +101,28 @@ export default function DemoPopup() {
         aria-labelledby="demo-popup-title"
         className="fixed z-1000 inset-x-4 bottom-4 sm:inset-auto sm:bottom-auto sm:top-1/2 sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 w-auto sm:w-full sm:max-w-md"
       >
-        <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
+        <div className="relative bg-white rounded-2xl shadow-2xl overflow-hidden">
+          {/* Close button — outside overflow-hidden clipping zone */}
+          <button
+            onClick={dismiss}
+            aria-label="Close popup"
+            className="absolute top-3 right-3 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors text-white/70 hover:text-white cursor-pointer"
+          >
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+
           {/* Header */}
           <div className="relative bg-[#0e2b49] px-6 pt-6 pb-5">
             <div
@@ -113,26 +134,6 @@ export default function DemoPopup() {
               }}
             />
             <div className="absolute top-0 right-0 w-40 h-40 bg-[#c0a84f]/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/4 pointer-events-none" />
-
-            <button
-              onClick={dismiss}
-              aria-label="Close popup"
-              className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors text-white/70 hover:text-white cursor-pointer"
-            >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
 
             <div className="relative">
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-[#c0a84f]/40 bg-[#c0a84f]/10 text-[#c0a84f] text-[10px] font-semibold uppercase tracking-widest mb-3">

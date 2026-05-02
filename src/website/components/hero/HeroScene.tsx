@@ -2,7 +2,7 @@
 
 import { useRef, useEffect } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { MeshTransmissionMaterial, Torus } from "@react-three/drei";
+import { MeshTransmissionMaterial } from "@react-three/drei";
 import * as THREE from "three";
 import HeroParticles from "./HeroParticles";
 
@@ -70,26 +70,6 @@ function GlassSphere({
   );
 }
 
-// ─── Torus Ring ──────────────────────────────────────────────────────────────
-
-function TorusRing() {
-  const ref = useRef<THREE.Mesh>(null);
-
-  useFrame((_, delta) => {
-    if (ref.current) {
-      ref.current.rotation.z += delta * 0.06;
-      ref.current.rotation.x += delta * 0.02;
-    }
-  });
-
-  return (
-    <mesh ref={ref} rotation={[1.1, 0.3, 0]}>
-      <Torus args={[3.5, 0.015, 16, 100]} />
-      <meshBasicMaterial color="#c0a84f" transparent opacity={0.12} wireframe />
-    </mesh>
-  );
-}
-
 // ─── Mouse-responsive Group ──────────────────────────────────────────────────
 
 function SceneContent({ isMobile }: { isMobile: boolean }) {
@@ -119,7 +99,6 @@ function SceneContent({ isMobile }: { isMobile: boolean }) {
   return (
     <group ref={groupRef}>
       <HeroParticles count={particleCount} />
-      <TorusRing />
       <GlassSphere
         position={[-2.5, 0.8, -3]}
         radius={0.7}

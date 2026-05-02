@@ -1,21 +1,29 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Terms & Conditions",
+  title: "Terms & Conditions – UNIK Academy | Course Policies",
   description:
-    "Read UNIK Academy's terms and conditions governing the use of our website, services, and course enrollment.",
+    "Read UNIK Academy's Terms & Conditions covering enrollment, payment, session policies, student responsibilities, intellectual property, and refund terms.",
   alternates: { canonical: "https://www.unikacademy.in/terms" },
   openGraph: {
-    title: "Terms & Conditions | UNIK Academy",
+    title: "Terms & Conditions – UNIK Academy | Course Policies",
     description:
-      "Read UNIK Academy's terms and conditions governing the use of our website, services, and course enrollment.",
+      "Read UNIK Academy's Terms & Conditions covering enrollment, payment, session policies, student responsibilities, intellectual property, and refund terms.",
     url: "https://www.unikacademy.in/terms",
     type: "website",
+    images: [
+      {
+        url: "/og-image.svg",
+        width: 1200,
+        height: 630,
+        alt: "UNIK Academy Terms & Conditions",
+      },
+    ],
   },
   twitter: {
-    title: "Terms & Conditions | UNIK Academy",
+    title: "Terms & Conditions – UNIK Academy | Course Policies",
     description:
-      "Read UNIK Academy's terms and conditions governing the use of our website, services, and course enrollment.",
+      "Read UNIK Academy's Terms & Conditions covering enrollment, payment, session policies, student responsibilities, intellectual property, and refund terms.",
   },
 };
 

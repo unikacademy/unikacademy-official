@@ -1,21 +1,22 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy",
+  title: "Privacy Policy – UNIK Academy | Your Data & Safety",
   description:
-    "Read UNIK Academy's Privacy Policy to understand how we collect, use, and protect your personal information.",
+    "Read UNIK Academy's Privacy Policy to understand how we collect, store, use, and protect your personal information in compliance with applicable data laws.",
   alternates: { canonical: "https://www.unikacademy.in/privacy-policy" },
   openGraph: {
-    title: "Privacy Policy | UNIK Academy",
+    title: "Privacy Policy – UNIK Academy | Your Data & Safety",
     description:
-      "Read UNIK Academy's Privacy Policy to understand how we collect, use, and protect your personal information.",
+      "Read UNIK Academy's Privacy Policy to understand how we collect, store, use, and protect your personal information in compliance with applicable data laws.",
     url: "https://www.unikacademy.in/privacy-policy",
     type: "website",
+    images: [{ url: "/og-image.svg", width: 1200, height: 630, alt: "UNIK Academy Privacy Policy" }],
   },
   twitter: {
-    title: "Privacy Policy | UNIK Academy",
+    title: "Privacy Policy – UNIK Academy | Your Data & Safety",
     description:
-      "Read UNIK Academy's Privacy Policy to understand how we collect, use, and protect your personal information.",
+      "Read UNIK Academy's Privacy Policy to understand how we collect, store, use, and protect your personal information in compliance with applicable data laws.",
   },
 };
 

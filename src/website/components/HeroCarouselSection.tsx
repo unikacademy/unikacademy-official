@@ -635,12 +635,17 @@ export default function HeroCarouselSection({ courses }: Props) {
                     <form onSubmit={handleSubmit} className="space-y-4">
                       {/* Name */}
                       <div className="group">
-                        <label className="block text-[11px] font-semibold text-white/40 uppercase tracking-widest mb-2">
+                        <label
+                          htmlFor="hero-name"
+                          className="block text-[11px] font-semibold text-white/40 uppercase tracking-widest mb-2"
+                        >
                           Your Name
                         </label>
                         <div className="relative">
                           <input
+                            id="hero-name"
                             type="text"
+                            autoComplete="name"
                             placeholder="Enter your name"
                             value={name}
                             onChange={(e) => {
@@ -678,7 +683,10 @@ export default function HeroCarouselSection({ courses }: Props) {
 
                       {/* Phone */}
                       <div>
-                        <label className="block text-[11px] font-semibold text-white/40 uppercase tracking-widest mb-2">
+                        <label
+                          htmlFor="hero-phone"
+                          className="block text-[11px] font-semibold text-white/40 uppercase tracking-widest mb-2"
+                        >
                           Phone Number
                         </label>
                         <div className="relative flex items-center">
@@ -688,7 +696,10 @@ export default function HeroCarouselSection({ courses }: Props) {
                             <div className="w-px h-4 bg-white/15 ml-1" />
                           </div>
                           <input
+                            id="hero-phone"
                             type="tel"
+                            inputMode="numeric"
+                            autoComplete="tel"
                             placeholder="10-digit mobile number"
                             value={phone}
                             onChange={(e) => {

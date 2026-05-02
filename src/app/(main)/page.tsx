@@ -12,21 +12,24 @@ import TiltCard from "@/components/animations/TiltCard";
 import MagneticButton from "@/components/animations/MagneticButton";
 
 export const metadata: Metadata = {
-  title: "UNIK Academy – Communication & Personality Development",
+  title: "UNIK Academy – Communication & Personality Courses",
   description:
-    "Join UNIK Academy for expert-led courses in Communication Skills, Public Speaking, Spoken English & Personality Development. Book a free demo today.",
+    "Join UNIK Academy for expert-led courses in Communication Skills, Public Speaking, Spoken English & Personality Development. Book a free demo session today.",
   alternates: { canonical: "https://www.unikacademy.in/" },
   openGraph: {
-    title: "UNIK Academy – Communication & Personality Development",
+    title: "UNIK Academy – Communication & Personality Courses",
     description:
-      "Join UNIK Academy for expert-led courses in Communication Skills, Public Speaking, Spoken English & Personality Development. Book a free demo today.",
+      "Join UNIK Academy for expert-led courses in Communication Skills, Public Speaking, Spoken English & Personality Development. Book a free demo session today.",
     url: "https://www.unikacademy.in/",
     type: "website",
+    images: [
+      { url: "/og-image.svg", width: 1200, height: 630, alt: "UNIK Academy" },
+    ],
   },
   twitter: {
-    title: "UNIK Academy – Communication & Personality Development",
+    title: "UNIK Academy – Communication & Personality Courses",
     description:
-      "Join UNIK Academy for expert-led courses in Communication Skills, Public Speaking, Spoken English & Personality Development. Book a free demo today.",
+      "Join UNIK Academy for expert-led courses in Communication Skills, Public Speaking, Spoken English & Personality Development. Book a free demo session today.",
   },
 };
 
@@ -85,6 +88,11 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen">
+      {/* Visually hidden H1 for SEO — visible heading is inside HeroCarouselSection */}
+      <h1 className="sr-only">
+        UNIK Academy – Communication & Personality Development Courses
+      </h1>
+
       {/* ─── Hero ─── */}
       <HeroCarouselSection courses={[...coursePricing, ...premiumPlans]} />
 

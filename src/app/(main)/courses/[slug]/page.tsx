@@ -2,8 +2,6 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { courseDetailsData } from "@/website/data/courseDetails";
-import { AccordionGroup } from "@/website/components/CourseAccordion";
-import type { AccordionGroupItem } from "@/website/components/CourseAccordion";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -19,44 +17,79 @@ export async function generateMetadata({
   const { slug } = await params;
   const course = courseDetailsData.find((c) => c.id === slug);
   if (!course) return { title: "Course Not Found | UNIK Academy" };
+  const desc =
+    course.overview.length > 155
+      ? course.overview.slice(0, 152) + "..."
+      : course.overview;
   return {
-    title: `${course.title} | UNIK Academy`,
-    description: course.overview,
+    title: `${course.title} – UNIK Academy | Live Communication Training`,
+    description: desc,
     alternates: { canonical: `https://www.unikacademy.in/courses/${slug}` },
     openGraph: {
-      title: `${course.title} | UNIK Academy`,
+      title: `${course.title} – UNIK Academy`,
       description: course.overview,
       url: `https://www.unikacademy.in/courses/${slug}`,
       type: "website",
+      images: [
+        {
+          url: "/og-image.svg",
+          width: 1200,
+          height: 630,
+          alt: `${course.title} – UNIK Academy`,
+        },
+      ],
+    },
+    twitter: {
+      title: `${course.title} – UNIK Academy`,
+      description: desc,
     },
   };
 }
+
+const INSTRUCTOR = {
+  initials: "UA",
+  name: "Certified Communication Expert",
+  title: "Lead Trainer · UNIK Academy",
+  experience: "8+ Years",
+  students: "500+",
+  rating: "4.9★",
+  bio: "Our expert trainers are certified communication coaches with 8+ years of experience transforming hesitant speakers into confident, impactful communicators. Every session blends proven techniques with intensive real-world practice to ensure lasting results.",
+};
+
+const SESSION_FORMATS = [
+  { label: "1-on-1 Sessions", price: "₹11,999", badge: "Most Personalized" },
+  { label: "1-to-2 Sessions", price: "₹8,999", badge: "Best Value" },
+  { label: "1-to-5 Group", price: "₹5,999", badge: "Group Learning" },
+];
 
 const CERT_TIERS = [
   {
     tier: "Gold",
     range: "Above 80%",
-    iconColor: "#c0a84f",
-    bgClass: "bg-[#c0a84f]/10",
-    borderClass: "border-[#c0a84f]/25",
-    textColor: "#b8960d",
+    color: "#c0a84f",
+    bg: "bg-[#c0a84f]/8 border-[#c0a84f]/25",
   },
   {
     tier: "Silver",
     range: "70% – 80%",
-    iconColor: "#94A3B8",
-    bgClass: "bg-slate-100",
-    borderClass: "border-slate-200",
-    textColor: "#64748B",
+    color: "#94A3B8",
+    bg: "bg-slate-50 border-slate-200",
   },
   {
     tier: "Bronze",
     range: "60% – 70%",
-    iconColor: "#b45309",
-    bgClass: "bg-amber-50",
-    borderClass: "border-amber-200",
-    textColor: "#92400e",
+    color: "#b45309",
+    bg: "bg-amber-50 border-amber-200",
   },
+];
+
+const INCLUDED = [
+  "Live Interactive Sessions",
+  "Expert Communication Trainer",
+  "UNIK Academy Certificate",
+  "Real-World Practice Exercises",
+  "Doubt Resolution In Session",
+  "Flexible Scheduling Options",
 ];
 
 export default async function CourseDetailPage({ params }: PageProps) {
@@ -66,11 +99,8 @@ export default async function CourseDetailPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
-      {/* ── Hero ── */}
-      <div className="relative bg-linear-to-br from-[#0a1f38] via-[#0e2b49] to-[#112d52] overflow-hidden">
-        {/* Ambient glows */}
-        <div className="absolute -top-16 -right-16 w-72 h-72 bg-[#c0a84f]/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-1/4 w-48 h-48 bg-[#c0a84f]/6 rounded-full blur-2xl pointer-events-none" />
+      {/* ─── Hero ─── */}
+      <div className="relative bg-[#0e2b49] overflow-hidden">
         <div
           className="absolute inset-0 opacity-[0.04] pointer-events-none"
           style={{
@@ -79,233 +109,567 @@ export default async function CourseDetailPage({ params }: PageProps) {
             backgroundSize: "28px 28px",
           }}
         />
+        <div className="absolute -top-24 right-0 w-[500px] h-[500px] bg-[#c0a84f]/8 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-1/3 w-72 h-72 bg-[#c0a84f]/5 rounded-full blur-2xl pointer-events-none" />
 
-        <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-10">
-          {/* Back */}
-          <Link
-            href="/#courses"
-            className="flex w-fit items-center gap-1.5 text-white/50 hover:text-white text-xs font-medium transition-colors duration-200 mb-8 group"
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-20">
+          {/* Breadcrumb */}
+          <nav
+            className="flex items-center gap-1.5 text-xs text-white/40 mb-8"
+            aria-label="Breadcrumb"
           >
-            <svg
-              className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform duration-200"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2.5}
+            <Link
+              href="/"
+              className="hover:text-white/70 transition-colors duration-150"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"
-              />
-            </svg>
-            Back to Courses
-          </Link>
+              Home
+            </Link>
+            <span>/</span>
+            <Link
+              href="/#courses"
+              className="hover:text-white/70 transition-colors duration-150"
+            >
+              Courses
+            </Link>
+            <span>/</span>
+            <span className="text-white/60 truncate max-w-[180px]">
+              {course.title}
+            </span>
+          </nav>
 
-          {/* Label */}
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#c0a84f]/40 bg-[#c0a84f]/10 text-[#c0a84f] text-[11px] font-semibold uppercase tracking-widest mb-4">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#c0a84f]" />
-            UNIK Academy
+          {/* Badges */}
+          <div className="flex flex-wrap items-center gap-2 mb-5">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-[#c0a84f]/40 bg-[#c0a84f]/10 text-[#c0a84f] text-[11px] font-semibold uppercase tracking-widest">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#c0a84f] animate-pulse" />
+              Live Program
+            </span>
+            <span className="px-3 py-1 rounded-full bg-white/8 border border-white/10 text-white/50 text-[11px]">
+              {course.programType}
+            </span>
           </div>
 
+          {/* Title */}
           <h1
-            className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-2 leading-tight"
+            className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-3 leading-tight max-w-3xl"
             style={{ fontFamily: "Poppins, sans-serif" }}
           >
             {course.title}
           </h1>
-          <p className="text-[#c0a84f] text-sm font-medium mb-2">
-            {course.programType}
+          <p className="text-[#c0a84f] text-base italic font-medium mb-8 max-w-2xl">
+            {course.subtitle}
           </p>
-          <p className="text-white/45 text-sm italic mb-8">{course.subtitle}</p>
 
-          {/* Quick stats */}
-          <div className="grid grid-cols-3 gap-3">
+          {/* Instructor quick info */}
+          <div className="flex items-center gap-3 mb-8">
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#c0a84f] to-[#d4bc72] flex items-center justify-center shrink-0 shadow-md">
+              <span className="text-[#0e2b49] font-bold text-xs">
+                {INSTRUCTOR.initials}
+              </span>
+            </div>
+            <p className="text-white/65 text-sm">
+              Taught by{" "}
+              <span className="text-white font-semibold">
+                {INSTRUCTOR.name}
+              </span>
+              <span className="text-white/40 text-xs ml-2">
+                {INSTRUCTOR.rating} · {INSTRUCTOR.students} students
+              </span>
+            </p>
+          </div>
+
+          {/* Stats row */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
               { label: "Duration", value: course.duration },
               { label: "Live Sessions", value: String(course.totalSessions) },
               { label: "Total Hours", value: `${course.totalHours}h` },
+              { label: "Mode", value: "Live Online" },
             ].map((stat) => (
               <div
                 key={stat.label}
-                className="bg-white/8 border border-white/10 rounded-xl px-3 py-3 text-center"
+                className="bg-white/8 border border-white/10 rounded-xl px-4 py-3 text-center sm:text-left"
               >
                 <div
-                  className="text-[#c0a84f] font-bold text-base sm:text-lg leading-none"
+                  className="text-[#c0a84f] font-bold text-xl leading-none mb-1.5"
                   style={{ fontFamily: "Poppins, sans-serif" }}
                 >
                   {stat.value}
                 </div>
-                <div className="text-white/40 text-[10px] uppercase tracking-wider mt-1.5">
+                <div className="text-white/40 text-[11px] uppercase tracking-wider">
                   {stat.label}
                 </div>
               </div>
             ))}
           </div>
         </div>
+
+        {/* Wave divider */}
+        <div className="absolute bottom-0 left-0 right-0">
+          <svg
+            viewBox="0 0 1440 40"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            preserveAspectRatio="none"
+            className="w-full h-10"
+          >
+            <path
+              d="M0 40L1440 40L1440 12C1320 32 1200 40 1080 32C960 24 840 0 720 0C600 0 480 24 360 32C240 40 120 32 0 12L0 40Z"
+              fill="#F8FAFC"
+            />
+          </svg>
+        </div>
       </div>
 
-      {/* ── Accordion Content ── */}
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white rounded-2xl border border-[#E2E8F0] shadow-sm overflow-hidden">
-          <div className="px-6 py-1">
-            <AccordionGroup
-              defaultOpenIndex={0}
-              items={[
-                {
-                  title: "Course Overview",
-                  content: (
-                    <>
-                      <p className="leading-relaxed text-[#475569]">
-                        {course.overview}
+      {/* ─── Body ─── */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-20">
+        <div className="flex flex-col lg:flex-row gap-8 items-start">
+          {/* ─── Main content ─── */}
+          <div className="flex-1 min-w-0 space-y-6">
+            {/* What you'll learn */}
+            <section className="bg-white rounded-2xl border border-[#E2E8F0] p-6 sm:p-8">
+              <h2
+                className="text-xl font-bold text-[#0e2b49] mb-5"
+                style={{ fontFamily: "Poppins, sans-serif" }}
+              >
+                What You&apos;ll Learn
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {course.outcomes.map((outcome, i) => (
+                  <div key={i} className="flex items-start gap-3">
+                    <div className="shrink-0 w-5 h-5 rounded-full bg-gradient-to-br from-[#c0a84f]/20 to-[#d4bc72]/15 border border-[#c0a84f]/30 flex items-center justify-center mt-0.5">
+                      <svg
+                        className="w-3 h-3 text-[#c0a84f]"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={3}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M4.5 12.75l6 6 9-13.5"
+                        />
+                      </svg>
+                    </div>
+                    <span className="text-[#475569] text-sm leading-relaxed">
+                      {outcome}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* Instructor */}
+            <section className="bg-white rounded-2xl border border-[#E2E8F0] p-6 sm:p-8">
+              <h2
+                className="text-xl font-bold text-[#0e2b49] mb-6"
+                style={{ fontFamily: "Poppins, sans-serif" }}
+              >
+                Your Instructor
+              </h2>
+              <div className="flex flex-col sm:flex-row gap-5">
+                <div className="shrink-0 w-20 h-20 rounded-2xl bg-gradient-to-br from-[#0e2b49] to-[#133a67] flex items-center justify-center shadow-lg">
+                  <span
+                    className="text-[#c0a84f] font-bold text-2xl"
+                    style={{ fontFamily: "Poppins, sans-serif" }}
+                  >
+                    {INSTRUCTOR.initials}
+                  </span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3
+                    className="text-lg font-bold text-[#0e2b49] mb-0.5"
+                    style={{ fontFamily: "Poppins, sans-serif" }}
+                  >
+                    {INSTRUCTOR.name}
+                  </h3>
+                  <p className="text-[#c0a84f] text-sm font-medium mb-4">
+                    {INSTRUCTOR.title}
+                  </p>
+                  <div className="flex flex-wrap gap-6 mb-4">
+                    {[
+                      { value: INSTRUCTOR.experience, label: "Experience" },
+                      { value: INSTRUCTOR.students, label: "Students Trained" },
+                      { value: INSTRUCTOR.rating, label: "Course Rating" },
+                    ].map((s) => (
+                      <div key={s.label}>
+                        <div
+                          className="text-[#0e2b49] font-bold text-base"
+                          style={{ fontFamily: "Poppins, sans-serif" }}
+                        >
+                          {s.value}
+                        </div>
+                        <div className="text-[#94A3B8] text-xs">{s.label}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[#64748B] text-sm leading-relaxed">
+                    {INSTRUCTOR.bio}
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            {/* About the course */}
+            <section className="bg-white rounded-2xl border border-[#E2E8F0] p-6 sm:p-8">
+              <h2
+                className="text-xl font-bold text-[#0e2b49] mb-4"
+                style={{ fontFamily: "Poppins, sans-serif" }}
+              >
+                About This Course
+              </h2>
+              <p className="text-[#475569] text-sm leading-relaxed mb-5">
+                {course.overview}
+              </p>
+
+              {course.focusNote && (
+                <div className="flex items-start gap-3 bg-[#c0a84f]/6 border border-[#c0a84f]/20 rounded-xl p-4 mb-6">
+                  <svg
+                    className="w-4 h-4 text-[#c0a84f] shrink-0 mt-0.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                    />
+                  </svg>
+                  <p className="text-[#c0a84f] text-sm font-medium italic">
+                    {course.focusNote}
+                  </p>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {[
+                  { label: "Duration", val: course.duration },
+                  {
+                    label: "Total Sessions",
+                    val: `${course.totalSessions} Live`,
+                  },
+                  { label: "Session Length", val: course.sessionDuration },
+                  { label: "Delivery Mode", val: course.mode },
+                  {
+                    label: "Concept / Week",
+                    val: `${course.conceptSessionsPerWeek} Sessions`,
+                  },
+                  {
+                    label: "Practice / Week",
+                    val: `${course.practiceSessionsPerWeek} Sessions`,
+                  },
+                ].map((item) => (
+                  <div
+                    key={item.label}
+                    className="bg-[#F8FAFC] rounded-xl p-3 border border-[#E2E8F0]"
+                  >
+                    <div className="text-[#94A3B8] text-[10px] uppercase tracking-wider mb-1">
+                      {item.label}
+                    </div>
+                    <div
+                      className="text-[#0e2b49] font-semibold text-xs"
+                      style={{ fontFamily: "Poppins, sans-serif" }}
+                    >
+                      {item.val}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* Curriculum */}
+            <section className="bg-white rounded-2xl border border-[#E2E8F0] p-6 sm:p-8">
+              <div className="flex items-center justify-between mb-6">
+                <h2
+                  className="text-xl font-bold text-[#0e2b49]"
+                  style={{ fontFamily: "Poppins, sans-serif" }}
+                >
+                  Course Curriculum
+                </h2>
+                <span className="text-xs font-medium text-[#94A3B8] bg-[#F8FAFC] border border-[#E2E8F0] px-3 py-1 rounded-full">
+                  {course.modules.length} weeks · {course.totalSessions}{" "}
+                  sessions
+                </span>
+              </div>
+
+              <div>
+                {course.modules.map((mod, i) => (
+                  <div key={mod.week} className="flex gap-4 relative">
+                    {i < course.modules.length - 1 && (
+                      <div
+                        className="absolute left-[15px] top-9 w-px bg-gradient-to-b from-[#c0a84f]/30 to-[#E2E8F0]"
+                        style={{ bottom: 0 }}
+                      />
+                    )}
+                    <div className="shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-[#c0a84f]/20 to-[#d4bc72]/15 border border-[#c0a84f]/30 flex items-center justify-center mt-0.5 z-10 relative">
+                      <span className="text-[#c0a84f] text-[10px] font-bold">
+                        {mod.week}
+                      </span>
+                    </div>
+                    <div className="flex-1 pb-5">
+                      <p
+                        className="text-[#0e2b49] font-semibold text-sm leading-snug"
+                        style={{ fontFamily: "Poppins, sans-serif" }}
+                      >
+                        {mod.topic}
                       </p>
-                      {course.focusNote && (
-                        <p className="mt-3 text-[#c0a84f] font-medium italic text-xs border-l-2 border-[#c0a84f]/40 pl-3">
-                          {course.focusNote}
-                        </p>
-                      )}
-                    </>
-                  ),
-                },
-                {
-                  title: "Course Structure & Schedule",
-                  content: (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                      {[
-                        { label: "Duration", val: course.duration },
-                        { label: "Total Sessions", val: `${course.totalSessions} Live` },
-                        { label: "Session Duration", val: course.sessionDuration },
-                        { label: "Mode", val: course.mode },
-                        { label: "Concept / Week", val: `${course.conceptSessionsPerWeek} Sessions` },
-                        { label: "Practice / Week", val: `${course.practiceSessionsPerWeek} Sessions` },
-                      ].map((item) => (
-                        <div key={item.label} className="bg-[#F8FAFC] rounded-xl p-3 border border-[#E2E8F0]">
-                          <div className="text-[#94A3B8] text-[10px] uppercase tracking-wider mb-1">
-                            {item.label}
-                          </div>
-                          <div className="text-[#0e2b49] font-semibold text-xs" style={{ fontFamily: "Poppins, sans-serif" }}>
-                            {item.val}
-                          </div>
-                        </div>
-                      ))}
+                      <p className="text-[#94A3B8] text-xs mt-0.5 leading-relaxed">
+                        {mod.description}
+                      </p>
                     </div>
-                  ),
-                },
-                {
-                  title: `Course Modules (${course.modules.length} Weeks)`,
-                  content: (
-                    <div className="space-y-3">
-                      {course.modules.map((mod) => (
-                        <div key={mod.week} className="flex gap-3">
-                          <div className="shrink-0 w-7 h-7 rounded-full bg-linear-to-br from-[#c0a84f]/20 to-[#d4bc72]/15 border border-[#c0a84f]/30 flex items-center justify-center mt-0.5">
-                            <span className="text-[#c0a84f] text-[10px] font-bold">{mod.week}</span>
-                          </div>
-                          <div>
-                            <div className="text-[#0e2b49] font-semibold text-xs leading-snug" style={{ fontFamily: "Poppins, sans-serif" }}>
-                              {mod.topic}
-                            </div>
-                            <div className="text-[#94A3B8] text-[11px] mt-0.5">{mod.description}</div>
-                          </div>
-                        </div>
-                      ))}
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* Who is this for */}
+            <section className="bg-white rounded-2xl border border-[#E2E8F0] p-6 sm:p-8">
+              <h2
+                className="text-xl font-bold text-[#0e2b49] mb-6"
+                style={{ fontFamily: "Poppins, sans-serif" }}
+              >
+                Who Is This Course For?
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {course.targetAudience.map((group) => (
+                  <div
+                    key={group.group}
+                    className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-5 hover:border-[#c0a84f]/30 transition-colors duration-200"
+                  >
+                    <div className="flex items-center gap-2.5 mb-3">
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#0e2b49] to-[#133a67] flex items-center justify-center shrink-0">
+                        <svg
+                          className="w-4 h-4 text-[#c0a84f]"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={1.5}
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
+                          />
+                        </svg>
+                      </div>
+                      <span
+                        className="text-[#0e2b49] font-semibold text-sm"
+                        style={{ fontFamily: "Poppins, sans-serif" }}
+                      >
+                        {group.group}
+                      </span>
                     </div>
-                  ),
-                },
-                {
-                  title: "Course Outcomes",
-                  content: (
-                    <ul className="space-y-2.5">
-                      {course.outcomes.map((outcome, i) => (
+                    <ul className="space-y-2 pl-0.5">
+                      {group.points.map((pt, i) => (
                         <li key={i} className="flex items-start gap-2.5">
-                          <div className="shrink-0 w-4 h-4 rounded-full bg-linear-to-br from-[#c0a84f] to-[#d4bc72] flex items-center justify-center mt-0.5 shadow-sm">
-                            <svg className="w-2.5 h-2.5 text-[#0e2b49]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                            </svg>
-                          </div>
-                          <span className="text-[#475569] text-sm leading-relaxed">{outcome}</span>
+                          <span className="shrink-0 w-1.5 h-1.5 rounded-full bg-[#c0a84f]/60 mt-1.5" />
+                          <span className="text-[#64748B] text-xs leading-relaxed">
+                            {pt}
+                          </span>
                         </li>
                       ))}
                     </ul>
-                  ),
-                },
-                {
-                  title: "Who Is This Course For?",
-                  content: (
-                    <div className="space-y-5">
-                      {course.targetAudience.map((group) => (
-                        <div key={group.group}>
-                          <div className="text-[#0e2b49] font-semibold text-sm mb-2" style={{ fontFamily: "Poppins, sans-serif" }}>
-                            {group.group}
-                          </div>
-                          <ul className="space-y-1.5 pl-1">
-                            {group.points.map((pt, i) => (
-                              <li key={i} className="flex items-start gap-2">
-                                <div className="shrink-0 w-1.5 h-1.5 rounded-full bg-[#c0a84f]/60 mt-2" />
-                                <span className="text-[#64748B] text-sm">{pt}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      ))}
-                    </div>
-                  ),
-                },
-                {
-                  title: "Certification",
-                  content: (
-                    <div className="space-y-2.5">
-                      {CERT_TIERS.map((cert) => (
-                        <div key={cert.tier} className={`flex items-center justify-between ${cert.bgClass} border ${cert.borderClass} rounded-xl px-4 py-3`}>
-                          <div className="flex items-center gap-2.5">
-                            <div className="w-7 h-7 rounded-full flex items-center justify-center" style={{ backgroundColor: `${cert.iconColor}20` }}>
-                              <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24" style={{ color: cert.iconColor }}>
-                                <path d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
-                              </svg>
-                            </div>
-                            <span className="font-semibold text-sm" style={{ color: cert.textColor, fontFamily: "Poppins, sans-serif" }}>
-                              UNIK {cert.tier} Certification
-                            </span>
-                          </div>
-                          <span className="text-sm font-medium text-[#475569]">{cert.range}</span>
-                        </div>
-                      ))}
-                      <p className="text-[#94A3B8] text-xs italic mt-2">
-                        Certification is based on performance and practical application. All doubts are solved during live sessions in real-time.
-                      </p>
-                    </div>
-                  ),
-                },
-              ] satisfies AccordionGroupItem[]}
-            />
-          </div>
-        </div>
+                  </div>
+                ))}
+              </div>
+            </section>
 
-        {/* Enroll CTA */}
-        <div className="mt-6">
-          <Link
-            href="/contact"
-            className="flex items-center justify-center gap-2.5 w-full py-4 rounded-xl font-bold text-[#0e2b49] bg-linear-to-r from-[#c0a84f] to-[#d4bc72] hover:from-[#d4bc72] hover:to-[#c0a84f] transition-all duration-200 shadow-[0_4px_24px_rgba(192,168,79,0.35)] hover:shadow-[0_8px_32px_rgba(192,168,79,0.5)] hover:-translate-y-0.5 text-base cursor-pointer"
-            style={{ fontFamily: "Poppins, sans-serif" }}
-          >
-            Enroll Now — Limited Seats Available
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2.5}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
-              />
-            </svg>
-          </Link>
-          <p className="text-center text-[#94A3B8] text-xs mt-3">
-            {course.mode} &bull; {course.totalSessions} Sessions &bull;{" "}
-            {course.sessionDuration} each
-          </p>
+            {/* Certification */}
+            <section className="bg-white rounded-2xl border border-[#E2E8F0] p-6 sm:p-8">
+              <h2
+                className="text-xl font-bold text-[#0e2b49] mb-2"
+                style={{ fontFamily: "Poppins, sans-serif" }}
+              >
+                Certification
+              </h2>
+              <p className="text-[#94A3B8] text-sm mb-5">
+                Earn a UNIK Academy certificate based on your performance and
+                dedication throughout the program.
+              </p>
+              <div className="space-y-3">
+                {CERT_TIERS.map((cert) => (
+                  <div
+                    key={cert.tier}
+                    className={`flex items-center justify-between border rounded-xl px-4 py-3 ${cert.bg}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-8 h-8 rounded-full flex items-center justify-center"
+                        style={{ background: `${cert.color}20` }}
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          fill="currentColor"
+                          viewBox="0 0 24 24"
+                          style={{ color: cert.color }}
+                        >
+                          <path d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
+                        </svg>
+                      </div>
+                      <span
+                        className="font-semibold text-sm"
+                        style={{
+                          color: cert.color,
+                          fontFamily: "Poppins, sans-serif",
+                        }}
+                      >
+                        UNIK {cert.tier} Certification
+                      </span>
+                    </div>
+                    <span className="text-sm text-[#475569] font-medium tabular-nums">
+                      {cert.range}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[#94A3B8] text-xs italic mt-4">
+                Certification reflects overall performance and active
+                participation. All doubts are resolved during live sessions in
+                real-time.
+              </p>
+            </section>
+          </div>
+
+          {/* ─── Sticky Sidebar ─── */}
+          <div className="w-full lg:w-[300px] xl:w-[320px] flex-shrink-0">
+            <div className="sticky top-24 space-y-4">
+              {/* Price card */}
+              <div className="bg-white rounded-2xl border border-[#E2E8F0] shadow-[0_4px_24px_rgba(14,43,73,0.08)] overflow-hidden">
+                <div className="bg-gradient-to-br from-[#0e2b49] to-[#133a67] px-5 pt-5 pb-6">
+                  <p className="text-white/50 text-[11px] uppercase tracking-widest mb-1.5">
+                    Starting From
+                  </p>
+                  <div
+                    className="text-4xl font-bold text-white mb-1"
+                    style={{ fontFamily: "Poppins, sans-serif" }}
+                  >
+                    ₹5,999
+                  </div>
+                  <p className="text-[#c0a84f] text-xs font-medium">
+                    3 session formats available
+                  </p>
+                </div>
+
+                {/* Session formats */}
+                <div className="px-5 py-4 border-b border-[#E2E8F0] space-y-2">
+                  {SESSION_FORMATS.map((sf) => (
+                    <div
+                      key={sf.label}
+                      className="flex items-center justify-between py-1"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-[#0e2b49] font-semibold text-sm">
+                          {sf.label}
+                        </span>
+                        <span className="text-[10px] text-[#c0a84f] font-semibold bg-[#c0a84f]/10 px-2 py-0.5 rounded-full">
+                          {sf.badge}
+                        </span>
+                      </div>
+                      <span className="text-[#0e2b49] font-bold text-sm tabular-nums">
+                        {sf.price}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* CTAs */}
+                <div className="p-5 space-y-3">
+                  <Link
+                    href={`/enroll?course=${encodeURIComponent(course.title)}`}
+                    className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl font-bold text-[#0e2b49] bg-gradient-to-r from-[#c0a84f] to-[#d4bc72] hover:from-[#d4bc72] hover:to-[#c0a84f] transition-all duration-200 shadow-md hover:shadow-[0_4px_20px_rgba(192,168,79,0.4)] hover:-translate-y-0.5 cursor-pointer text-sm"
+                    style={{ fontFamily: "Poppins, sans-serif" }}
+                  >
+                    Enroll Now
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2.5}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
+                      />
+                    </svg>
+                  </Link>
+                  <Link
+                    href="/demo"
+                    className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl font-semibold text-[#0e2b49] border-2 border-[#0e2b49] hover:bg-[#0e2b49] hover:text-white transition-all duration-200 cursor-pointer text-sm"
+                    style={{ fontFamily: "Poppins, sans-serif" }}
+                  >
+                    Book Free Demo First
+                  </Link>
+                </div>
+
+                {/* What's included */}
+                <div className="px-5 pb-5">
+                  <p className="text-[#94A3B8] text-[11px] uppercase tracking-widest font-semibold mb-3">
+                    What&apos;s Included
+                  </p>
+                  <ul className="space-y-2.5">
+                    {INCLUDED.map((item) => (
+                      <li key={item} className="flex items-center gap-2.5">
+                        <svg
+                          className="w-3.5 h-3.5 text-[#c0a84f] shrink-0"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={2.5}
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M4.5 12.75l6 6 9-13.5"
+                          />
+                        </svg>
+                        <span className="text-[#475569] text-xs">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              {/* Trust badges */}
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { label: "Certified Program" },
+                  { label: "500+ Students" },
+                  { label: "4.9★ Rating" },
+                ].map((b) => (
+                  <div
+                    key={b.label}
+                    className="bg-white border border-[#E2E8F0] rounded-xl p-3 text-center"
+                  >
+                    <p className="text-[#0e2b49] text-[10px] font-semibold leading-tight">
+                      {b.label}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Mobile CTA — shown below sidebar on mobile */}
+              <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-[#E2E8F0] px-4 py-3 flex gap-3">
+                <Link
+                  href="/demo"
+                  className="flex-1 py-3 rounded-xl font-semibold text-[#0e2b49] border-2 border-[#0e2b49] text-sm text-center hover:bg-[#0e2b49] hover:text-white transition-all duration-200 cursor-pointer"
+                  style={{ fontFamily: "Poppins, sans-serif" }}
+                >
+                  Free Demo
+                </Link>
+                <Link
+                  href={`/enroll?course=${encodeURIComponent(course.title)}`}
+                  className="flex-1 py-3 rounded-xl font-bold text-[#0e2b49] bg-gradient-to-r from-[#c0a84f] to-[#d4bc72] text-sm text-center shadow-md cursor-pointer"
+                  style={{ fontFamily: "Poppins, sans-serif" }}
+                >
+                  Enroll Now
+                </Link>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

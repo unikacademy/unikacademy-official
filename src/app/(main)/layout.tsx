@@ -2,6 +2,7 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import DemoPopup from "@/website/components/DemoPopup";
 import SmoothScrollProvider from "@/components/providers/SmoothScrollProvider";
+import SaleBanner from "@/components/SaleBanner";
 
 export default function MainLayout({
   children,
@@ -17,6 +18,7 @@ export default function MainLayout({
         Skip to main content
       </a>
       <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
+        <SaleBanner />
         <Navigation />
         <main id="main-content" className="grow">
           {children}

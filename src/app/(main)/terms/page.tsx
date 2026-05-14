@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { SESSION_FORMATS } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: "Terms & Conditions – UNIK Academy | Course Policies",
@@ -87,9 +88,9 @@ export default function Terms() {
               Course fees are as listed on our website:
             </p>
             <ul className="list-disc pl-6 text-gray-700 space-y-2">
-              <li>1-on-1 Sessions: ₹11,999</li>
-              <li>1-to-2 Sessions: ₹8,999</li>
-              <li>1-to-5 Group Sessions: ₹5,999</li>
+              {SESSION_FORMATS.map((sf) => (
+                <li key={sf.id}>{sf.label}: {sf.price}</li>
+              ))}
             </ul>
             <p className="text-gray-700 mt-4">
               Payment terms and refund policies will be communicated at the time

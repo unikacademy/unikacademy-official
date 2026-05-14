@@ -2,6 +2,7 @@
 
 import { useState, FormEvent } from "react";
 import { validateName, validatePhone } from "@/lib/validation";
+import { DEMO_ORIGINAL_PRICE } from "@/lib/constants";
 
 export default function DemoPage() {
   const [formData, setFormData] = useState({
@@ -306,7 +307,7 @@ export default function DemoPage() {
               {/* Price callout */}
               <div className="mt-8 flex items-center gap-4 bg-gradient-to-r from-[#0e2b49] to-[#133a67] rounded-2xl p-5">
                 <div className="flex-shrink-0">
-                  <div className="text-white/40 text-sm line-through">₹499</div>
+                  <div className="text-white/40 text-sm line-through">{DEMO_ORIGINAL_PRICE}</div>
                   <div
                     className="text-[#c0a84f] font-bold text-3xl"
                     style={{ fontFamily: "Poppins, sans-serif" }}

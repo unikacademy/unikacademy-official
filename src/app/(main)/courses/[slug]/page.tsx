@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { courseDetailsData } from "@/website/data/courseDetails";
+import { SESSION_FORMATS, STARTING_FROM_PRICE, FOUR_WEEK_SESSION_FORMATS, FOUR_WEEK_STARTING_FROM, computeMRP } from "@/lib/constants";
+import CourseCurriculum from "@/website/components/CourseCurriculum";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -56,11 +58,6 @@ const INSTRUCTOR = {
   bio: "Our expert trainers are certified communication coaches with 8+ years of experience transforming hesitant speakers into confident, impactful communicators. Every session blends proven techniques with intensive real-world practice to ensure lasting results.",
 };
 
-const SESSION_FORMATS = [
-  { label: "1-on-1 Sessions", price: "₹11,999", badge: "Most Personalized" },
-  { label: "1-to-2 Sessions", price: "₹8,999", badge: "Best Value" },
-  { label: "1-to-5 Group", price: "₹5,999", badge: "Group Learning" },
-];
 
 const CERT_TIERS = [
   {
@@ -96,6 +93,10 @@ export default async function CourseDetailPage({ params }: PageProps) {
   const { slug } = await params;
   const course = courseDetailsData.find((c) => c.id === slug);
   if (!course) notFound();
+
+  const is4Week = course.duration === "4 Weeks";
+  const activeFormats = is4Week ? FOUR_WEEK_SESSION_FORMATS : SESSION_FORMATS;
+  const startingFrom = is4Week ? FOUR_WEEK_STARTING_FROM : STARTING_FROM_PRICE;
 
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
@@ -380,49 +381,11 @@ export default async function CourseDetailPage({ params }: PageProps) {
             </section>
 
             {/* Curriculum */}
-            <section className="bg-white rounded-2xl border border-[#E2E8F0] p-6 sm:p-8">
-              <div className="flex items-center justify-between mb-6">
-                <h2
-                  className="text-xl font-bold text-[#0e2b49]"
-                  style={{ fontFamily: "Poppins, sans-serif" }}
-                >
-                  Course Curriculum
-                </h2>
-                <span className="text-xs font-medium text-[#94A3B8] bg-[#F8FAFC] border border-[#E2E8F0] px-3 py-1 rounded-full">
-                  {course.modules.length} weeks · {course.totalSessions}{" "}
-                  sessions
-                </span>
-              </div>
-
-              <div>
-                {course.modules.map((mod, i) => (
-                  <div key={mod.week} className="flex gap-4 relative">
-                    {i < course.modules.length - 1 && (
-                      <div
-                        className="absolute left-[15px] top-9 w-px bg-gradient-to-b from-[#c0a84f]/30 to-[#E2E8F0]"
-                        style={{ bottom: 0 }}
-                      />
-                    )}
-                    <div className="shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-[#c0a84f]/20 to-[#d4bc72]/15 border border-[#c0a84f]/30 flex items-center justify-center mt-0.5 z-10 relative">
-                      <span className="text-[#c0a84f] text-[10px] font-bold">
-                        {mod.week}
-                      </span>
-                    </div>
-                    <div className="flex-1 pb-5">
-                      <p
-                        className="text-[#0e2b49] font-semibold text-sm leading-snug"
-                        style={{ fontFamily: "Poppins, sans-serif" }}
-                      >
-                        {mod.topic}
-                      </p>
-                      <p className="text-[#94A3B8] text-xs mt-0.5 leading-relaxed">
-                        {mod.description}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
+            <CourseCurriculum
+              modules={course.modules}
+              totalSessions={course.totalSessions}
+              duration={course.duration}
+            />
 
             {/* Who is this for */}
             <section className="bg-white rounded-2xl border border-[#E2E8F0] p-6 sm:p-8">
@@ -541,11 +504,16 @@ export default async function CourseDetailPage({ params }: PageProps) {
                   <p className="text-white/50 text-[11px] uppercase tracking-widest mb-1.5">
                     Starting From
                   </p>
-                  <div
-                    className="text-4xl font-bold text-white mb-1"
-                    style={{ fontFamily: "Poppins, sans-serif" }}
-                  >
-                    ₹5,999
+                  <div className="flex items-baseline gap-2 mb-1">
+                    <span className="text-white/40 text-sm line-through tabular-nums">
+                      {computeMRP(startingFrom)}
+                    </span>
+                    <span
+                      className="text-4xl font-bold text-white"
+                      style={{ fontFamily: "Poppins, sans-serif" }}
+                    >
+                      {startingFrom}
+                    </span>
                   </div>
                   <p className="text-[#c0a84f] text-xs font-medium">
                     3 session formats available
@@ -554,7 +522,7 @@ export default async function CourseDetailPage({ params }: PageProps) {
 
                 {/* Session formats */}
                 <div className="px-5 py-4 border-b border-[#E2E8F0] space-y-2">
-                  {SESSION_FORMATS.map((sf) => (
+                  {activeFormats.map((sf) => (
                     <div
                       key={sf.label}
                       className="flex items-center justify-between py-1"
@@ -567,9 +535,14 @@ export default async function CourseDetailPage({ params }: PageProps) {
                           {sf.badge}
                         </span>
                       </div>
-                      <span className="text-[#0e2b49] font-bold text-sm tabular-nums">
-                        {sf.price}
-                      </span>
+                      <div className="flex flex-col items-end">
+                        <span className="text-[#0e2b49]/40 text-xs line-through tabular-nums">
+                          {computeMRP(sf.price)}
+                        </span>
+                        <span className="text-[#0e2b49] font-bold text-sm tabular-nums">
+                          {sf.price}
+                        </span>
+                      </div>
                     </div>
                   ))}
                 </div>

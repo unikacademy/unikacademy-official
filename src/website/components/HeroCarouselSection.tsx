@@ -6,6 +6,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { CourseIcon } from "@/lib/courseIcons";
 import { validateName, validatePhone } from "@/lib/validation";
+import { COURSE_PRICES, computeMRP } from "@/lib/constants";
 
 const HeroScene = dynamic(() => import("./hero/HeroScene"), {
   ssr: false,
@@ -35,7 +36,7 @@ function charmPrice(price: string): string {
 const FALLBACK: Course[] = [
   {
     title: "Basic Communication",
-    price: "999",
+    price: COURSE_PRICES.basic,
     description:
       "Perfect for beginners looking to build foundational communication skills.",
     features: ["Core communication basics", "100% Live classes", "Certificate"],
@@ -43,7 +44,7 @@ const FALLBACK: Course[] = [
   },
   {
     title: "Intermediate Communication",
-    price: "1999",
+    price: COURSE_PRICES.intermediate,
     description:
       "Refine and elevate your communication in professional contexts.",
     features: ["Advanced techniques", "Professional scenarios", "Certificate"],
@@ -51,14 +52,14 @@ const FALLBACK: Course[] = [
   },
   {
     title: "Advanced Communication",
-    price: "2999",
+    price: COURSE_PRICES.advanced,
     description: "Executive-level mastery for leaders and high-performers.",
     features: ["Executive communication", "Leadership presence", "Certificate"],
     iconKey: "microphone",
   },
   {
     title: "1-on-5 Group Sessions",
-    price: "5999",
+    price: COURSE_PRICES.group1on5,
     description:
       "Interactive group learning with peer engagement and collaborative exercises.",
     features: ["60 Live sessions", "Up to 5 students", "Group activities"],
@@ -66,7 +67,7 @@ const FALLBACK: Course[] = [
   },
   {
     title: "1-on-2 Small Group",
-    price: "8999",
+    price: COURSE_PRICES.group1on2,
     description:
       "Focused small-group sessions with maximum personalized attention.",
     features: ["60 Live sessions", "2 students", "Personalized focus"],
@@ -74,7 +75,7 @@ const FALLBACK: Course[] = [
   },
   {
     title: "1-on-1 Private Sessions",
-    price: "11999",
+    price: COURSE_PRICES.private1on1,
     description:
       "Fully personalized sessions exclusively dedicated to your growth.",
     features: ["60 Live sessions", "Exclusive 1-on-1", "Custom curriculum"],
@@ -113,7 +114,6 @@ export default function HeroCarouselSection({ courses }: Props) {
     }
   }, []);
 
-  // Progress bar animation
   useEffect(() => {
     if (reducedMotion) return;
     pausedRef.current = paused;
@@ -182,8 +182,11 @@ export default function HeroCarouselSection({ courses }: Props) {
 
   return (
     <section
-      className="relative overflow-hidden bg-[#080f1a] text-white"
-      style={{ overflowX: "hidden" }}
+      className="relative overflow-hidden text-white"
+      style={{
+        overflowX: "hidden",
+        background: "linear-gradient(135deg, #0a1628 0%, #0d1f3c 50%, #0a1a30 100%)",
+      }}
     >
       {/* 3D Canvas */}
       <Suspense fallback={null}>
@@ -205,44 +208,28 @@ export default function HeroCarouselSection({ courses }: Props) {
         className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full pointer-events-none"
         style={{
           background:
-            "radial-gradient(circle, rgba(192,168,79,0.12) 0%, transparent 70%)",
+            "radial-gradient(circle, rgba(192,168,79,0.1) 0%, transparent 70%)",
         }}
       />
       <div
         className="absolute bottom-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full pointer-events-none"
         style={{
           background:
-            "radial-gradient(circle, rgba(19,58,103,0.5) 0%, transparent 70%)",
-        }}
-      />
-      <div
-        className="absolute top-[40%] left-[40%] w-[300px] h-[300px] rounded-full pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(circle, rgba(192,168,79,0.06) 0%, transparent 70%)",
+            "radial-gradient(circle, rgba(19,58,103,0.4) 0%, transparent 70%)",
         }}
       />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 pb-24 md:pb-32">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-14 items-center">
-          {/* ── CAROUSEL ── */}
+
+          {/* ── CAROUSEL — glassy lighter navy card ── */}
           <motion.div
             className="relative"
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{
-              duration: 1,
-              delay: 0.15,
-              ease: [0.25, 0.46, 0.45, 0.94],
-            }}
-            onMouseEnter={() => {
-              setPaused(true);
-              pausedRef.current = true;
-            }}
-            onMouseLeave={() => {
-              setPaused(false);
-              pausedRef.current = false;
-            }}
+            transition={{ duration: 1, delay: 0.15, ease: [0.25, 0.46, 0.45, 0.94] }}
+            onMouseEnter={() => { setPaused(true); pausedRef.current = true; }}
+            onMouseLeave={() => { setPaused(false); pausedRef.current = false; }}
           >
             {/* Label */}
             <motion.div
@@ -268,23 +255,22 @@ export default function HeroCarouselSection({ courses }: Props) {
               </span>
             </motion.div>
 
-            {/* Card viewport */}
+            {/* Card — lighter navy glassy (like the stat boxes in the reference) */}
             <div
               className="relative overflow-hidden rounded-3xl"
               style={{
-                background: "rgba(255,255,255,0.04)",
+                background: "rgba(255,255,255,0.07)",
                 backdropFilter: "blur(20px)",
                 WebkitBackdropFilter: "blur(20px)",
-                boxShadow:
-                  "0 0 0 1px rgba(255,255,255,0.07), 0 32px 80px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08)",
+                border: "1px solid rgba(255,255,255,0.1)",
+                boxShadow: "0 32px 80px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08)",
               }}
             >
-              {/* Animated gradient top bar */}
+              {/* Gold top bar */}
               <div
-                className="absolute top-0 left-0 right-0 h-[1px]"
+                className="absolute top-0 left-0 right-0 h-0.5"
                 style={{
-                  background:
-                    "linear-gradient(90deg, transparent, rgba(192,168,79,0.6), transparent)",
+                  background: "linear-gradient(90deg, transparent, rgba(192,168,79,0.7), transparent)",
                 }}
               />
 
@@ -302,20 +288,14 @@ export default function HeroCarouselSection({ courses }: Props) {
                 }}
               >
                 {displaySlides.map((slide, i) => (
-                  <div
-                    key={i}
-                    style={{ minWidth: "100%" }}
-                    className="px-6 py-8 sm:px-10 sm:py-10"
-                  >
+                  <Link key={i} href="/demo" style={{ minWidth: "100%", display: "block" }} className="group/card px-6 py-8 sm:px-10 sm:py-10 cursor-pointer">
                     {/* Top row: icon + price */}
                     <div className="flex items-start justify-between mb-6">
-                      {/* Animated icon */}
                       <div className="relative">
                         <div
                           className="absolute inset-0 rounded-2xl animate-pulse"
                           style={{
-                            background:
-                              "radial-gradient(circle, rgba(192,168,79,0.3) 0%, transparent 70%)",
+                            background: "radial-gradient(circle, rgba(192,168,79,0.3) 0%, transparent 70%)",
                             filter: "blur(8px)",
                             transform: "scale(1.4)",
                           }}
@@ -323,38 +303,30 @@ export default function HeroCarouselSection({ courses }: Props) {
                         <div
                           className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center"
                           style={{
-                            background:
-                              "linear-gradient(135deg, #c0a84f, #d4bc72)",
+                            background: "linear-gradient(135deg, #c0a84f, #d4bc72)",
                             boxShadow: "0 8px 32px rgba(192,168,79,0.4)",
                           }}
                         >
-                          <CourseIcon
-                            iconKey={slide.iconKey}
-                            className="w-7 h-7 sm:w-8 sm:h-8 text-[#0e2b49]"
-                          />
+                          <CourseIcon iconKey={slide.iconKey} className="w-7 h-7 sm:w-8 sm:h-8 text-[#0e2b49]" />
                         </div>
                       </div>
 
-                      {/* Price chip */}
                       {slide.price && (
                         <div className="text-right">
                           <div className="text-white/40 text-[10px] uppercase tracking-widest mb-0.5">
                             Starting at
                           </div>
-                          <div
-                            className="font-bold text-xl sm:text-2xl text-white"
-                            style={{ fontFamily: "Poppins, sans-serif" }}
-                          >
+                          <div className="text-white/40 text-xs line-through tabular-nums">
+                            ₹{computeMRP(slide.price)}
+                          </div>
+                          <div className="font-bold text-xl sm:text-2xl text-white" style={{ fontFamily: "Poppins, sans-serif" }}>
                             ₹{charmPrice(slide.price)}
                           </div>
-                          <div className="text-white/30 text-[10px]">
-                            / full course
-                          </div>
+                          <div className="text-white/30 text-[10px]">/ full course</div>
                         </div>
                       )}
                     </div>
 
-                    {/* Title */}
                     <h2
                       className="text-2xl sm:text-3xl font-bold text-white mb-3 leading-tight"
                       style={{ fontFamily: "Poppins, sans-serif" }}
@@ -362,14 +334,12 @@ export default function HeroCarouselSection({ courses }: Props) {
                       {slide.title}
                     </h2>
 
-                    {/* Description */}
                     {slide.description && (
                       <p className="text-white/50 text-sm leading-relaxed mb-5">
                         {slide.description}
                       </p>
                     )}
 
-                    {/* Features */}
                     <ul className="space-y-2 mb-7">
                       {slide.features.slice(0, 3).map((f, j) => (
                         <li key={j} className="flex items-center gap-3">
@@ -380,18 +350,8 @@ export default function HeroCarouselSection({ courses }: Props) {
                               border: "1px solid rgba(192,168,79,0.3)",
                             }}
                           >
-                            <svg
-                              className="w-2.5 h-2.5 text-[#c0a84f]"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              strokeWidth={3}
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M4.5 12.75l6 6 9-13.5"
-                              />
+                            <svg className="w-2.5 h-2.5 text-[#c0a84f]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                             </svg>
                           </div>
                           <span className="text-white/65 text-sm">{f}</span>
@@ -399,63 +359,31 @@ export default function HeroCarouselSection({ courses }: Props) {
                       ))}
                     </ul>
 
-                    {/* CTA */}
-                    <Link
-                      href="/demo"
+                    <div
                       className="group relative flex items-center justify-between w-full px-5 py-4 mt-2 transition-all duration-250"
                       style={{
-                        background: "rgba(192,168,79,0.08)",
-                        border: "1px solid rgba(192,168,79,0.35)",
+                        background: "#ffffff",
+                        border: "1px solid #ffffff",
                         borderRadius: "6px",
                       }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background =
-                          "rgba(192,168,79,0.18)";
-                        e.currentTarget.style.borderColor =
-                          "rgba(192,168,79,0.7)";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background =
-                          "rgba(192,168,79,0.08)";
-                        e.currentTarget.style.borderColor =
-                          "rgba(192,168,79,0.35)";
-                      }}
                     >
-                      {/* Corner accents */}
-                      <span className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-[#c0a84f] rounded-tl-sm" />
-                      <span className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-[#c0a84f] rounded-tr-sm" />
-                      <span className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-[#c0a84f] rounded-bl-sm" />
-                      <span className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-[#c0a84f] rounded-br-sm" />
-
-                      <span
-                        className="text-[#c0a84f] text-sm font-bold tracking-wide"
-                        style={{ fontFamily: "Poppins, sans-serif" }}
-                      >
+                      <span className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-[#0e2b49] rounded-tl-sm" />
+                      <span className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-[#0e2b49] rounded-tr-sm" />
+                      <span className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-[#0e2b49] rounded-bl-sm" />
+                      <span className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-[#0e2b49] rounded-br-sm" />
+                      <span className="text-[#0e2b49] text-sm font-bold tracking-wide" style={{ fontFamily: "Poppins, sans-serif" }}>
                         Enroll Now
                       </span>
-                      <svg
-                        className="w-4 h-4 text-[#c0a84f] transition-transform duration-200 group-hover:translate-x-1"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={2.5}
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
-                        />
+                      <svg className="w-4 h-4 text-[#0e2b49] transition-transform duration-200 group-hover/card:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
                       </svg>
-                    </Link>
-                  </div>
+                    </div>
+                  </Link>
                 ))}
               </div>
 
               {/* Progress bar */}
-              <div
-                className="absolute bottom-0 left-0 right-0 h-[2px]"
-                style={{ background: "rgba(255,255,255,0.06)" }}
-              >
+              <div className="absolute bottom-0 left-0 right-0 h-0.5" style={{ background: "rgba(255,255,255,0.06)" }}>
                 <div
                   className="h-full transition-none"
                   style={{
@@ -472,68 +400,52 @@ export default function HeroCarouselSection({ courses }: Props) {
               {slides.map((_, i) => (
                 <button
                   key={i}
-                  onClick={() => {
-                    setCurrent(i);
-                    startRef.current = null;
-                    setProgress(0);
-                  }}
+                  onClick={() => { setCurrent(i); startRef.current = null; setProgress(0); }}
                   aria-label={`Go to slide ${i + 1}`}
                   className="transition-all duration-300"
                   style={{
                     width: realIndex === i ? "24px" : "6px",
                     height: "6px",
                     borderRadius: "3px",
-                    background:
-                      realIndex === i
-                        ? "linear-gradient(90deg, #c0a84f, #d4bc72)"
-                        : "rgba(255,255,255,0.2)",
-                    boxShadow:
-                      realIndex === i ? "0 0 8px rgba(192,168,79,0.5)" : "none",
+                    background: realIndex === i ? "linear-gradient(90deg, #c0a84f, #d4bc72)" : "rgba(255,255,255,0.25)",
+                    boxShadow: realIndex === i ? "0 0 8px rgba(192,168,79,0.5)" : "none",
                   }}
                 />
               ))}
             </div>
           </motion.div>
 
-          {/* ── FLOATING "ON AIR" FORM ── */}
+          {/* ── DEMO FORM — solid deeper navy card (like pricing card in reference) ── */}
           <motion.div
             initial={{ opacity: 0, y: 50, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{
-              duration: 1,
-              delay: 0.35,
-              ease: [0.25, 0.46, 0.45, 0.94],
-            }}
+            transition={{ duration: 1, delay: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
             className="relative"
           >
-            {/* Glow aura behind the card */}
+            {/* Glow aura */}
             <div
               className="absolute inset-0 rounded-3xl pointer-events-none"
               style={{
-                background:
-                  "radial-gradient(ellipse at 50% 60%, rgba(192,168,79,0.18) 0%, transparent 70%)",
+                background: "radial-gradient(ellipse at 50% 60%, rgba(192,168,79,0.15) 0%, transparent 70%)",
                 filter: "blur(32px)",
                 transform: "scale(1.1) translateY(8%)",
               }}
             />
 
-            {/* The floating card */}
+            {/* Solid deeper navy card */}
             <div
               className="relative rounded-3xl overflow-hidden"
               style={{
-                background: "rgba(255,255,255,0.05)",
-                backdropFilter: "blur(32px)",
-                WebkitBackdropFilter: "blur(32px)",
-                boxShadow:
-                  "0 0 0 1px rgba(255,255,255,0.09), 0 40px 100px rgba(0,0,0,0.55), 0 0 80px rgba(192,168,79,0.06), inset 0 1px 0 rgba(255,255,255,0.12)",
+                background: "#0e2b49",
+                border: "1px solid rgba(255,255,255,0.1)",
+                boxShadow: "0 40px 100px rgba(0,0,0,0.5), 0 0 80px rgba(192,168,79,0.05), inset 0 1px 0 rgba(255,255,255,0.08)",
               }}
             >
-              {/* Top shimmer line */}
+              {/* Gold shimmer line */}
               <div
-                className="absolute top-0 left-0 right-0 h-[1px]"
+                className="absolute top-0 left-0 right-0 h-0.5"
                 style={{
-                  background:
-                    "linear-gradient(90deg, transparent 0%, rgba(192,168,79,0.8) 40%, rgba(212,188,114,0.8) 60%, transparent 100%)",
+                  background: "linear-gradient(90deg, transparent 0%, rgba(192,168,79,0.9) 40%, rgba(212,188,114,0.9) 60%, transparent 100%)",
                 }}
               />
 
@@ -550,41 +462,22 @@ export default function HeroCarouselSection({ courses }: Props) {
                     <motion.div
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
-                      transition={{
-                        delay: 0.1,
-                        type: "spring",
-                        stiffness: 200,
-                        damping: 15,
-                      }}
+                      transition={{ delay: 0.1, type: "spring", stiffness: 200, damping: 15 }}
                       className="w-20 h-20 rounded-full flex items-center justify-center mb-5"
                       style={{
                         background: "linear-gradient(135deg, #c0a84f, #d4bc72)",
                         boxShadow: "0 8px 40px rgba(192,168,79,0.5)",
                       }}
                     >
-                      <svg
-                        className="w-9 h-9 text-[#0e2b49]"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={2.5}
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M4.5 12.75l6 6 9-13.5"
-                        />
+                      <svg className="w-9 h-9 text-[#0e2b49]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                       </svg>
                     </motion.div>
-                    <h3
-                      className="text-2xl font-bold text-white mb-2"
-                      style={{ fontFamily: "Poppins, sans-serif" }}
-                    >
+                    <h3 className="text-2xl font-bold text-white mb-2" style={{ fontFamily: "Poppins, sans-serif" }}>
                       You&apos;re Booked! 🎉
                     </h3>
                     <p className="text-white/50 text-sm leading-relaxed">
-                      We&apos;ll call you shortly to confirm your free 30-min
-                      session.
+                      We&apos;ll call you shortly to confirm your free 30-min session.
                     </p>
                   </motion.div>
                 ) : (
@@ -600,8 +493,8 @@ export default function HeroCarouselSection({ courses }: Props) {
                       <div
                         className="inline-flex items-center gap-2 px-3 py-1 rounded-full mb-4"
                         style={{
-                          background: "rgba(192,168,79,0.1)",
-                          border: "1px solid rgba(192,168,79,0.2)",
+                          background: "rgba(192,168,79,0.12)",
+                          border: "1px solid rgba(192,168,79,0.25)",
                         }}
                       >
                         <span className="w-1.5 h-1.5 rounded-full bg-[#c0a84f] animate-pulse" />
@@ -616,8 +509,7 @@ export default function HeroCarouselSection({ courses }: Props) {
                         Book Your{" "}
                         <span
                           style={{
-                            background:
-                              "linear-gradient(135deg, #c0a84f, #d4bc72)",
+                            background: "linear-gradient(135deg, #c0a84f, #d4bc72)",
                             WebkitBackgroundClip: "text",
                             WebkitTextFillColor: "transparent",
                             backgroundClip: "text",
@@ -626,67 +518,45 @@ export default function HeroCarouselSection({ courses }: Props) {
                           Free Demo
                         </span>
                       </h2>
-                      <p className="text-white/40 text-sm">
-                        30 min · Live session · Expert trainer
-                      </p>
+                      <p className="text-white/45 text-sm">30 min · Live session · Expert trainer</p>
                     </div>
 
                     {/* Form */}
                     <form onSubmit={handleSubmit} className="space-y-4">
                       {/* Name */}
-                      <div className="group">
-                        <label
-                          htmlFor="hero-name"
-                          className="block text-[11px] font-semibold text-white/40 uppercase tracking-widest mb-2"
-                        >
+                      <div>
+                        <label htmlFor="hero-name" className="block text-[11px] font-semibold text-white/40 uppercase tracking-widest mb-2">
                           Your Name
                         </label>
-                        <div className="relative">
-                          <input
-                            id="hero-name"
-                            type="text"
-                            autoComplete="name"
-                            placeholder="Enter your name"
-                            value={name}
-                            onChange={(e) => {
-                              setName(e.target.value);
-                              setErrors((p) => ({ ...p, name: undefined }));
-                            }}
-                            className="w-full px-4 py-3.5 rounded-xl text-white placeholder:text-white/25 text-sm focus:outline-none transition-all duration-200"
-                            style={{
-                              background: "rgba(255,255,255,0.07)",
-                              border: "1px solid rgba(255,255,255,0.1)",
-                            }}
-                            onFocus={(e) => {
-                              e.currentTarget.style.border =
-                                "1px solid rgba(192,168,79,0.5)";
-                              e.currentTarget.style.background =
-                                "rgba(255,255,255,0.1)";
-                              e.currentTarget.style.boxShadow =
-                                "0 0 0 3px rgba(192,168,79,0.08)";
-                            }}
-                            onBlur={(e) => {
-                              e.currentTarget.style.border =
-                                "1px solid rgba(255,255,255,0.1)";
-                              e.currentTarget.style.background =
-                                "rgba(255,255,255,0.07)";
-                              e.currentTarget.style.boxShadow = "none";
-                            }}
-                          />
-                        </div>
-                        {errors.name && (
-                          <p className="text-red-400 text-xs mt-1.5">
-                            {errors.name}
-                          </p>
-                        )}
+                        <input
+                          id="hero-name"
+                          type="text"
+                          autoComplete="name"
+                          placeholder="Enter your name"
+                          value={name}
+                          onChange={(e) => { setName(e.target.value); setErrors((p) => ({ ...p, name: undefined })); }}
+                          className="w-full px-4 py-3.5 rounded-xl text-white placeholder:text-white/25 text-sm focus:outline-none transition-all duration-200"
+                          style={{
+                            background: "rgba(255,255,255,0.06)",
+                            border: "1px solid rgba(255,255,255,0.1)",
+                          }}
+                          onFocus={(e) => {
+                            e.currentTarget.style.border = "1px solid rgba(192,168,79,0.5)";
+                            e.currentTarget.style.background = "rgba(255,255,255,0.1)";
+                            e.currentTarget.style.boxShadow = "0 0 0 3px rgba(192,168,79,0.08)";
+                          }}
+                          onBlur={(e) => {
+                            e.currentTarget.style.border = "1px solid rgba(255,255,255,0.1)";
+                            e.currentTarget.style.background = "rgba(255,255,255,0.06)";
+                            e.currentTarget.style.boxShadow = "none";
+                          }}
+                        />
+                        {errors.name && <p className="text-red-400 text-xs mt-1.5">{errors.name}</p>}
                       </div>
 
                       {/* Phone */}
                       <div>
-                        <label
-                          htmlFor="hero-phone"
-                          className="block text-[11px] font-semibold text-white/40 uppercase tracking-widest mb-2"
-                        >
+                        <label htmlFor="hero-phone" className="block text-[11px] font-semibold text-white/40 uppercase tracking-widest mb-2">
                           Phone Number
                         </label>
                         <div className="relative flex items-center">
@@ -702,46 +572,30 @@ export default function HeroCarouselSection({ courses }: Props) {
                             autoComplete="tel"
                             placeholder="10-digit mobile number"
                             value={phone}
-                            onChange={(e) => {
-                              setPhone(e.target.value);
-                              setErrors((p) => ({ ...p, phone: undefined }));
-                            }}
+                            onChange={(e) => { setPhone(e.target.value); setErrors((p) => ({ ...p, phone: undefined })); }}
                             maxLength={10}
                             className="w-full pl-[80px] pr-4 py-3.5 rounded-xl text-white placeholder:text-white/25 text-sm focus:outline-none transition-all duration-200"
                             style={{
-                              background: "rgba(255,255,255,0.07)",
+                              background: "rgba(255,255,255,0.06)",
                               border: "1px solid rgba(255,255,255,0.1)",
                             }}
                             onFocus={(e) => {
-                              e.currentTarget.style.border =
-                                "1px solid rgba(192,168,79,0.5)";
-                              e.currentTarget.style.background =
-                                "rgba(255,255,255,0.1)";
-                              e.currentTarget.style.boxShadow =
-                                "0 0 0 3px rgba(192,168,79,0.08)";
+                              e.currentTarget.style.border = "1px solid rgba(192,168,79,0.5)";
+                              e.currentTarget.style.background = "rgba(255,255,255,0.1)";
+                              e.currentTarget.style.boxShadow = "0 0 0 3px rgba(192,168,79,0.08)";
                             }}
                             onBlur={(e) => {
-                              e.currentTarget.style.border =
-                                "1px solid rgba(255,255,255,0.1)";
-                              e.currentTarget.style.background =
-                                "rgba(255,255,255,0.07)";
+                              e.currentTarget.style.border = "1px solid rgba(255,255,255,0.1)";
+                              e.currentTarget.style.background = "rgba(255,255,255,0.06)";
                               e.currentTarget.style.boxShadow = "none";
                             }}
                           />
                         </div>
-                        {errors.phone && (
-                          <p className="text-red-400 text-xs mt-1.5">
-                            {errors.phone}
-                          </p>
-                        )}
+                        {errors.phone && <p className="text-red-400 text-xs mt-1.5">{errors.phone}</p>}
                       </div>
 
                       {formStatus === "error" && (
-                        <motion.p
-                          initial={{ opacity: 0, y: -4 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="text-red-400 text-xs"
-                        >
+                        <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="text-red-400 text-xs">
                           Something went wrong. Please try again.
                         </motion.p>
                       )}
@@ -755,51 +609,24 @@ export default function HeroCarouselSection({ courses }: Props) {
                         className="w-full py-4 rounded-xl font-bold text-[#0e2b49] text-sm flex items-center justify-center gap-2.5 mt-2 disabled:opacity-60 cursor-pointer"
                         style={{
                           fontFamily: "Poppins, sans-serif",
-                          background:
-                            "linear-gradient(135deg, #c0a84f 0%, #d4bc72 50%, #c0a84f 100%)",
+                          background: "linear-gradient(135deg, #c0a84f 0%, #d4bc72 50%, #c0a84f 100%)",
                           backgroundSize: "200% 100%",
-                          boxShadow:
-                            "0 8px 32px rgba(192,168,79,0.45), inset 0 1px 0 rgba(255,255,255,0.3)",
+                          boxShadow: "0 8px 32px rgba(192,168,79,0.45), inset 0 1px 0 rgba(255,255,255,0.3)",
                         }}
                       >
                         {formStatus === "loading" ? (
                           <>
-                            <svg
-                              className="w-4 h-4 animate-spin"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                            >
-                              <circle
-                                className="opacity-25"
-                                cx="12"
-                                cy="12"
-                                r="10"
-                                stroke="currentColor"
-                                strokeWidth="4"
-                              />
-                              <path
-                                className="opacity-75"
-                                fill="currentColor"
-                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                              />
+                            <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                             </svg>
                             Booking...
                           </>
                         ) : (
                           <>
                             Book Free Demo Now
-                            <svg
-                              className="w-4 h-4"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              strokeWidth={2.5}
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
-                              />
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
                             </svg>
                           </>
                         )}
@@ -808,16 +635,10 @@ export default function HeroCarouselSection({ courses }: Props) {
 
                     {/* Trust row */}
                     <div className="flex items-center justify-center gap-4 mt-5">
-                      {[
-                        ["🔒", "Secure"],
-                        ["⚡", "Instant"],
-                        ["🎯", "Expert"],
-                      ].map(([icon, label]) => (
+                      {[["🔒", "Secure"], ["⚡", "Instant"], ["🎯", "Expert"]].map(([icon, label]) => (
                         <div key={label} className="flex items-center gap-1.5">
                           <span className="text-xs">{icon}</span>
-                          <span className="text-white/30 text-[11px]">
-                            {label}
-                          </span>
+                          <span className="text-white/30 text-[11px]">{label}</span>
                         </div>
                       ))}
                     </div>
@@ -831,12 +652,7 @@ export default function HeroCarouselSection({ courses }: Props) {
 
       {/* Wave */}
       <div className="absolute bottom-0 left-0 right-0">
-        <svg
-          viewBox="0 0 1440 60"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          preserveAspectRatio="none"
-        >
+        <svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
           <path
             d="M0 60L1440 60L1440 20C1320 50 1200 60 1080 50C960 40 840 0 720 0C600 0 480 40 360 50C240 60 120 50 0 20L0 60Z"
             fill="#F8FAFC"

@@ -80,9 +80,11 @@ export default function HorizontalCourses({ courses }: Props) {
           {courses.map((course, i) => {
             const slug = getCourseSlug(course.title);
             return (
-              <div
+              <Link
                 key={course._id}
-                className="group relative flex flex-col rounded-2xl p-6 border border-white/8 transition-all duration-300 hover:border-[#c0a84f]/40 hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.35),0_0_0_1px_rgba(192,168,79,0.15)]"
+                href={slug ? `/courses/${slug}` : "#"}
+                aria-label={`View details for ${course.title}`}
+                className="group relative flex flex-col rounded-2xl p-6 border border-white/8 transition-all duration-300 hover:border-[#c0a84f]/40 hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.35),0_0_0_1px_rgba(192,168,79,0.15)] cursor-pointer"
                 style={{
                   background:
                     "linear-gradient(145deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)",
@@ -137,30 +139,23 @@ export default function HorizontalCourses({ courses }: Props) {
                 </p>
 
                 {/* CTA */}
-                {slug && (
-                  <Link
-                    href={`/courses/${slug}`}
-                    aria-label={`View details for ${course.title}`}
-                    className="mt-5 inline-flex items-center gap-1.5 text-xs font-semibold text-[#c0a84f] hover:text-white transition-colors duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c0a84f] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent self-start"
-                    style={{ fontFamily: "Poppins, sans-serif" }}
+                <div className="mt-5 inline-flex items-center gap-1.5 text-xs font-semibold text-[#c0a84f] group-hover:text-white transition-colors duration-200 self-start" style={{ fontFamily: "Poppins, sans-serif" }}>
+                  Explore Course
+                  <svg
+                    className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2.5}
                   >
-                    Explore Course
-                    <svg
-                      className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={2.5}
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
-                      />
-                    </svg>
-                  </Link>
-                )}
-              </div>
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
+                    />
+                  </svg>
+                </div>
+              </Link>
             );
           })}
         </div>

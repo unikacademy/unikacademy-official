@@ -2,6 +2,7 @@
 
 import { useState, FormEvent } from "react";
 import Link from "next/link";
+import { SESSION_FORMATS, computeMRP } from "@/lib/constants";
 
 const ALL_COURSES = [
   {
@@ -38,50 +39,6 @@ const ALL_COURSES = [
   { title: "Basic Communication", duration: "4 Weeks", level: "Beginner" },
 ];
 
-const SESSION_FORMATS = [
-  {
-    id: "1-on-1",
-    label: "1-on-1 Sessions",
-    price: "₹11,999",
-    badge: "Most Personalized",
-    badgeColor: "bg-[#0e2b49] text-white",
-    highlight: true,
-    perks: [
-      "100% dedicated attention",
-      "Customised learning pace",
-      "Flexible scheduling",
-      "Fastest results",
-    ],
-  },
-  {
-    id: "1-to-2",
-    label: "1-to-2 Sessions",
-    price: "₹8,999",
-    badge: "Best Value",
-    badgeColor: "bg-[#c0a84f] text-[#0e2b49]",
-    highlight: false,
-    perks: [
-      "Peer learning dynamics",
-      "Semi-personalised coaching",
-      "Collaborative practice",
-      "Great for siblings / friends",
-    ],
-  },
-  {
-    id: "1-to-5",
-    label: "1-to-5 Group",
-    price: "₹5,999",
-    badge: "Budget Friendly",
-    badgeColor: "bg-emerald-100 text-emerald-700",
-    highlight: false,
-    perks: [
-      "Group interaction practice",
-      "Affordable pricing",
-      "Public speaking exposure",
-      "Community learning",
-    ],
-  },
-];
 
 const WHAT_INCLUDED = [
   {
@@ -195,7 +152,7 @@ interface Props {
 }
 
 export default function EnrollClient({ preSelectedCourse }: Props) {
-  const [selectedFormat, setSelectedFormat] = useState(SESSION_FORMATS[0].id);
+  const [selectedFormat, setSelectedFormat] = useState<typeof SESSION_FORMATS[number]["id"]>(SESSION_FORMATS[0].id);
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -367,11 +324,16 @@ export default function EnrollClient({ preSelectedCourse }: Props) {
                 >
                   {sf.label}
                 </h3>
-                <div
-                  className={`text-3xl font-bold mb-5 ${sf.highlight ? "text-[#c0a84f]" : "text-[#0e2b49]"}`}
-                  style={{ fontFamily: "Poppins, sans-serif" }}
-                >
-                  {sf.price}
+                <div className="mb-5">
+                  <span className={`text-sm line-through tabular-nums ${sf.highlight ? "text-white/40" : "text-[#0e2b49]/40"}`}>
+                    {computeMRP(sf.price)}
+                  </span>
+                  <div
+                    className={`text-3xl font-bold ${sf.highlight ? "text-[#c0a84f]" : "text-[#0e2b49]"}`}
+                    style={{ fontFamily: "Poppins, sans-serif" }}
+                  >
+                    {sf.price}
+                  </div>
                 </div>
 
                 <ul className="space-y-2.5 mb-6">
@@ -707,9 +669,14 @@ export default function EnrollClient({ preSelectedCourse }: Props) {
                               {sf.badge}
                             </span>
                           </div>
-                          <span className="text-sm font-bold text-[#0e2b49] tabular-nums">
-                            {sf.price}
-                          </span>
+                          <div className="flex flex-col items-end">
+                            <span className="text-[10px] text-[#0e2b49]/40 line-through tabular-nums">
+                              {computeMRP(sf.price)}
+                            </span>
+                            <span className="text-sm font-bold text-[#0e2b49] tabular-nums">
+                              {sf.price}
+                            </span>
+                          </div>
                         </label>
                       ))}
                     </div>

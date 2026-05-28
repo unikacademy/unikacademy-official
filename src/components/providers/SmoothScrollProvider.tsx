@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 import Lenis from "lenis";
 import gsap from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
@@ -12,17 +13,19 @@ export default function SmoothScrollProvider({
 }: {
   children: React.ReactNode;
 }) {
+  const lenisRef = useRef<Lenis | null>(null);
+  const pathname = usePathname();
+
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     history.scrollRestoration = "manual";
 
     const lenis = new Lenis({ lerp: 0.08, duration: 1.2 });
+    lenisRef.current = lenis;
 
-    // Keep GSAP ScrollTrigger in sync with Lenis scroll position
     lenis.on("scroll", ScrollTrigger.update);
 
-    // Drive Lenis through GSAP's ticker — single RAF loop, no conflict
     const rafCallback = (time: number) => lenis.raf(time * 1000);
     gsap.ticker.add(rafCallback);
     gsap.ticker.lagSmoothing(0);
@@ -32,8 +35,17 @@ export default function SmoothScrollProvider({
       lenis.off("scroll", ScrollTrigger.update);
       gsap.ticker.remove(rafCallback);
       lenis.destroy();
+      lenisRef.current = null;
     };
   }, []);
+
+  useEffect(() => {
+    if (lenisRef.current) {
+      lenisRef.current.scrollTo(0, { immediate: true });
+    } else {
+      window.scrollTo({ top: 0 });
+    }
+  }, [pathname]);
 
   return <>{children}</>;
 }

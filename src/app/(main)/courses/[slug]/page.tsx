@@ -116,24 +116,27 @@ export default async function CourseDetailPage({ params }: PageProps) {
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-20">
           {/* Breadcrumb */}
           <nav
-            className="flex items-center gap-1.5 text-xs text-white/40 mb-8"
+            className="flex items-center gap-2 text-sm text-white/55 mb-8"
             aria-label="Breadcrumb"
           >
             <Link
               href="/"
-              className="hover:text-white/70 transition-colors duration-150"
+              className="hover:text-white/80 transition-colors duration-150 flex items-center gap-1"
             >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+              </svg>
               Home
             </Link>
-            <span>/</span>
+            <span className="text-white/30">›</span>
             <Link
               href="/#courses"
-              className="hover:text-white/70 transition-colors duration-150"
+              className="hover:text-white/80 transition-colors duration-150"
             >
               Courses
             </Link>
-            <span>/</span>
-            <span className="text-white/60 truncate max-w-[180px]">
+            <span className="text-white/30">›</span>
+            <span className="text-white/80 font-medium truncate max-w-[200px]">
               {course.title}
             </span>
           </nav>

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { SESSION_FORMATS } from "@/lib/constants";
+import { getLiveSessionPricing } from "@/lib/pricing";
 
 export const metadata: Metadata = {
   title: "Terms & Conditions – UNIK Academy | Course Policies",
@@ -28,7 +28,8 @@ export const metadata: Metadata = {
   },
 };
 
-export default function Terms() {
+export default async function Terms() {
+  const { sessionFormats } = await getLiveSessionPricing();
   return (
     <div className="min-h-screen py-16">
       <div className="container mx-auto px-4 max-w-4xl">
@@ -88,7 +89,7 @@ export default function Terms() {
               Course fees are as listed on our website:
             </p>
             <ul className="list-disc pl-6 text-gray-700 space-y-2">
-              {SESSION_FORMATS.map((sf) => (
+              {sessionFormats.map((sf) => (
                 <li key={sf.id}>{sf.label}: {sf.price}</li>
               ))}
             </ul>

@@ -106,6 +106,8 @@ interface Contact {
   createdAt: string;
 }
 
+type BookingType = "individual" | "corporate";
+
 interface DemoBooking {
   _id: string;
   name: string;
@@ -114,6 +116,11 @@ interface DemoBooking {
   course: string;
   message?: string;
   status: ContactStatus;
+  bookingType: BookingType;
+  companyName?: string;
+  companySize?: string;
+  participants?: number;
+  preferredDate?: string;
   createdAt: string;
 }
 
@@ -207,6 +214,21 @@ function StatusBadge({ status }: { status: string }) {
     >
       <span className={`w-1.5 h-1.5 rounded-full ${STATUS_DOT[status]}`} />
       {STATUS_LABEL[status]}
+    </span>
+  );
+}
+
+function BookingTypeBadge({ type }: { type?: BookingType }) {
+  const isCorporate = type === "corporate";
+  return (
+    <span
+      className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${
+        isCorporate
+          ? "bg-[#c0a84f]/15 text-[#8a742f]"
+          : "bg-gray-100 text-gray-500"
+      }`}
+    >
+      {isCorporate ? "Corporate" : "Individual"}
     </span>
   );
 }
@@ -905,13 +927,56 @@ function SlideOver({
 
           {/* Section-specific fields */}
           {booking && (
-            <div>
-              <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">
-                Course Interested In
-              </p>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
+                  {booking.bookingType === "corporate"
+                    ? "Training Requirement"
+                    : "Course Interested In"}
+                </p>
+                <BookingTypeBadge type={booking.bookingType} />
+              </div>
               <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary/10 text-primary">
                 {booking.course}
               </span>
+              {booking.bookingType === "corporate" && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">
+                      Company
+                    </p>
+                    <p className="text-sm text-gray-800">
+                      {booking.companyName || "—"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">
+                      Company Size
+                    </p>
+                    <p className="text-sm text-gray-800">
+                      {booking.companySize || "—"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">
+                      Participants
+                    </p>
+                    <p className="text-sm text-gray-800">
+                      {booking.participants ?? "—"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">
+                      Preferred Date
+                    </p>
+                    <p className="text-sm text-gray-800">
+                      {booking.preferredDate
+                        ? formatDate(booking.preferredDate)
+                        : "—"}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           )}
           {application && (
@@ -1085,16 +1150,6 @@ export default function AdminDashboard() {
     setDetailItem(null);
   }, [activeSection]);
 
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) {
-        router.push("/login");
-        return;
-      }
-      fetchAll();
-    });
-  }, [router]);
-
   const fetchAll = async (silent = false) => {
     if (silent) setRefreshing(true);
     else setLoading(true);
@@ -1119,6 +1174,17 @@ export default function AdminDashboard() {
       setRefreshing(false);
     }
   };
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) {
+        router.push("/login");
+        return;
+      }
+      fetchAll();
+    });
+  }, [router]);
+
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -1211,7 +1277,9 @@ export default function AdminDashboard() {
           return (
             r.name.toLowerCase().includes(q) ||
             (c.email ?? d.email ?? "").toLowerCase().includes(q) ||
-            (c.phone ?? d.phone ?? "").toLowerCase().includes(q)
+            (c.phone ?? d.phone ?? "").toLowerCase().includes(q) ||
+            (d.companyName ?? "").toLowerCase().includes(q) ||
+            (d.bookingType ?? "").toLowerCase().includes(q)
           );
         });
       }
@@ -1800,6 +1868,28 @@ export default function AdminDashboard() {
               strokeLinecap="round"
               strokeLinejoin="round"
               d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+        ),
+      },
+      {
+        label: "Corporate",
+        value: demoBookings.filter((d) => d.bookingType === "corporate")
+          .length,
+        bgColor: "bg-[#c0a84f]/10",
+        textColor: "text-[#8a742f]",
+        icon: (
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21"
             />
           </svg>
         ),
@@ -2918,12 +3008,20 @@ export default function AdminDashboard() {
                     <thead className="sticky top-0 z-10 bg-gray-50 border-b border-gray-100">
                       <tr>
                         <SortableTh
+                          label="Type"
+                          sortKey="bookingType"
+                          currentSortKey={sortKey}
+                          currentSortDir={sortDir}
+                          onSort={handleSort}
+                        />
+                        <SortableTh
                           label="Name"
                           sortKey="name"
                           currentSortKey={sortKey}
                           currentSortDir={sortDir}
                           onSort={handleSort}
                         />
+                        <th className={thClass}>Company</th>
                         <th className={thClass}>Phone</th>
                         <th className={thClass}>Email</th>
                         <SortableTh
@@ -2953,7 +3051,7 @@ export default function AdminDashboard() {
                     </thead>
                     <tbody className="divide-y divide-gray-50">
                       {loading ? (
-                        <SkeletonRows cols={8} />
+                        <SkeletonRows cols={10} />
                       ) : (
                         filteredDemoBookings.map((d) => (
                           <tr
@@ -2961,10 +3059,18 @@ export default function AdminDashboard() {
                             className={rowClass(d.status)}
                             onClick={() => setDetailItem(d)}
                           >
+                            <td className={tdClass}>
+                              <BookingTypeBadge type={d.bookingType} />
+                            </td>
                             <td
                               className={`${tdClass} font-medium text-gray-900 whitespace-nowrap`}
                             >
                               {d.name}
+                            </td>
+                            <td
+                              className={`${tdClass} text-gray-600 whitespace-nowrap`}
+                            >
+                              {d.companyName || "—"}
                             </td>
                             <td className={`${tdClass} whitespace-nowrap`}>
                               <a

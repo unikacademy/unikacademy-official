@@ -2,7 +2,8 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { courseDetailsData } from "@/website/data/courseDetails";
-import { SESSION_FORMATS, STARTING_FROM_PRICE, FOUR_WEEK_SESSION_FORMATS, FOUR_WEEK_STARTING_FROM, computeMRP } from "@/lib/constants";
+import { computeMRP } from "@/lib/constants";
+import { getLiveSessionPricing } from "@/lib/pricing";
 import CourseCurriculum from "@/website/components/CourseCurriculum";
 
 interface PageProps {
@@ -95,8 +96,10 @@ export default async function CourseDetailPage({ params }: PageProps) {
   if (!course) notFound();
 
   const is4Week = course.duration === "4 Weeks";
-  const activeFormats = is4Week ? FOUR_WEEK_SESSION_FORMATS : SESSION_FORMATS;
-  const startingFrom = is4Week ? FOUR_WEEK_STARTING_FROM : STARTING_FROM_PRICE;
+  const { sessionFormats, fourWeekSessionFormats, startingFrom: liveStandard, fourWeekStartingFrom: liveFourWeek } =
+    await getLiveSessionPricing();
+  const activeFormats = is4Week ? fourWeekSessionFormats : sessionFormats;
+  const startingFrom = is4Week ? liveFourWeek : liveStandard;
 
   return (
     <div className="min-h-screen bg-[#F8FAFC]">

@@ -30,16 +30,31 @@ create table if not exists applications (
 
 -- demo_bookings
 create table if not exists demo_bookings (
-  id         uuid primary key default gen_random_uuid(),
-  name       text not null,
-  email      text,
-  phone      text not null,
-  course     text not null,
-  message    text,
-  status     text not null default 'not_read'
-               check (status in ('not_read', 'read', 'replied')),
-  created_at timestamptz default now()
+  id            uuid primary key default gen_random_uuid(),
+  name          text not null,
+  email         text,
+  phone         text not null,
+  course        text not null,
+  message       text,
+  status        text not null default 'not_read'
+                  check (status in ('not_read', 'read', 'replied')),
+  booking_type  text not null default 'individual'
+                  check (booking_type in ('individual', 'corporate')),
+  company_name  text,
+  company_size  text,
+  participants  integer,
+  preferred_date date,
+  created_at    timestamptz default now()
 );
+
+-- Adds the corporate booking columns if this table already existed before
+-- that feature was introduced (create table if not exists is a no-op on an
+-- existing table, so these run unconditionally and are safe to re-run).
+alter table demo_bookings add column if not exists booking_type text not null default 'individual' check (booking_type in ('individual', 'corporate'));
+alter table demo_bookings add column if not exists company_name text;
+alter table demo_bookings add column if not exists company_size text;
+alter table demo_bookings add column if not exists participants integer;
+alter table demo_bookings add column if not exists preferred_date date;
 
 -- courses
 create table if not exists courses (
@@ -77,19 +92,24 @@ alter table courses      enable row level security;
 alter table jobs         enable row level security;
 
 -- Public can read only active courses and jobs (homepage / careers page)
+drop policy if exists "Public read active courses" on courses;
 create policy "Public read active courses"
   on courses for select using (is_active = true);
 
+drop policy if exists "Public read active jobs" on jobs;
 create policy "Public read active jobs"
   on jobs for select using (is_active = true);
 
 -- Public can insert into submission tables (contact form, demo booking, application)
+drop policy if exists "Public insert contacts" on contacts;
 create policy "Public insert contacts"
   on contacts for insert with check (true);
 
+drop policy if exists "Public insert demo_bookings" on demo_bookings;
 create policy "Public insert demo_bookings"
   on demo_bookings for insert with check (true);
 
+drop policy if exists "Public insert applications" on applications;
 create policy "Public insert applications"
   on applications for insert with check (true);
 

@@ -18,3 +18,20 @@ export function validateName(raw: string): string | null {
   if (!/^[a-zA-Z\s.'-]+$/.test(name)) return "Name must contain only letters.";
   return null;
 }
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+export function validateEmail(raw: string): string | null {
+  const email = raw.trim();
+  if (!email) return "Email is required.";
+  if (!EMAIL_RE.test(email)) return "Enter a valid email address.";
+  return null;
+}
+
+export function validateCompanyName(raw: string): string | null {
+  const name = raw.trim();
+  if (!name) return "Company name is required.";
+  if (name.length < 2) return "Company name must be at least 2 characters.";
+  if (name.length > 100) return "Company name is too long.";
+  return null;
+}

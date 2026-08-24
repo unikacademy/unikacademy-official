@@ -2,7 +2,8 @@
 
 import { useState, FormEvent } from "react";
 import Link from "next/link";
-import { SESSION_FORMATS, computeMRP } from "@/lib/constants";
+import { computeMRP } from "@/lib/constants";
+import type { SessionFormatItem } from "@/lib/pricing";
 
 const ALL_COURSES = [
   {
@@ -149,10 +150,16 @@ const FAQS = [
 
 interface Props {
   preSelectedCourse?: string;
+  sessionFormats: SessionFormatItem[];
 }
 
-export default function EnrollClient({ preSelectedCourse }: Props) {
-  const [selectedFormat, setSelectedFormat] = useState<typeof SESSION_FORMATS[number]["id"]>(SESSION_FORMATS[0].id);
+export default function EnrollClient({
+  preSelectedCourse,
+  sessionFormats,
+}: Props) {
+  const [selectedFormat, setSelectedFormat] = useState<
+    SessionFormatItem["id"]
+  >(sessionFormats[0].id);
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -174,7 +181,7 @@ export default function EnrollClient({ preSelectedCourse }: Props) {
     e.preventDefault();
     setStatus("submitting");
     try {
-      const format = SESSION_FORMATS.find((f) => f.id === selectedFormat);
+      const format = sessionFormats.find((f) => f.id === selectedFormat);
       const res = await fetch("/api/demo-booking", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -288,7 +295,7 @@ export default function EnrollClient({ preSelectedCourse }: Props) {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {SESSION_FORMATS.map((sf) => (
+            {sessionFormats.map((sf) => (
               <div
                 key={sf.id}
                 className={`relative rounded-2xl border p-6 transition-all duration-200 cursor-pointer ${
@@ -534,7 +541,7 @@ export default function EnrollClient({ preSelectedCourse }: Props) {
                           <span className="text-[#CBD5E1]">·</span>
                           <span className="font-semibold text-[#c0a84f]">
                             {
-                              SESSION_FORMATS.find(
+                              sessionFormats.find(
                                 (f) => f.id === selectedFormat,
                               )?.label
                             }
@@ -542,7 +549,7 @@ export default function EnrollClient({ preSelectedCourse }: Props) {
                           <span className="text-[#CBD5E1]">·</span>
                           <span className="font-bold text-[#0e2b49]">
                             {
-                              SESSION_FORMATS.find(
+                              sessionFormats.find(
                                 (f) => f.id === selectedFormat,
                               )?.price
                             }
@@ -644,7 +651,7 @@ export default function EnrollClient({ preSelectedCourse }: Props) {
                       Session Format *
                     </p>
                     <div className="space-y-2">
-                      {SESSION_FORMATS.map((sf) => (
+                      {sessionFormats.map((sf) => (
                         <label
                           key={sf.id}
                           className={`flex items-center justify-between p-3.5 rounded-xl border cursor-pointer transition-all duration-150 ${

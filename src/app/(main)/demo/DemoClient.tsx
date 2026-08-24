@@ -1,22 +1,42 @@
 "use client";
 
 import { useState, FormEvent } from "react";
-import { validateName, validatePhone } from "@/lib/validation";
+import {
+  validateName,
+  validatePhone,
+  validateEmail,
+  validateCompanyName,
+} from "@/lib/validation";
 import { DEMO_ORIGINAL_PRICE } from "@/lib/constants";
 
+type BookingType = "individual" | "corporate";
+
+const EMPTY_FORM = {
+  name: "",
+  email: "",
+  phone: "",
+  course: "",
+  message: "",
+  companyName: "",
+  companySize: "",
+  participants: "",
+  preferredDate: "",
+};
+
 export default function DemoPage() {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    course: "",
-    message: "",
-  });
+  const [bookingType, setBookingType] = useState<BookingType>("individual");
+  const [formData, setFormData] = useState(EMPTY_FORM);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<
     "idle" | "success" | "error"
   >("idle");
   const [validationError, setValidationError] = useState("");
+
+  const handleBookingTypeChange = (type: BookingType) => {
+    setBookingType(type);
+    setFormData({ ...EMPTY_FORM });
+    setValidationError("");
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -32,8 +52,24 @@ export default function DemoPage() {
       return;
     }
     if (!formData.course) {
-      setValidationError("Please select a course of interest.");
+      setValidationError(
+        bookingType === "corporate"
+          ? "Please select a training requirement."
+          : "Please select a course of interest.",
+      );
       return;
+    }
+    if (bookingType === "corporate") {
+      const companyErr = validateCompanyName(formData.companyName);
+      if (companyErr) {
+        setValidationError(companyErr);
+        return;
+      }
+      const emailErr = validateEmail(formData.email);
+      if (emailErr) {
+        setValidationError(emailErr);
+        return;
+      }
     }
     setIsSubmitting(true);
     setSubmitStatus("idle");
@@ -41,17 +77,17 @@ export default function DemoPage() {
       const response = await fetch("/api/demo-booking", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          bookingType,
+          participants: formData.participants
+            ? Number(formData.participants)
+            : undefined,
+        }),
       });
       if (response.ok) {
         setSubmitStatus("success");
-        setFormData({
-          name: "",
-          email: "",
-          phone: "",
-          course: "",
-          message: "",
-        });
+        setFormData({ ...EMPTY_FORM });
       } else {
         setSubmitStatus("error");
       }
@@ -103,6 +139,17 @@ export default function DemoPage() {
     "Intermediate Communication",
     "Advanced Communication",
   ];
+
+  const corporateCourses = [
+    "Corporate Communication Training",
+    "Team Communication Workshop",
+    "Business Etiquette & Soft Skills",
+    "Leadership Communication",
+    "Public Speaking for Teams",
+    "Custom Training Program",
+  ];
+
+  const companySizes = ["1-10", "11-50", "51-200", "201-500", "500+"];
 
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
@@ -332,12 +379,38 @@ export default function DemoPage() {
                 className="text-2xl font-bold text-[#0e2b49] mb-1"
                 style={{ fontFamily: "Poppins, sans-serif" }}
               >
-                Book Your Slot
+                {bookingType === "corporate"
+                  ? "Book Corporate Training"
+                  : "Book Your Slot"}
               </h3>
-              <p className="text-[#64748B] text-sm mb-7">
-                Fill in your details and we&apos;ll reach out to confirm your
-                demo session.
+              <p className="text-[#64748B] text-sm mb-5">
+                {bookingType === "corporate"
+                  ? "Tell us about your company and we'll design a training plan for your team."
+                  : "Fill in your details and we'll reach out to confirm your demo session."}
               </p>
+
+              {/* Booking type toggle */}
+              <div className="grid grid-cols-2 gap-2 p-1 mb-6 rounded-xl bg-[#E2E8F0]/60">
+                {(
+                  [
+                    { value: "individual", label: "Individual" },
+                    { value: "corporate", label: "Corporate / Company" },
+                  ] as const
+                ).map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => handleBookingTypeChange(opt.value)}
+                    className={`py-2.5 rounded-lg text-sm font-semibold transition-all cursor-pointer ${
+                      bookingType === opt.value
+                        ? "bg-white text-[#0e2b49] shadow-sm"
+                        : "text-[#64748B] hover:text-[#0e2b49]"
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
 
               {submitStatus === "success" ? (
                 <div className="text-center py-10">
@@ -360,21 +433,47 @@ export default function DemoPage() {
                     className="text-xl font-bold text-[#0e2b49] mb-2"
                     style={{ fontFamily: "Poppins, sans-serif" }}
                   >
-                    Demo Booked!
+                    {bookingType === "corporate"
+                      ? "Request Received!"
+                      : "Demo Booked!"}
                   </h4>
                   <p className="text-[#64748B] text-sm">
-                    Thanks for submitting your details — we will connect with
-                    you as soon as possible!
+                    {bookingType === "corporate"
+                      ? "Thanks for reaching out — our corporate training team will connect with you shortly."
+                      : "Thanks for submitting your details — we will connect with you as soon as possible!"}
                   </p>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-5">
+                  {bookingType === "corporate" && (
+                    <div>
+                      <label
+                        htmlFor="companyName"
+                        className="block text-sm font-semibold text-[#0e2b49] mb-1.5"
+                      >
+                        Company Name *
+                      </label>
+                      <input
+                        type="text"
+                        id="companyName"
+                        name="companyName"
+                        required
+                        autoComplete="organization"
+                        value={formData.companyName}
+                        onChange={handleChange}
+                        className="w-full px-4 py-3 border border-[#E2E8F0] rounded-xl bg-white text-[#0e2b49] placeholder-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#c0a84f]/50 focus:border-[#c0a84f] transition-colors text-sm"
+                        placeholder="Your company's name"
+                      />
+                    </div>
+                  )}
                   <div>
                     <label
                       htmlFor="name"
                       className="block text-sm font-semibold text-[#0e2b49] mb-1.5"
                     >
-                      Full Name *
+                      {bookingType === "corporate"
+                        ? "Contact Person Name *"
+                        : "Full Name *"}
                     </label>
                     <input
                       type="text"
@@ -385,7 +484,11 @@ export default function DemoPage() {
                       value={formData.name}
                       onChange={handleChange}
                       className="w-full px-4 py-3 border border-[#E2E8F0] rounded-xl bg-white text-[#0e2b49] placeholder-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#c0a84f]/50 focus:border-[#c0a84f] transition-colors text-sm"
-                      placeholder="Your full name"
+                      placeholder={
+                        bookingType === "corporate"
+                          ? "HR / L&D contact name"
+                          : "Your full name"
+                      }
                     />
                   </div>
                   <div>
@@ -413,25 +516,78 @@ export default function DemoPage() {
                       htmlFor="email"
                       className="block text-sm font-semibold text-[#0e2b49] mb-1.5"
                     >
-                      Email Address
+                      {bookingType === "corporate"
+                        ? "Business Email *"
+                        : "Email Address"}
                     </label>
                     <input
                       type="email"
                       id="email"
                       name="email"
+                      required={bookingType === "corporate"}
                       autoComplete="email"
                       value={formData.email}
                       onChange={handleChange}
                       className="w-full px-4 py-3 border border-[#E2E8F0] rounded-xl bg-white text-[#0e2b49] placeholder-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#c0a84f]/50 focus:border-[#c0a84f] transition-colors text-sm"
-                      placeholder="your@email.com"
+                      placeholder={
+                        bookingType === "corporate"
+                          ? "you@company.com"
+                          : "your@email.com"
+                      }
                     />
                   </div>
+                  {bookingType === "corporate" && (
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label
+                          htmlFor="companySize"
+                          className="block text-sm font-semibold text-[#0e2b49] mb-1.5"
+                        >
+                          Company Size
+                        </label>
+                        <select
+                          id="companySize"
+                          name="companySize"
+                          value={formData.companySize}
+                          onChange={handleChange}
+                          className="w-full px-4 py-3 border border-[#E2E8F0] rounded-xl bg-white text-[#0e2b49] focus:outline-none focus:ring-2 focus:ring-[#c0a84f]/50 focus:border-[#c0a84f] transition-colors text-sm cursor-pointer"
+                        >
+                          <option value="">Select</option>
+                          {companySizes.map((s) => (
+                            <option key={s} value={s}>
+                              {s} employees
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label
+                          htmlFor="participants"
+                          className="block text-sm font-semibold text-[#0e2b49] mb-1.5"
+                        >
+                          Participants
+                        </label>
+                        <input
+                          type="number"
+                          id="participants"
+                          name="participants"
+                          min={1}
+                          value={formData.participants}
+                          onChange={handleChange}
+                          className="w-full px-4 py-3 border border-[#E2E8F0] rounded-xl bg-white text-[#0e2b49] placeholder-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#c0a84f]/50 focus:border-[#c0a84f] transition-colors text-sm"
+                          placeholder="e.g. 20"
+                        />
+                      </div>
+                    </div>
+                  )}
                   <div>
                     <label
                       htmlFor="course"
                       className="block text-sm font-semibold text-[#0e2b49] mb-1.5"
                     >
-                      Course of Interest *
+                      {bookingType === "corporate"
+                        ? "Training Requirement *"
+                        : "Course of Interest *"}
                     </label>
                     <select
                       id="course"
@@ -441,20 +597,47 @@ export default function DemoPage() {
                       onChange={handleChange}
                       className="w-full px-4 py-3 border border-[#E2E8F0] rounded-xl bg-white text-[#0e2b49] focus:outline-none focus:ring-2 focus:ring-[#c0a84f]/50 focus:border-[#c0a84f] transition-colors text-sm cursor-pointer"
                     >
-                      <option value="">Select a course</option>
-                      {courses.map((c) => (
+                      <option value="">
+                        {bookingType === "corporate"
+                          ? "Select a requirement"
+                          : "Select a course"}
+                      </option>
+                      {(bookingType === "corporate"
+                        ? corporateCourses
+                        : courses
+                      ).map((c) => (
                         <option key={c} value={c}>
                           {c}
                         </option>
                       ))}
                     </select>
                   </div>
+                  {bookingType === "corporate" && (
+                    <div>
+                      <label
+                        htmlFor="preferredDate"
+                        className="block text-sm font-semibold text-[#0e2b49] mb-1.5"
+                      >
+                        Preferred Training Date
+                      </label>
+                      <input
+                        type="date"
+                        id="preferredDate"
+                        name="preferredDate"
+                        value={formData.preferredDate}
+                        onChange={handleChange}
+                        className="w-full px-4 py-3 border border-[#E2E8F0] rounded-xl bg-white text-[#0e2b49] focus:outline-none focus:ring-2 focus:ring-[#c0a84f]/50 focus:border-[#c0a84f] transition-colors text-sm cursor-pointer"
+                      />
+                    </div>
+                  )}
                   <div>
                     <label
                       htmlFor="message"
                       className="block text-sm font-semibold text-[#0e2b49] mb-1.5"
                     >
-                      Anything you&apos;d like us to know?
+                      {bookingType === "corporate"
+                        ? "Additional Requirements"
+                        : "Anything you'd like us to know?"}
                     </label>
                     <textarea
                       id="message"
@@ -463,7 +646,11 @@ export default function DemoPage() {
                       value={formData.message}
                       onChange={handleChange}
                       className="w-full px-4 py-3 border border-[#E2E8F0] rounded-xl bg-white text-[#0e2b49] placeholder-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#c0a84f]/50 focus:border-[#c0a84f] transition-colors text-sm resize-none"
-                      placeholder="Your goals, preferred time slot, etc."
+                      placeholder={
+                        bookingType === "corporate"
+                          ? "Training goals, preferred format, venue, etc."
+                          : "Your goals, preferred time slot, etc."
+                      }
                     />
                   </div>
 
@@ -485,11 +672,16 @@ export default function DemoPage() {
                     className="w-full py-4 rounded-xl font-bold text-[#0e2b49] bg-gradient-to-r from-[#c0a84f] to-[#d4bc72] hover:from-[#d4bc72] hover:to-[#c0a84f] transition-all duration-200 shadow-md hover:shadow-[0_4px_20px_rgba(192,168,79,0.4)] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-sm"
                     style={{ fontFamily: "Poppins, sans-serif" }}
                   >
-                    {isSubmitting ? "Booking..." : "Book My Free Demo Session"}
+                    {isSubmitting
+                      ? "Submitting..."
+                      : bookingType === "corporate"
+                        ? "Request Corporate Training"
+                        : "Book My Free Demo Session"}
                   </button>
                   <p className="text-center text-[#94a3b8] text-xs">
-                    No payment required &bull; We&apos;ll confirm your slot
-                    within 24 hours
+                    {bookingType === "corporate"
+                      ? "Our team will reach out within 24 hours to discuss your requirements"
+                      : "No payment required • We'll confirm your slot within 24 hours"}
                   </p>
                 </form>
               )}

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import EnrollClient from "./EnrollClient";
+import { getLiveSessionPricing } from "@/lib/pricing";
 
 export const metadata: Metadata = {
   title: "Enroll in a Course – UNIK Academy | Live Communication Training",
@@ -34,5 +35,8 @@ interface Props {
 
 export default async function EnrollPage({ searchParams }: Props) {
   const { course } = await searchParams;
-  return <EnrollClient preSelectedCourse={course} />;
+  const { sessionFormats } = await getLiveSessionPricing();
+  return (
+    <EnrollClient preSelectedCourse={course} sessionFormats={sessionFormats} />
+  );
 }

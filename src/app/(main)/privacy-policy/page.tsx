@@ -153,10 +153,10 @@ export default function PrivacyPolicy() {
             <p className="text-gray-700 leading-relaxed mt-4">
               To exercise any of these rights, contact us at{" "}
               <a
-                href="mailto:unikacademy2025@gmail.com"
+                href="mailto:official@unikacademy.in"
                 className="text-accent hover:underline"
               >
-                unikacademy2025@gmail.com
+                official@unikacademy.in
               </a>
               .
             </p>
@@ -198,19 +198,10 @@ export default function PrivacyPolicy() {
               <p className="text-gray-600 mt-1">
                 Email:{" "}
                 <a
-                  href="mailto:unikacademy2025@gmail.com"
+                  href="mailto:official@unikacademy.in"
                   className="text-accent hover:underline"
                 >
-                  unikacademy2025@gmail.com
-                </a>
-              </p>
-              <p className="text-gray-600 mt-1">
-                Phone:{" "}
-                <a
-                  href="tel:9217196824"
-                  className="text-accent hover:underline"
-                >
-                  9217196824
+                  official@unikacademy.in
                 </a>
               </p>
             </div>

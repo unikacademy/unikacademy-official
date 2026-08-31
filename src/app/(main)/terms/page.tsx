@@ -173,19 +173,10 @@ export default async function Terms() {
               <li>
                 <strong>Email:</strong>{" "}
                 <a
-                  href="mailto:unikacademy2025@gmail.com"
+                  href="mailto:official@unikacademy.in"
                   className="text-accent hover:underline"
                 >
-                  unikacademy2025@gmail.com
-                </a>
-              </li>
-              <li>
-                <strong>Phone:</strong>{" "}
-                <a
-                  href="tel:9217196824"
-                  className="text-accent hover:underline"
-                >
-                  9217196824
+                  official@unikacademy.in
                 </a>
               </li>
             </ul>

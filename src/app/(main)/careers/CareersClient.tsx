@@ -308,10 +308,10 @@ function JobCard({ job }: { job: Job }) {
               Or email us directly
             </p>
             <a
-              href="mailto:unikacademy2025@gmail.com"
+              href="mailto:official@unikacademy.in"
               className="text-[#c0a84f] font-semibold text-sm hover:text-[#0e2b49] transition-colors"
             >
-              unikacademy2025@gmail.com
+              official@unikacademy.in
             </a>
           </div>
         </div>

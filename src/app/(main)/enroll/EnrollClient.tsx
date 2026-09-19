@@ -128,11 +128,7 @@ const WHAT_INCLUDED = [
 const FAQS = [
   {
     q: "How do I start? Do I need to pay upfront?",
-    a: "Start with a completely free demo session — no payment required. After the demo, you can choose your course and session format and enroll.",
-  },
-  {
-    q: "Can I switch my session format after enrolling?",
-    a: "Yes, you can upgrade or change your session format before the course begins. Contact us and we'll help you switch.",
+    a: "Start with a completely free demo session — no payment required. After the demo, you can choose your course and enroll.",
   },
   {
     q: "What if I miss a session?",
@@ -237,7 +233,7 @@ export default function EnrollClient({
             </span>
           </h1>
           <p className="text-white/65 text-lg md:text-xl leading-relaxed max-w-2xl mx-auto mb-8">
-            Pick the session format that works best for you. Start with a{" "}
+            Personalised 1-on-1 live sessions. Start with a{" "}
             <span className="text-[#c0a84f] font-semibold">free demo</span> — no
             commitment required.
           </p>
@@ -294,7 +290,7 @@ export default function EnrollClient({
             <div className="w-12 h-1 bg-gradient-to-r from-[#c0a84f] to-[#d4bc72] rounded-full mx-auto mt-4" />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-6 max-w-sm mx-auto">
             {sessionFormats.map((sf) => (
               <div
                 key={sf.id}

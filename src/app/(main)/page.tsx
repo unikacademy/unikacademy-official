@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { DEMO_ORIGINAL_PRICE } from "@/lib/constants";
+import { DEMO_ORIGINAL_PRICE, isRetiredSessionFormat } from "@/lib/constants";
 import HeroCarouselSection from "@/website/components/HeroCarouselSection";
 import JourneySection from "@/website/components/JourneySection";
 import TestimonialsMarquee from "@/website/components/TestimonialsMarquee";
@@ -34,14 +34,6 @@ export const metadata: Metadata = {
   },
 };
 
-function charmPrice(price: string): string {
-  const num = parseInt(price.replace(/,/g, ""), 10);
-  if (!isNaN(num) && num > 0 && num % 1000 === 0) {
-    return (num - 1).toLocaleString("en-IN");
-  }
-  return price;
-}
-
 interface DBCourse {
   _id: string;
   title: string;
@@ -69,12 +61,14 @@ export default async function Home() {
   const allCourses = await getCourses();
   const coreCourses = allCourses.filter((c) => c.category === "core");
   const coursePricing = allCourses.filter((c) => c.category === "pricing");
-  const premiumPlans = allCourses.filter((c) => c.category === "premium");
+  const premiumPlans = allCourses.filter(
+    (c) => c.category === "premium" && !isRetiredSessionFormat(c.title),
+  );
 
   const stats = [
     { value: "500+", label: "Students Trained" },
     { value: "8", label: "Core Courses" },
-    { value: "3", label: "Session Formats" },
+    { value: "30", label: "Min Free Demo" },
     { value: "100%", label: "Dedicated Support" },
   ];
 

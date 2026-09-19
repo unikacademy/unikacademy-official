@@ -6,7 +6,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { CourseIcon } from "@/lib/courseIcons";
 import { validateName, validatePhone } from "@/lib/validation";
-import { COURSE_PRICES, computeMRP } from "@/lib/constants";
+import { COURSE_PRICES, computeMRP, charmPrice } from "@/lib/constants";
 
 const HeroScene = dynamic(() => import("./hero/HeroScene"), {
   ssr: false,
@@ -23,14 +23,6 @@ interface Course {
 
 interface Props {
   courses: Course[];
-}
-
-function charmPrice(price: string): string {
-  const num = parseInt(price.replace(/,/g, ""), 10);
-  if (!isNaN(num) && num > 0 && num % 1000 === 0) {
-    return (num - 1).toLocaleString("en-IN");
-  }
-  return price;
 }
 
 const FALLBACK: Course[] = [
@@ -56,22 +48,6 @@ const FALLBACK: Course[] = [
     description: "Executive-level mastery for leaders and high-performers.",
     features: ["Executive communication", "Leadership presence", "Certificate"],
     iconKey: "microphone",
-  },
-  {
-    title: "1-on-5 Group Sessions",
-    price: COURSE_PRICES.group1on5,
-    description:
-      "Interactive group learning with peer engagement and collaborative exercises.",
-    features: ["60 Live sessions", "Up to 5 students", "Group activities"],
-    iconKey: "chart",
-  },
-  {
-    title: "1-on-2 Small Group",
-    price: COURSE_PRICES.group1on2,
-    description:
-      "Focused small-group sessions with maximum personalized attention.",
-    features: ["60 Live sessions", "2 students", "Personalized focus"],
-    iconKey: "star",
   },
   {
     title: "1-on-1 Private Sessions",

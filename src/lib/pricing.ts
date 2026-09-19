@@ -1,23 +1,16 @@
 import { supabaseAdmin } from "@/lib/supabase-admin";
-import {
-  SESSION_FORMATS,
-  FOUR_WEEK_SESSION_FORMATS,
-  STARTING_FROM_PRICE,
-  FOUR_WEEK_STARTING_FROM,
-} from "@/lib/constants";
+import { SESSION_FORMATS, COURSE_PRICES, charmPrice } from "@/lib/constants";
 
 // Server-only. Merges the admin-editable `courses` table prices into the
-// SESSION_FORMATS / FOUR_WEEK_SESSION_FORMATS display data (badges, perks,
-// colors stay static — only the price number is sourced live), so editing a
-// course's price in the admin dashboard is reflected on the course detail,
-// enroll, and terms pages, not just the homepage carousel.
+// SESSION_FORMATS display data (badges, perks, colors stay static — only the
+// price number is sourced live), so editing a course's price in the admin
+// dashboard is reflected on the course detail, enroll, and terms pages, not
+// just the homepage carousel.
 
-type FormatId = "1-on-1" | "1-to-2" | "1-to-5";
+type FormatId = "1-on-1";
 
 // Deliberately wider than `typeof SESSION_FORMATS[number]` — that type's
-// `price` field is narrowed to SESSION_FORMATS' own literal values by
-// `as const`, which would reject FOUR_WEEK_SESSION_FORMATS' different price
-// literals. Both arrays are structurally assignable to this interface.
+// `price` field is narrowed to the literal value by `as const`.
 export interface SessionFormatItem {
   id: FormatId;
   label: string;
@@ -28,6 +21,16 @@ export interface SessionFormatItem {
   perks: readonly string[];
 }
 
+type FourWeekLevel = "basic" | "intermediate" | "advanced";
+
+// The 4-week courses are priced individually (Basic / Intermediate / Advanced
+// Communication rows in the `pricing` category), not per session format.
+const FOUR_WEEK_LEVEL_BY_SLUG: Record<string, FourWeekLevel> = {
+  "basic-communication": "basic",
+  "communication-skills-intermediate": "intermediate",
+  "communication-skills-advanced": "advanced",
+};
+
 interface CourseRow {
   title: string;
   category: string;
@@ -37,29 +40,14 @@ interface CourseRow {
 function formatPrice(raw: string): string | null {
   const digits = raw.replace(/[^\d]/g, "");
   if (!digits) return null;
-  return `₹${Number(digits).toLocaleString("en-IN")}`;
+  return `₹${charmPrice(digits)}`;
 }
 
-// "1-on-1", "1 to 2", "1-on-5 Group" → "1-on-1" | "1-to-2" | "1-to-5"
-function matchSessionFormatId(title: string): FormatId | null {
-  const m = title.toLowerCase().match(/1[\s-]*(?:on|to)[\s-]*(\d)/);
-  if (!m) return null;
-  const byDigit: Record<string, FormatId> = {
-    "1": "1-on-1",
-    "2": "1-to-2",
-    "5": "1-to-5",
-  };
-  return byDigit[m[1]] ?? null;
-}
-
-// "Basic/Intermediate/Advanced Communication" fill the same 1-on-1 / 1-to-2 /
-// 1-to-5 slots at 4-week pricing (matches the existing COURSE_PRICES mapping
-// used as the carousel's fallback data in constants.ts).
-function matchFourWeekFormatId(title: string): FormatId | null {
+function matchFourWeekLevel(title: string): FourWeekLevel | null {
   const t = title.toLowerCase();
-  if (t.includes("basic")) return "1-to-5";
-  if (t.includes("intermediate")) return "1-to-2";
-  if (t.includes("advanced")) return "1-on-1";
+  if (t.includes("basic")) return "basic";
+  if (t.includes("intermediate")) return "intermediate";
+  if (t.includes("advanced")) return "advanced";
   return null;
 }
 
@@ -76,61 +64,49 @@ async function fetchActiveCourses(): Promise<CourseRow[]> {
   }
 }
 
-function applyLivePrices(
-  base: readonly SessionFormatItem[],
-  rows: CourseRow[],
-  category: "premium" | "pricing",
-  matchId: (title: string) => FormatId | null,
-): SessionFormatItem[] {
-  const liveById = new Map<string, string>();
-  for (const row of rows) {
-    if (row.category !== category) continue;
-    const id = matchId(row.title);
-    const price = id && formatPrice(row.price);
-    if (id && price) liveById.set(id, price);
-  }
-  return base.map((f) => {
-    const live = liveById.get(f.id);
-    return live ? { ...f, price: live } : f;
-  });
-}
-
-function cheapest(formats: SessionFormatItem[], fallback: string): string {
-  const nums = formats
-    .map((f) => parseInt(f.price.replace(/[₹,]/g, ""), 10))
-    .filter((n) => !isNaN(n));
-  if (!nums.length) return fallback;
-  return `₹${Math.min(...nums).toLocaleString("en-IN")}`;
-}
-
 export interface LiveSessionPricing {
   sessionFormats: SessionFormatItem[];
-  fourWeekSessionFormats: SessionFormatItem[];
-  startingFrom: string;
-  fourWeekStartingFrom: string;
+  fourWeekPrices: Record<FourWeekLevel, string>;
 }
 
 export async function getLiveSessionPricing(): Promise<LiveSessionPricing> {
   const rows = await fetchActiveCourses();
-  const sessionFormats = applyLivePrices(
-    SESSION_FORMATS,
-    rows,
-    "premium",
-    matchSessionFormatId,
-  );
-  const fourWeekSessionFormats = applyLivePrices(
-    FOUR_WEEK_SESSION_FORMATS,
-    rows,
-    "pricing",
-    matchFourWeekFormatId,
-  );
-  return {
-    sessionFormats,
-    fourWeekSessionFormats,
-    startingFrom: cheapest(sessionFormats, STARTING_FROM_PRICE),
-    fourWeekStartingFrom: cheapest(
-      fourWeekSessionFormats,
-      FOUR_WEEK_STARTING_FROM,
-    ),
+
+  // 12-week courses: the "1-on-1" row in the `premium` category.
+  const livePrice = rows
+    .filter((r) => r.category === "premium" && /1[\s-]*(?:on|to)[\s-]*1\b/i.test(r.title))
+    .map((r) => formatPrice(r.price))
+    .find(Boolean);
+  const sessionFormats: SessionFormatItem[] = SESSION_FORMATS.map((f) => ({
+    ...f,
+    price: livePrice ?? f.price,
+  }));
+
+  const fourWeekPrices: Record<FourWeekLevel, string> = {
+    basic: `₹${charmPrice(COURSE_PRICES.basic)}`,
+    intermediate: `₹${charmPrice(COURSE_PRICES.intermediate)}`,
+    advanced: `₹${charmPrice(COURSE_PRICES.advanced)}`,
   };
+  for (const row of rows) {
+    if (row.category !== "pricing") continue;
+    const level = matchFourWeekLevel(row.title);
+    const price = level && formatPrice(row.price);
+    if (level && price) fourWeekPrices[level] = price;
+  }
+
+  return { sessionFormats, fourWeekPrices };
+}
+
+// Formats shown on a course detail page: 4-week courses show their own price
+// as the single 1-on-1 option; everything else uses the standard 1-on-1 price.
+export function formatsForCourse(
+  pricing: LiveSessionPricing,
+  courseId: string,
+): SessionFormatItem[] {
+  const level = FOUR_WEEK_LEVEL_BY_SLUG[courseId];
+  if (!level) return pricing.sessionFormats;
+  return pricing.sessionFormats.map((f) => ({
+    ...f,
+    price: pricing.fourWeekPrices[level],
+  }));
 }

@@ -14,8 +14,19 @@ export function computeMRP(price: string): string {
   return hasSymbol ? `₹${mrp}` : mrp;
 }
 
+// Charm pricing: a round-thousand price from the admin dashboard (e.g. "6000")
+// is displayed one rupee lower ("5,999"). Used by the homepage AND the course
+// detail / enroll / terms pages so every page shows the same number.
+export function charmPrice(price: string): string {
+  const num = parseInt(price.replace(/,/g, ""), 10);
+  if (isNaN(num)) return price;
+  const charmed = num > 0 && num % 1000 === 0 ? num - 1 : num;
+  return charmed.toLocaleString("en-IN");
+}
+
 // ─── Session Format Pricing ───────────────────────────────────────────────────
-// Change prices here and they update across: course detail page, enroll page, terms page.
+// We only offer 1-on-1 sessions. Change the price here and it updates across:
+// course detail page, enroll page, terms page (live DB price overrides it).
 
 export const SESSION_FORMATS = [
   {
@@ -32,100 +43,24 @@ export const SESSION_FORMATS = [
       "Fastest results",
     ],
   },
-  {
-    id: "1-to-2",
-    label: "1-to-2 Sessions",
-    price: "₹8,999",
-    badge: "Best Value",
-    badgeColor: "bg-[#c0a84f] text-[#0e2b49]",
-    highlight: false,
-    perks: [
-      "Peer learning dynamics",
-      "Semi-personalised coaching",
-      "Collaborative practice",
-      "Great for siblings / friends",
-    ],
-  },
-  {
-    id: "1-to-5",
-    label: "1-to-5 Group",
-    price: "₹5,999",
-    badge: "Budget Friendly",
-    badgeColor: "bg-emerald-100 text-emerald-700",
-    highlight: false,
-    perks: [
-      "Group interaction practice",
-      "Affordable pricing",
-      "Public speaking exposure",
-      "Community learning",
-    ],
-  },
 ] as const;
-
-// The lowest session format price — shown as "Starting from" on course pages.
-export const STARTING_FROM_PRICE = "₹5,999";
-
-// ─── 4-Week Course Pricing ────────────────────────────────────────────────────
-// Used for Basic, Intermediate, and Advanced Communication (4-week duration courses).
-
-export const FOUR_WEEK_SESSION_FORMATS = [
-  {
-    id: "1-on-1",
-    label: "1-on-1 Sessions",
-    price: "₹2,999",
-    badge: "Most Personalized",
-    badgeColor: "bg-[#0e2b49] text-white",
-    highlight: true,
-    perks: [
-      "100% dedicated attention",
-      "Customised learning pace",
-      "Flexible scheduling",
-      "Fastest results",
-    ],
-  },
-  {
-    id: "1-to-2",
-    label: "1-to-2 Sessions",
-    price: "₹1,999",
-    badge: "Best Value",
-    badgeColor: "bg-[#c0a84f] text-[#0e2b49]",
-    highlight: false,
-    perks: [
-      "Peer learning dynamics",
-      "Semi-personalised coaching",
-      "Collaborative practice",
-      "Great for siblings / friends",
-    ],
-  },
-  {
-    id: "1-to-5",
-    label: "1-to-5 Group",
-    price: "₹999",
-    badge: "Budget Friendly",
-    badgeColor: "bg-emerald-100 text-emerald-700",
-    highlight: false,
-    perks: [
-      "Group interaction practice",
-      "Affordable pricing",
-      "Public speaking exposure",
-      "Community learning",
-    ],
-  },
-] as const;
-
-export const FOUR_WEEK_STARTING_FROM = "₹999";
 
 // ─── Course Prices ────────────────────────────────────────────────────────────
-// Fallback prices used in the hero carousel when Supabase has no data.
+// Fallback prices used when Supabase has no data: the 4-week courses on their
+// detail pages, and the 1-on-1 slide in the hero carousel.
 
 export const COURSE_PRICES = {
   basic: "999",
   intermediate: "1999",
   advanced: "2999",
-  group1on5: "5999",
-  group1on2: "8999",
   private1on1: "11999",
 } as const;
+
+// Group formats (1-on-2, 1-on-5, …) are no longer offered. Old rows may still
+// exist in the `courses` table, so the homepage filters them out by title.
+export function isRetiredSessionFormat(title: string): boolean {
+  return /1[\s-]*(?:on|to)[\s-]*[2-9]/i.test(title);
+}
 
 // ─── Demo Session ─────────────────────────────────────────────────────────────
 // Strikethrough "original" price shown on the free demo pages.

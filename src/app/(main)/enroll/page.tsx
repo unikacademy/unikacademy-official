@@ -5,12 +5,12 @@ import { getLiveSessionPricing } from "@/lib/pricing";
 export const metadata: Metadata = {
   title: "Enroll in a Course – UNIK Academy | Live Communication Training",
   description:
-    "Choose your learning plan at UNIK Academy. Pick from 1-on-1, 1-to-2, or group sessions. Start your communication skills, personality development, or public speaking journey today.",
+    "Choose your learning plan at UNIK Academy. Book personalised 1-on-1 live sessions. Start your communication skills, personality development, or public speaking journey today.",
   alternates: { canonical: "https://www.unikacademy.in/enroll" },
   openGraph: {
     title: "Enroll in a Course – UNIK Academy",
     description:
-      "Choose your learning plan at UNIK Academy. Pick from 1-on-1, 1-to-2, or group sessions. Start your communication journey today.",
+      "Choose your learning plan at UNIK Academy. Book personalised 1-on-1 live sessions. Start your communication journey today.",
     url: "https://www.unikacademy.in/enroll",
     type: "website",
     images: [
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   twitter: {
     title: "Enroll in a Course – UNIK Academy",
     description:
-      "Choose your learning plan at UNIK Academy. Pick from 1-on-1, 1-to-2, or group sessions. Start your communication journey today.",
+      "Choose your learning plan at UNIK Academy. Book personalised 1-on-1 live sessions. Start your communication journey today.",
   },
 };
 

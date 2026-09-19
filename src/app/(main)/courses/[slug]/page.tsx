@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { courseDetailsData } from "@/website/data/courseDetails";
 import { computeMRP } from "@/lib/constants";
-import { getLiveSessionPricing } from "@/lib/pricing";
+import { getLiveSessionPricing, formatsForCourse } from "@/lib/pricing";
 import CourseCurriculum from "@/website/components/CourseCurriculum";
 
 interface PageProps {
@@ -95,11 +95,8 @@ export default async function CourseDetailPage({ params }: PageProps) {
   const course = courseDetailsData.find((c) => c.id === slug);
   if (!course) notFound();
 
-  const is4Week = course.duration === "4 Weeks";
-  const { sessionFormats, fourWeekSessionFormats, startingFrom: liveStandard, fourWeekStartingFrom: liveFourWeek } =
-    await getLiveSessionPricing();
-  const activeFormats = is4Week ? fourWeekSessionFormats : sessionFormats;
-  const startingFrom = is4Week ? liveFourWeek : liveStandard;
+  const activeFormats = formatsForCourse(await getLiveSessionPricing(), course.id);
+  const startingFrom = activeFormats[0].price;
 
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
@@ -522,7 +519,7 @@ export default async function CourseDetailPage({ params }: PageProps) {
                     </span>
                   </div>
                   <p className="text-[#c0a84f] text-xs font-medium">
-                    3 session formats available
+                    Live 1-on-1 sessions
                   </p>
                 </div>
 

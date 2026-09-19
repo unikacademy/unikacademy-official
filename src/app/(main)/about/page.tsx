@@ -30,7 +30,7 @@ export const metadata: Metadata = {
 
 const reasons = [
   "Expert instructors with years of experience in communication training",
-  "Personalized attention through flexible session formats (1-on-1, small groups)",
+  "Personalized attention through personalised 1-on-1 live sessions",
   "Comprehensive curriculum covering all aspects of communication and personality",
   "Practical, hands-on approach to learning",
   "Affordable pricing options to suit different needs",
@@ -160,7 +160,7 @@ export default function About() {
                 {[
                   { n: "500+", sub: "Students Trained" },
                   { n: "8", sub: "Core Courses" },
-                  { n: "3", sub: "Session Formats" },
+                  { n: "30", sub: "Min Free Demo" },
                   { n: "100%", sub: "Dedicated Support" },
                 ].map((item, i) => (
                   <div

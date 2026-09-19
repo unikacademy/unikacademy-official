@@ -76,8 +76,7 @@ export default async function Terms() {
               <li>Business Communication</li>
             </ul>
             <p className="text-gray-700 mt-4">
-              We offer various session formats including 1-on-1, 1-to-2, and
-              1-to-5 group sessions.
+              All courses are delivered as live 1-on-1 sessions.
             </p>
           </section>
 

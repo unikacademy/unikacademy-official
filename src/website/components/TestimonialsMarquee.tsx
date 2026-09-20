@@ -50,7 +50,7 @@ const TESTIMONIALS = [
     initials: "SP",
     avatarFrom: "#c0a84f",
     avatarTo: "#133a67",
-    course: "Business Communication",
+    course: "Communication Skills",
     city: "Ahmedabad",
     rating: 5,
     review:

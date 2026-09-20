@@ -131,13 +131,9 @@ export default function DemoPage() {
 
   const courses = [
     "Communication Skills",
-    "Business Communication",
     "Public Speaking & Presentation",
     "Spoken English & Grammar",
     "Personality Development",
-    "Basic Communication",
-    "Intermediate Communication",
-    "Advanced Communication",
   ];
 
   const corporateCourses = [

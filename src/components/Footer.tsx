@@ -12,10 +12,9 @@ export default function Footer() {
 
   const courses = [
     "Communication Skills",
-    "Public Speaking",
-    "Spoken English",
+    "Public Speaking & Presentation",
+    "Spoken English & Grammar",
     "Personality Development",
-    "Business Communication",
   ];
 
   return (

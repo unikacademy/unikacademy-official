@@ -2,42 +2,35 @@
 
 import { useState, FormEvent } from "react";
 import Link from "next/link";
-import { computeMRP } from "@/lib/constants";
+import { computeMRP, SESSION_FORMATS } from "@/lib/constants";
 import type { SessionFormatItem } from "@/lib/pricing";
 
+// Titles match the course detail pages (which link here with ?course=<title>).
 const ALL_COURSES = [
   {
+    slug: "communication-skills",
     title: "Communication Skills",
     duration: "12 Weeks",
     level: "Beginner–Advanced",
   },
   {
-    title: "Business Communication",
-    duration: "12 Weeks",
-    level: "Professional",
-  },
-  {
+    slug: "personality-development",
     title: "Personality Development",
     duration: "12 Weeks",
     level: "All Levels",
   },
-  { title: "Public Speaking", duration: "12 Weeks", level: "All Levels" },
   {
+    slug: "public-speaking",
+    title: "Public Speaking",
+    duration: "12 Weeks",
+    level: "All Levels",
+  },
+  {
+    slug: "spoken-english-grammar",
     title: "Spoken English & Grammar",
     duration: "12 Weeks",
     level: "Beginner",
   },
-  {
-    title: "Communication Skills – Intermediate",
-    duration: "4 Weeks",
-    level: "Intermediate",
-  },
-  {
-    title: "Communication Skills – Advanced",
-    duration: "4 Weeks",
-    level: "Advanced",
-  },
-  { title: "Basic Communication", duration: "4 Weeks", level: "Beginner" },
 ];
 
 
@@ -146,16 +139,15 @@ const FAQS = [
 
 interface Props {
   preSelectedCourse?: string;
-  sessionFormats: SessionFormatItem[];
+  coursePrices: Record<string, string>;
 }
 
 export default function EnrollClient({
   preSelectedCourse,
-  sessionFormats,
+  coursePrices,
 }: Props) {
-  const [selectedFormat, setSelectedFormat] = useState<
-    SessionFormatItem["id"]
-  >(sessionFormats[0].id);
+  const [selectedFormat, setSelectedFormat] =
+    useState<SessionFormatItem["id"]>("1-on-1");
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -166,6 +158,17 @@ export default function EnrollClient({
   const [status, setStatus] = useState<
     "idle" | "submitting" | "success" | "error"
   >("idle");
+
+  // One 1-on-1 format, priced for the chosen course (cheapest until one is picked).
+  const chosenSlug = ALL_COURSES.find((c) => c.title === formData.course)?.slug;
+  const cheapestPrice = Object.values(coursePrices).sort(
+    (a, b) => parseInt(a.replace(/\D/g, ""), 10) - parseInt(b.replace(/\D/g, ""), 10),
+  )[0];
+  const price = (chosenSlug && coursePrices[chosenSlug]) || cheapestPrice;
+  const sessionFormats: SessionFormatItem[] = SESSION_FORMATS.map((f) => ({
+    ...f,
+    price,
+  }));
 
   const handleChange = (
     e: React.ChangeEvent<

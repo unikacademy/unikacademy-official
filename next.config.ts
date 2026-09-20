@@ -32,7 +32,23 @@ const securityHeaders = [
   },
 ];
 
+// Retired courses — send old links/bookmarks/search results to the closest
+// remaining course instead of a 404.
+const retiredCourseSlugs = [
+  "business-communication",
+  "basic-communication",
+  "communication-skills-intermediate",
+  "communication-skills-advanced",
+];
+
 const nextConfig: NextConfig = {
+  async redirects() {
+    return retiredCourseSlugs.map((slug) => ({
+      source: `/courses/${slug}`,
+      destination: "/courses/communication-skills",
+      permanent: true,
+    }));
+  },
   async headers() {
     return [
       {

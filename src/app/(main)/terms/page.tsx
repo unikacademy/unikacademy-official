@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { getLiveSessionPricing } from "@/lib/pricing";
+import { getCoursePrices } from "@/lib/pricing";
+import { courseDetailsData } from "@/website/data/courseDetails";
 
 export const metadata: Metadata = {
   title: "Terms & Conditions – UNIK Academy | Course Policies",
@@ -28,8 +29,11 @@ export const metadata: Metadata = {
   },
 };
 
+// Course prices come from Supabase — see the note in courses/[slug]/page.tsx.
+export const revalidate = 60;
+
 export default async function Terms() {
-  const { sessionFormats } = await getLiveSessionPricing();
+  const coursePrices = await getCoursePrices();
   return (
     <div className="min-h-screen py-16">
       <div className="container mx-auto px-4 max-w-4xl">
@@ -73,7 +77,6 @@ export default async function Terms() {
               <li>Public Speaking & Presentation Skills</li>
               <li>Spoken English & Grammar</li>
               <li>Personality Development</li>
-              <li>Business Communication</li>
             </ul>
             <p className="text-gray-700 mt-4">
               All courses are delivered as live 1-on-1 sessions.
@@ -88,8 +91,10 @@ export default async function Terms() {
               Course fees are as listed on our website:
             </p>
             <ul className="list-disc pl-6 text-gray-700 space-y-2">
-              {sessionFormats.map((sf) => (
-                <li key={sf.id}>{sf.label}: {sf.price}</li>
+              {courseDetailsData.map((c) => (
+                <li key={c.id}>
+                  {c.title}: {coursePrices[c.id]}
+                </li>
               ))}
             </ul>
             <p className="text-gray-700 mt-4">

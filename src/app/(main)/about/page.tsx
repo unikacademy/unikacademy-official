@@ -159,7 +159,7 @@ export default function About() {
               <div className="grid grid-cols-2 gap-4">
                 {[
                   { n: "500+", sub: "Students Trained" },
-                  { n: "8", sub: "Core Courses" },
+                  { n: "4", sub: "Core Courses" },
                   { n: "30", sub: "Min Free Demo" },
                   { n: "100%", sub: "Dedicated Support" },
                 ].map((item, i) => (

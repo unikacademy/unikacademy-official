@@ -27,35 +27,36 @@ interface Props {
 
 const FALLBACK: Course[] = [
   {
-    title: "Basic Communication",
-    price: COURSE_PRICES.basic,
+    title: "Communication Skills",
+    price: COURSE_PRICES["communication-skills"],
     description:
-      "Perfect for beginners looking to build foundational communication skills.",
-    features: ["Core communication basics", "100% Live classes", "Certificate"],
+      "Build clear, confident communication for personal and professional life.",
+    features: ["60 Live sessions", "Exclusive 1-on-1", "Certificate"],
     iconKey: "chat",
   },
   {
-    title: "Intermediate Communication",
-    price: COURSE_PRICES.intermediate,
+    title: "Public Speaking & Presentation",
+    price: COURSE_PRICES["public-speaking"],
     description:
-      "Refine and elevate your communication in professional contexts.",
-    features: ["Advanced techniques", "Professional scenarios", "Certificate"],
-    iconKey: "briefcase",
-  },
-  {
-    title: "Advanced Communication",
-    price: COURSE_PRICES.advanced,
-    description: "Executive-level mastery for leaders and high-performers.",
-    features: ["Executive communication", "Leadership presence", "Certificate"],
+      "Overcome stage fear and deliver powerful speeches and presentations.",
+    features: ["60 Live sessions", "Exclusive 1-on-1", "Certificate"],
     iconKey: "microphone",
   },
   {
-    title: "1-on-1 Private Sessions",
-    price: COURSE_PRICES.private1on1,
+    title: "Spoken English & Grammar",
+    price: COURSE_PRICES["spoken-english-grammar"],
     description:
-      "Fully personalized sessions exclusively dedicated to your growth.",
-    features: ["60 Live sessions", "Exclusive 1-on-1", "Custom curriculum"],
-    iconKey: "trophy",
+      "Speak fluent English with correct grammar, step by step.",
+    features: ["60 Live sessions", "Exclusive 1-on-1", "Certificate"],
+    iconKey: "chart",
+  },
+  {
+    title: "Personality Development",
+    price: COURSE_PRICES["personality-development"],
+    description:
+      "Transform your presence, confidence and leadership skills.",
+    features: ["60 Live sessions", "Exclusive 1-on-1", "Certificate"],
+    iconKey: "star",
   },
 ];
 

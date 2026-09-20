@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { DEMO_ORIGINAL_PRICE, isRetiredSessionFormat } from "@/lib/constants";
+import { DEMO_ORIGINAL_PRICE } from "@/lib/constants";
+import { findCourseDetail } from "@/website/data/courseDetails";
 import HeroCarouselSection from "@/website/components/HeroCarouselSection";
 import JourneySection from "@/website/components/JourneySection";
 import TestimonialsMarquee from "@/website/components/TestimonialsMarquee";
@@ -59,15 +60,18 @@ async function getCourses(): Promise<DBCourse[]> {
 
 export default async function Home() {
   const allCourses = await getCourses();
-  const coreCourses = allCourses.filter((c) => c.category === "core");
-  const coursePricing = allCourses.filter((c) => c.category === "pricing");
-  const premiumPlans = allCourses.filter(
-    (c) => c.category === "premium" && !isRetiredSessionFormat(c.title),
+  // Only the courses we sell (those with a detail page) are shown, so retired
+  // rows still lingering in the DB (Basic/Intermediate/Advanced/Business, the
+  // old 1-on-N formats) never reach the page.
+  const sellable = allCourses.filter((c) => findCourseDetail(c.title));
+  const coreCourses = sellable.filter((c) => c.category === "core");
+  const priced = sellable.filter(
+    (c) => c.category === "pricing" || c.category === "premium",
   );
 
   const stats = [
     { value: "500+", label: "Students Trained" },
-    { value: "8", label: "Core Courses" },
+    { value: "4", label: "Core Courses" },
     { value: "30", label: "Min Free Demo" },
     { value: "100%", label: "Dedicated Support" },
   ];
@@ -89,7 +93,7 @@ export default async function Home() {
       </h1>
 
       {/* ─── Hero ─── */}
-      <HeroCarouselSection courses={[...coursePricing, ...premiumPlans]} />
+      <HeroCarouselSection courses={priced} />
 
       {/* ─── Journey (Apple-like pinned horizontal panels) ─── */}
       <JourneySection />

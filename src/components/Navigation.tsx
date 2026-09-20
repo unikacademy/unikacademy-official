@@ -6,20 +6,10 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const courses = [
-  { slug: "business-communication", label: "Business Communication" },
   { slug: "communication-skills", label: "Communication Skills" },
-  {
-    slug: "communication-skills-intermediate",
-    label: "Communication Skills – Intermediate",
-  },
-  {
-    slug: "communication-skills-advanced",
-    label: "Communication Skills – Advanced",
-  },
-  { slug: "basic-communication", label: "Basic Communication" },
-  { slug: "personality-development", label: "Personality Development" },
-  { slug: "public-speaking", label: "Public Speaking" },
+  { slug: "public-speaking", label: "Public Speaking & Presentation" },
   { slug: "spoken-english-grammar", label: "Spoken English & Grammar" },
+  { slug: "personality-development", label: "Personality Development" },
 ];
 
 export default function Navigation() {

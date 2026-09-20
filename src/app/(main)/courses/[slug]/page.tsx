@@ -3,8 +3,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { courseDetailsData } from "@/website/data/courseDetails";
 import { computeMRP } from "@/lib/constants";
-import { getLiveSessionPricing, formatsForCourse } from "@/lib/pricing";
+import { getCoursePrices, formatsForCourse } from "@/lib/pricing";
 import CourseCurriculum from "@/website/components/CourseCurriculum";
+
+// Prices come from Supabase; re-generate at most once a minute so admin price
+// edits show up without a redeploy (the page is otherwise built statically).
+export const revalidate = 60;
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -95,7 +99,7 @@ export default async function CourseDetailPage({ params }: PageProps) {
   const course = courseDetailsData.find((c) => c.id === slug);
   if (!course) notFound();
 
-  const activeFormats = formatsForCourse(await getLiveSessionPricing(), course.id);
+  const activeFormats = formatsForCourse(await getCoursePrices(), course.id);
   const startingFrom = activeFormats[0].price;
 
   return (

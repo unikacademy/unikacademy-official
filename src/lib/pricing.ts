@@ -1,11 +1,12 @@
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { SESSION_FORMATS, COURSE_PRICES, charmPrice } from "@/lib/constants";
+import { courseDetailsData, getCourseSlug } from "@/website/data/courseDetails";
 
-// Server-only. Merges the admin-editable `courses` table prices into the
-// SESSION_FORMATS display data (badges, perks, colors stay static — only the
-// price number is sourced live), so editing a course's price in the admin
-// dashboard is reflected on the course detail, enroll, and terms pages, not
-// just the homepage carousel.
+// Server-only. Every course has exactly one price: the price on its own row in
+// the admin-editable `courses` table (the same row the homepage carousel
+// reads), falling back to COURSE_PRICES if the row/DB is unavailable. Editing a
+// price in the admin dashboard therefore updates the homepage, course detail,
+// enroll and terms pages together.
 
 type FormatId = "1-on-1";
 
@@ -21,29 +22,6 @@ export interface SessionFormatItem {
   perks: readonly string[];
 }
 
-type FourWeekLevel = "basic" | "intermediate" | "advanced";
-
-// The 4-week courses are priced individually (Basic / Intermediate / Advanced
-// Communication rows in the `pricing` category), not per session format.
-const FOUR_WEEK_LEVEL_BY_SLUG: Record<string, FourWeekLevel> = {
-  "basic-communication": "basic",
-  "communication-skills-intermediate": "intermediate",
-  "communication-skills-advanced": "advanced",
-};
-
-// 12-week courses that the homepage prices individually (their own row in the
-// `courses` table) rather than through the generic "1-on-1" session-format
-// row. Keyed by the course detail page's slug → the exact `courses.title` to
-// read the price from. Any 12-week course not listed here (e.g. Business
-// Communication, which only exists as a priceless `core` row) falls back to
-// the generic 1-on-1 price so the detail page and homepage never disagree.
-const OWN_PRICE_TITLE_BY_SLUG: Record<string, string> = {
-  "communication-skills": "Communication Skills",
-  "personality-development": "Personality Development",
-  "public-speaking": "Public Speaking & Presentation",
-  "spoken-english-grammar": "Spoken English & Grammar",
-};
-
 interface CourseRow {
   title: string;
   category: string;
@@ -54,14 +32,6 @@ function formatPrice(raw: string): string | null {
   const digits = raw.replace(/[^\d]/g, "");
   if (!digits) return null;
   return `₹${charmPrice(digits)}`;
-}
-
-function matchFourWeekLevel(title: string): FourWeekLevel | null {
-  const t = title.toLowerCase();
-  if (t.includes("basic")) return "basic";
-  if (t.includes("intermediate")) return "intermediate";
-  if (t.includes("advanced")) return "advanced";
-  return null;
 }
 
 async function fetchActiveCourses(): Promise<CourseRow[]> {
@@ -77,71 +47,36 @@ async function fetchActiveCourses(): Promise<CourseRow[]> {
   }
 }
 
-export interface LiveSessionPricing {
-  sessionFormats: SessionFormatItem[];
-  fourWeekPrices: Record<FourWeekLevel, string>;
-  ownPrices: Record<string, string>;
-}
+// Course-detail slug → display price (e.g. "₹14,999"), for all 4 courses.
+export type CoursePrices = Record<string, string>;
 
-export async function getLiveSessionPricing(): Promise<LiveSessionPricing> {
+export async function getCoursePrices(): Promise<CoursePrices> {
   const rows = await fetchActiveCourses();
-
-  // Generic 1-on-1 price: the "1-on-1" row in the `premium` category. Used by
-  // courses that don't have a dedicated price row of their own.
-  const livePrice = rows
-    .filter((r) => r.category === "premium" && /1[\s-]*(?:on|to)[\s-]*1\b/i.test(r.title))
-    .map((r) => formatPrice(r.price))
-    .find(Boolean);
-  const sessionFormats: SessionFormatItem[] = SESSION_FORMATS.map((f) => ({
-    ...f,
-    price: livePrice ?? f.price,
-  }));
-
-  const fourWeekPrices: Record<FourWeekLevel, string> = {
-    basic: `₹${charmPrice(COURSE_PRICES.basic)}`,
-    intermediate: `₹${charmPrice(COURSE_PRICES.intermediate)}`,
-    advanced: `₹${charmPrice(COURSE_PRICES.advanced)}`,
-  };
-  for (const row of rows) {
-    if (row.category !== "pricing") continue;
-    const level = matchFourWeekLevel(row.title);
-    const price = level && formatPrice(row.price);
-    if (level && price) fourWeekPrices[level] = price;
+  const prices: CoursePrices = {};
+  for (const course of courseDetailsData) {
+    const fallback = `₹${charmPrice(
+      COURSE_PRICES[course.id as keyof typeof COURSE_PRICES] ?? "",
+    )}`;
+    // Price rows live in the `pricing` / `premium` categories; `core` rows
+    // (homepage cards) carry no price. Match on the detail page's own lookup so
+    // "Public Speaking & Presentation" (DB) ↔ "Public Speaking" (detail) agree.
+    const live = rows
+      .filter((r) => r.category !== "core")
+      .filter((r) => getCourseSlug(r.title) === course.id)
+      .map((r) => formatPrice(r.price))
+      .find(Boolean);
+    prices[course.id] = live ?? fallback;
   }
-
-  // 12-week courses priced by their own row (see OWN_PRICE_TITLE_BY_SLUG),
-  // keyed by lower-cased title for a case-insensitive lookup below.
-  const ownPrices: Record<string, string> = {};
-  for (const row of rows) {
-    if (row.category === "core") continue;
-    const price = formatPrice(row.price);
-    if (price) ownPrices[row.title.toLowerCase()] = price;
-  }
-
-  return { sessionFormats, fourWeekPrices, ownPrices };
+  return prices;
 }
 
-// Formats shown on a course detail page: 4-week courses show their own price;
-// courses with a dedicated homepage row (OWN_PRICE_TITLE_BY_SLUG) show that
-// row's price; everything else falls back to the standard 1-on-1 price. This
-// keeps every course detail page in sync with what the homepage displays.
+// The single 1-on-1 format shown on a course detail page, at that course's price.
 export function formatsForCourse(
-  pricing: LiveSessionPricing,
+  prices: CoursePrices,
   courseId: string,
 ): SessionFormatItem[] {
-  const fourWeekLevel = FOUR_WEEK_LEVEL_BY_SLUG[courseId];
-  if (fourWeekLevel) {
-    return pricing.sessionFormats.map((f) => ({
-      ...f,
-      price: pricing.fourWeekPrices[fourWeekLevel],
-    }));
-  }
-
-  const ownTitle = OWN_PRICE_TITLE_BY_SLUG[courseId];
-  const ownPrice = ownTitle && pricing.ownPrices[ownTitle.toLowerCase()];
-  if (ownPrice) {
-    return pricing.sessionFormats.map((f) => ({ ...f, price: ownPrice }));
-  }
-
-  return pricing.sessionFormats;
+  return SESSION_FORMATS.map((f) => ({
+    ...f,
+    price: prices[courseId] ?? f.price,
+  }));
 }

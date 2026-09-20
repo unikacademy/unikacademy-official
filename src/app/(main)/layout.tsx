@@ -2,7 +2,6 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import DemoPopup from "@/website/components/DemoPopup";
 import SmoothScrollProvider from "@/components/providers/SmoothScrollProvider";
-import SaleBanner from "@/components/SaleBanner";
 import NavigationProgress from "@/components/NavigationProgress";
 
 export default function MainLayout({
@@ -20,7 +19,8 @@ export default function MainLayout({
         Skip to main content
       </a>
       <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
-        <SaleBanner />
+        {/* Summer Sale banner hidden for now — to bring it back, re-import
+            SaleBanner from "@/components/SaleBanner" and render it here. */}
         <Navigation />
         <main id="main-content" className="grow">
           {children}

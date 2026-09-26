@@ -1,6 +1,6 @@
 # UNIK Academy - Next.js Application
 
-A modern, responsive web application for UNIK Academy built with Next.js 15, TypeScript, Tailwind CSS, and MongoDB.
+A modern, responsive web application for UNIK Academy built with Next.js 15, TypeScript, Tailwind CSS, and MongoDB
 
 ## Features
 

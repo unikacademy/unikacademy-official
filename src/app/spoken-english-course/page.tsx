@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import SpokenEnglishLanding from "@/website/components/SpokenEnglishLanding";
+import SpokenEnglishLanding from "@/modules/marketing/components/SpokenEnglishLanding";
 
 export const metadata: Metadata = {
   title: "Speak English Confidently in 30 Days | UNIK Academy",

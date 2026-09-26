@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { withDB } from "@/lib/api";
-import { submitDemoBooking } from "./handler";
+import { submitDemoBooking } from "@/modules/demo-bookings/server/submit";
 
 export async function POST(request: NextRequest) {
   const body = await request.json();

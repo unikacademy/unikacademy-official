@@ -23,6 +23,7 @@ const FAB_POSITION_KEY = "unik_demo_fab_position";
 const FAB_SIZE = 56; // px, matches h-14 w-14
 const FAB_EDGE_MARGIN = 8; // px, keeps it off the very edge of the viewport
 const DRAG_THRESHOLD = 6; // px of pointer movement before a press counts as a drag
+const FAB_LABEL_AUTO_SHOW_MS = 5000; // how long the "Free Demo" label stays expanded on first appearance
 
 type FabPosition = { x: number; y: number };
 
@@ -83,6 +84,23 @@ export default function DemoPopup() {
     origY: number;
   } | null>(null);
   const didDragRef = useRef(false);
+
+  // "Free Demo" label on the floating button: expanded briefly when the
+  // button first appears (so it's clear what the icon does), then collapses
+  // to just the icon — same pattern chat-widget launchers use. Desktop users
+  // can also re-reveal it by hovering.
+  const [autoShowFabLabel, setAutoShowFabLabel] = useState(true);
+  const [fabHovered, setFabHovered] = useState(false);
+  const fabLabelExpanded =
+    !isDraggingFab && (autoShowFabLabel || fabHovered);
+
+  useEffect(() => {
+    const timer = setTimeout(
+      () => setAutoShowFabLabel(false),
+      FAB_LABEL_AUTO_SHOW_MS,
+    );
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     // Never show on the demo page itself
@@ -196,8 +214,10 @@ export default function DemoPopup() {
           onPointerMove={handleFabPointerMove}
           onPointerUp={handleFabPointerUp}
           onPointerCancel={handleFabPointerUp}
+          onMouseEnter={() => setFabHovered(true)}
+          onMouseLeave={() => setFabHovered(false)}
           aria-label="Book a free demo session"
-          className="fixed bottom-24 right-4 z-40 flex h-14 w-14 touch-none items-center justify-center sm:bottom-6 sm:right-6"
+          className="fixed bottom-24 right-4 z-40 h-14 w-14 touch-none sm:bottom-6 sm:right-6"
           style={
             fabPosition
               ? {
@@ -210,17 +230,30 @@ export default function DemoPopup() {
               : { cursor: "grab" }
           }
         >
-          <span className="absolute inset-0 rounded-full bg-[#c0a84f] opacity-40 blur-md animate-pulse" />
+          {/*
+            Anchored top-right and absolutely positioned so it can grow/shrink
+            for the label without resizing the <button> itself — the button
+            stays a fixed 56x56 hit-box, so growing this pill under the
+            cursor never crosses the hover boundary and can't flicker.
+            Hovering this pill still counts as hovering the button since
+            it's a DOM descendant.
+          */}
           <span
-            className={`relative flex h-14 w-14 items-center justify-center rounded-full bg-linear-to-br from-[#c0a84f] to-[#d4bc72] text-[#0e2b49] shadow-[0_8px_32px_rgba(192,168,79,0.5)] ${
-              isDraggingFab
-                ? ""
-                : "transition-transform hover:scale-105 active:scale-95"
-            }`}
+            className={`absolute top-0 right-0 flex h-14 items-center rounded-full bg-linear-to-br from-[#c0a84f] to-[#d4bc72] text-[#0e2b49] shadow-[0_8px_32px_rgba(192,168,79,0.5)] transition-all duration-300 ${
+              isDraggingFab ? "" : "hover:scale-105 active:scale-95"
+            } ${fabLabelExpanded ? "pl-4 pr-5" : "w-14 justify-center px-0"}`}
           >
-            <CalendarClock className="h-6 w-6" strokeWidth={2.25} />
+            <span className="absolute inset-0 -z-10 rounded-full bg-[#c0a84f] opacity-40 blur-md animate-pulse" />
+            <CalendarClock className="h-6 w-6 shrink-0" strokeWidth={2.25} />
+            <span
+              className={`overflow-hidden whitespace-nowrap text-sm font-bold transition-all duration-300 ${
+                fabLabelExpanded ? "ml-2 max-w-[110px] opacity-100" : "ml-0 max-w-0 opacity-0"
+              }`}
+              style={{ fontFamily: "Poppins, sans-serif" }}
+            >
+              Free Demo
+            </span>
           </span>
-          <span className="absolute -top-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-[#c0a84f] ring-2 ring-white animate-pulse" />
         </button>
       )}
 

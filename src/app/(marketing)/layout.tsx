@@ -1,6 +1,7 @@
 import Navigation from "@/shared/components/Navigation";
 import Footer from "@/shared/components/Footer";
 import DemoPopup from "@/modules/demo-bookings/components/DemoPopup";
+import { DemoPopupProvider } from "@/modules/demo-bookings/components/DemoPopupProvider";
 import SmoothScrollProvider from "@/shared/components/providers/SmoothScrollProvider";
 import NavigationProgress from "@/shared/components/NavigationProgress";
 
@@ -21,12 +22,14 @@ export default function MainLayout({
       <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
         {/* Summer Sale banner hidden for now — to bring it back, re-import
             SaleBanner from "@/shared/components/SaleBanner" and render it here. */}
-        <Navigation />
-        <main id="main-content" className="grow">
-          {children}
-        </main>
-        <Footer />
-        <DemoPopup />
+        <DemoPopupProvider>
+          <Navigation />
+          <main id="main-content" className="grow">
+            {children}
+          </main>
+          <Footer />
+          <DemoPopup />
+        </DemoPopupProvider>
       </div>
     </SmoothScrollProvider>
   );

@@ -12,6 +12,7 @@ import SplitHeading from "@/shared/components/animations/SplitHeading";
 import CountUp from "@/shared/components/animations/CountUp";
 import TiltCard from "@/shared/components/animations/TiltCard";
 import MagneticButton from "@/shared/components/animations/MagneticButton";
+import OpenDemoPopupButton from "@/modules/demo-bookings/components/OpenDemoPopupButton";
 
 export const metadata: Metadata = {
   title: "UNIK Academy – Communication & Personality Courses",
@@ -313,10 +314,7 @@ export default async function Home() {
                       </div>
                     ))}
                   </div>
-                  <Link
-                    href="/demo"
-                    className="inline-flex items-center gap-2.5 px-8 py-4 rounded-xl font-bold text-[#0e2b49] bg-gradient-to-r from-[#c0a84f] to-[#d4bc72] hover:from-[#d4bc72] hover:to-[#c0a84f] transition-all duration-200 shadow-[0_4px_24px_rgba(192,168,79,0.4)] hover:shadow-[0_8px_32px_rgba(192,168,79,0.55)] hover:-translate-y-0.5 cursor-pointer text-base"
-                  >
+                  <OpenDemoPopupButton className="inline-flex items-center gap-2.5 px-8 py-4 rounded-xl font-bold text-[#0e2b49] bg-gradient-to-r from-[#c0a84f] to-[#d4bc72] hover:from-[#d4bc72] hover:to-[#c0a84f] transition-all duration-200 shadow-[0_4px_24px_rgba(192,168,79,0.4)] hover:shadow-[0_8px_32px_rgba(192,168,79,0.55)] hover:-translate-y-0.5 cursor-pointer text-base">
                     Book Free Demo Now
                     <svg
                       className="w-4 h-4"
@@ -331,7 +329,7 @@ export default async function Home() {
                         d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
                       />
                     </svg>
-                  </Link>
+                  </OpenDemoPopupButton>
                 </div>
 
                 <div className="flex justify-center lg:justify-end">

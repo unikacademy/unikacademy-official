@@ -1,14 +1,10 @@
 "use client";
 
-import { useState, useEffect, useRef, SubmitEvent } from "react";
+import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
-import { CalendarClock, CheckIcon, XIcon } from "lucide-react";
-import {
-  validateName,
-  validatePhone,
-  validateEmail,
-  validateCompanyName,
-} from "@/shared/validation";
+import { CalendarClock, XIcon } from "lucide-react";
+import { useDemoPopup } from "./DemoPopupProvider";
+import DemoBookingForm, { type BookingType } from "./DemoBookingForm";
 import {
   Dialog,
   DialogClose,
@@ -17,19 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Field, FieldError, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Spinner } from "@/components/ui/spinner";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@/components/ui/empty";
 
 const STORAGE_KEY = "unik_demo_popup_dismissed";
 const DISMISS_DURATION_MS = 30 * 60 * 1000; // 30 minutes
@@ -40,7 +24,6 @@ const FAB_SIZE = 56; // px, matches h-14 w-14
 const FAB_EDGE_MARGIN = 8; // px, keeps it off the very edge of the viewport
 const DRAG_THRESHOLD = 6; // px of pointer movement before a press counts as a drag
 
-type BookingType = "individual" | "corporate";
 type FabPosition = { x: number; y: number };
 
 function clampFabPosition(
@@ -77,25 +60,14 @@ function loadSavedFabPosition(): FabPosition | null {
 
 export default function DemoPopup() {
   const pathname = usePathname();
+  const { registerOpenHandler } = useDemoPopup();
   const [visible, setVisible] = useState(false);
-  const [bookingType, setBookingType] = useState<BookingType>("individual");
-  const [formData, setFormData] = useState({
-    name: "",
-    phone: "",
-    email: "",
-    companyName: "",
-    course: "Quick Demo Request",
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<
-    "idle" | "success" | "error"
-  >("idle");
-  const [fieldErrors, setFieldErrors] = useState<{
-    name?: string;
-    phone?: string;
-    email?: string;
-    companyName?: string;
-  }>({});
+  // initialBookingType + formKey let an external requestOpen("corporate")
+  // pre-select a type by remounting DemoBookingForm with a fresh key, since
+  // the booking-type toggle's state now lives inside that shared component.
+  const [initialBookingType, setInitialBookingType] =
+    useState<BookingType>("individual");
+  const [formKey, setFormKey] = useState(0);
 
   // Floating button drag state — position is null until a saved position is
   // restored (client-only, after mount) or the user drags it, meaning it
@@ -125,6 +97,18 @@ export default function DemoPopup() {
     const timer = setTimeout(() => setVisible(true), SHOW_DELAY_MS);
     return () => clearTimeout(timer);
   }, [pathname]);
+
+  // Let another component (e.g. a homepage CTA) open this same dialog via
+  // useDemoPopup().requestOpen() instead of duplicating this form.
+  useEffect(() => {
+    registerOpenHandler((type) => {
+      setVisible(true);
+      if (type) {
+        setInitialBookingType(type);
+        setFormKey((k) => k + 1);
+      }
+    });
+  }, [registerOpenHandler]);
 
   // Restore a saved floating-button position (client-only, after mount —
   // reading localStorage during render would mismatch the server HTML),
@@ -199,63 +183,6 @@ export default function DemoPopup() {
   const dismiss = () => {
     localStorage.setItem(STORAGE_KEY, String(Date.now()));
     setVisible(false);
-  };
-
-  const handleBookingTypeChange = (type: BookingType) => {
-    setBookingType(type);
-    setFormData((prev) => ({ ...prev, email: "", companyName: "" }));
-    setFieldErrors((prev) => ({
-      ...prev,
-      email: undefined,
-      companyName: undefined,
-    }));
-  };
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
-  ) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e: SubmitEvent) => {
-    e.preventDefault();
-    const nameErr = validateName(formData.name);
-    const phoneErr = validatePhone(formData.phone);
-    const companyErr =
-      bookingType === "corporate"
-        ? validateCompanyName(formData.companyName)
-        : null;
-    const emailErr =
-      bookingType === "corporate" ? validateEmail(formData.email) : null;
-    if (nameErr || phoneErr || companyErr || emailErr) {
-      setFieldErrors({
-        name: nameErr ?? undefined,
-        phone: phoneErr ?? undefined,
-        companyName: companyErr ?? undefined,
-        email: emailErr ?? undefined,
-      });
-      return;
-    }
-    setFieldErrors({});
-    setIsSubmitting(true);
-    setSubmitStatus("idle");
-    try {
-      const res = await fetch("/api/demo-booking", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...formData, bookingType }),
-      });
-      if (res.ok) {
-        setSubmitStatus("success");
-        localStorage.setItem(STORAGE_KEY, String(Date.now()));
-      } else {
-        setSubmitStatus("error");
-      }
-    } catch {
-      setSubmitStatus("error");
-    } finally {
-      setIsSubmitting(false);
-    }
   };
 
   return (
@@ -364,175 +291,14 @@ export default function DemoPopup() {
 
           {/* Body */}
           <div className="px-6 py-5">
-            {submitStatus === "success" ? (
-              <Empty className="p-0 py-6">
-                <EmptyHeader>
-                  <EmptyMedia className="mb-0 size-14 rounded-full bg-linear-to-br from-[#c0a84f] to-[#d4bc72] shadow-lg [&_svg]:size-7 [&_svg]:text-[#0e2b49]">
-                    <CheckIcon strokeWidth={2.5} />
-                  </EmptyMedia>
-                  <EmptyTitle
-                    className="text-lg font-bold text-[#0e2b49]"
-                    style={{ fontFamily: "Poppins, sans-serif" }}
-                  >
-                    {bookingType === "corporate"
-                      ? "Request Received!"
-                      : "Demo Booked!"}
-                  </EmptyTitle>
-                  <EmptyDescription className="text-[#64748B] text-sm">
-                    {bookingType === "corporate"
-                      ? "Our corporate training team will reach out shortly."
-                      : "We'll reach out on WhatsApp / phone to confirm your slot."}
-                  </EmptyDescription>
-                </EmptyHeader>
-              </Empty>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <ToggleGroup
-                  value={[bookingType]}
-                  onValueChange={(values) => {
-                    const next = values[0] as BookingType | undefined;
-                    if (next) handleBookingTypeChange(next);
-                  }}
-                  className="grid w-full grid-cols-2 gap-1 rounded-xl bg-[#E2E8F0]/60 p-1"
-                >
-                  <ToggleGroupItem
-                    value="individual"
-                    className="h-auto rounded-lg border-none bg-transparent px-2.5 py-2 text-sm font-semibold text-[#64748B] hover:bg-transparent hover:text-[#0e2b49] data-pressed:bg-white data-pressed:text-[#0e2b49] data-pressed:shadow-sm"
-                  >
-                    Individual
-                  </ToggleGroupItem>
-                  <ToggleGroupItem
-                    value="corporate"
-                    className="h-auto rounded-lg border-none bg-transparent px-2.5 py-2 text-sm font-semibold text-[#64748B] hover:bg-transparent hover:text-[#0e2b49] data-pressed:bg-white data-pressed:text-[#0e2b49] data-pressed:shadow-sm"
-                  >
-                    Corporate
-                  </ToggleGroupItem>
-                </ToggleGroup>
-
-                {bookingType === "corporate" && (
-                  <Field data-invalid={!!fieldErrors.companyName}>
-                    <FieldLabel
-                      htmlFor="popup-company"
-                      className="text-xs font-semibold text-[#0e2b49]"
-                    >
-                      Company Name *
-                    </FieldLabel>
-                    <Input
-                      type="text"
-                      id="popup-company"
-                      name="companyName"
-                      autoComplete="organization"
-                      value={formData.companyName}
-                      onChange={handleChange}
-                      placeholder="Your company's name"
-                      className="h-auto rounded-xl border-[#E2E8F0] bg-[#F8FAFC] px-4 py-2.5 text-sm text-[#0e2b49] placeholder-[#94a3b8] focus-visible:border-[#c0a84f] focus-visible:ring-[#c0a84f]/50"
-                    />
-                    <FieldError className="text-xs">
-                      {fieldErrors.companyName}
-                    </FieldError>
-                  </Field>
-                )}
-
-                <Field data-invalid={!!fieldErrors.name}>
-                  <FieldLabel
-                    htmlFor="popup-name"
-                    className="text-xs font-semibold text-[#0e2b49]"
-                  >
-                    {bookingType === "corporate"
-                      ? "Contact Person Name *"
-                      : "Full Name *"}
-                  </FieldLabel>
-                  <Input
-                    type="text"
-                    id="popup-name"
-                    name="name"
-                    required
-                    value={formData.name}
-                    onChange={handleChange}
-                    placeholder="Your full name"
-                    className="h-auto rounded-xl border-[#E2E8F0] bg-[#F8FAFC] px-4 py-2.5 text-sm text-[#0e2b49] placeholder-[#94a3b8] focus-visible:border-[#c0a84f] focus-visible:ring-[#c0a84f]/50"
-                  />
-                  <FieldError className="text-xs">
-                    {fieldErrors.name}
-                  </FieldError>
-                </Field>
-
-                <Field data-invalid={!!fieldErrors.phone}>
-                  <FieldLabel
-                    htmlFor="popup-phone"
-                    className="text-xs font-semibold text-[#0e2b49]"
-                  >
-                    Phone Number *
-                  </FieldLabel>
-                  <Input
-                    type="tel"
-                    id="popup-phone"
-                    name="phone"
-                    maxLength={10}
-                    value={formData.phone}
-                    onChange={handleChange}
-                    placeholder="10-digit mobile number"
-                    className="h-auto rounded-xl border-[#E2E8F0] bg-[#F8FAFC] px-4 py-2.5 text-sm text-[#0e2b49] placeholder-[#94a3b8] focus-visible:border-[#c0a84f] focus-visible:ring-[#c0a84f]/50"
-                  />
-                  <FieldError className="text-xs">
-                    {fieldErrors.phone}
-                  </FieldError>
-                </Field>
-
-                {bookingType === "corporate" && (
-                  <Field data-invalid={!!fieldErrors.email}>
-                    <FieldLabel
-                      htmlFor="popup-email"
-                      className="text-xs font-semibold text-[#0e2b49]"
-                    >
-                      Business Email *
-                    </FieldLabel>
-                    <Input
-                      type="email"
-                      id="popup-email"
-                      name="email"
-                      autoComplete="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      placeholder="you@company.com"
-                      className="h-auto rounded-xl border-[#E2E8F0] bg-[#F8FAFC] px-4 py-2.5 text-sm text-[#0e2b49] placeholder-[#94a3b8] focus-visible:border-[#c0a84f] focus-visible:ring-[#c0a84f]/50"
-                    />
-                    <FieldError className="text-xs">
-                      {fieldErrors.email}
-                    </FieldError>
-                  </Field>
-                )}
-
-                {submitStatus === "error" && (
-                  <Alert
-                    variant="destructive"
-                    className="border-red-100 bg-red-50 px-4 py-2.5"
-                  >
-                    <AlertDescription className="text-red-500 text-xs">
-                      Something went wrong. Please try again.
-                    </AlertDescription>
-                  </Alert>
-                )}
-
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="h-auto w-full gap-2 rounded-xl bg-linear-to-r from-[#c0a84f] to-[#d4bc72] py-3 font-bold text-[#0e2b49] shadow-md hover:from-[#d4bc72] hover:to-[#c0a84f] hover:shadow-[0_4px_20px_rgba(192,168,79,0.4)]"
-                  style={{ fontFamily: "Poppins, sans-serif" }}
-                >
-                  {isSubmitting && <Spinner className="text-[#0e2b49]" />}
-                  {isSubmitting
-                    ? "Booking..."
-                    : bookingType === "corporate"
-                      ? "Request Corporate Training"
-                      : "Book My Free Demo Session"}
-                </Button>
-                <p className="text-center text-[#94a3b8] text-[11px]">
-                  No payment required &bull; We&apos;ll confirm within 24
-                  hours
-                </p>
-              </form>
-            )}
+            <DemoBookingForm
+              key={formKey}
+              idPrefix="popup"
+              initialBookingType={initialBookingType}
+              onSuccess={() =>
+                localStorage.setItem(STORAGE_KEY, String(Date.now()))
+              }
+            />
           </div>
         </DialogContent>
       </Dialog>

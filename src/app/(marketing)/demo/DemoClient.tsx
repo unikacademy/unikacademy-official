@@ -27,6 +27,9 @@ import {
   ItemMedia,
   ItemTitle,
 } from "@/components/ui/item";
+import { Button } from "@/components/ui/button";
+
+const BOOKING_FORM_OFFSET = -80; // clears the sticky nav (h-16) + breathing room
 
 const steps = [
   {
@@ -93,6 +96,18 @@ const faqs = [
 export default function DemoPage() {
   const [bookingType, setBookingType] = useState<BookingType>("individual");
 
+  const scrollToBookingForm = () => {
+    if (window.lenisInstance) {
+      window.lenisInstance.scrollTo("#book-demo", {
+        offset: BOOKING_FORM_OFFSET,
+      });
+    } else {
+      document
+        .getElementById("book-demo")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
       {/* ─── Hero ─── */}
@@ -134,6 +149,28 @@ export default function DemoPage() {
             Experience our teaching style first-hand with a free 30-minute live
             session no payment, no pressure, just learning.
           </p>
+
+          <Button
+            type="button"
+            onClick={scrollToBookingForm}
+            className="h-auto mt-8 gap-2 rounded-xl bg-linear-to-r from-[#c0a84f] to-[#d4bc72] px-8 py-4 text-base font-bold text-[#0e2b49] shadow-[0_4px_24px_rgba(192,168,79,0.4)] hover:from-[#d4bc72] hover:to-[#c0a84f] hover:shadow-[0_8px_32px_rgba(192,168,79,0.55)] hover:-translate-y-0.5 transition-all duration-200"
+            style={{ fontFamily: "Poppins, sans-serif" }}
+          >
+            Book Your Free Demo Session
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2.5}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 4.5v15m7.5-7.5h-15"
+              />
+            </svg>
+          </Button>
 
           {/* Quick stats */}
           <div className="flex flex-wrap justify-center gap-6 mt-10">
@@ -221,7 +258,7 @@ export default function DemoPage() {
       </section>
 
       {/* ─── Form + Info ─── */}
-      <section className="py-16 bg-white">
+      <section id="book-demo" className="py-16 bg-white scroll-mt-20">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
             {/* Left info */}

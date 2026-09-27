@@ -344,10 +344,6 @@ export default function HeroCarouselSection({ courses }: Props) {
                         borderRadius: "6px",
                       }}
                     >
-                      <span className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-[#0e2b49] rounded-tl-sm" />
-                      <span className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-[#0e2b49] rounded-tr-sm" />
-                      <span className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-[#0e2b49] rounded-bl-sm" />
-                      <span className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-[#0e2b49] rounded-br-sm" />
                       <span className="text-[#0e2b49] text-sm font-bold tracking-wide" style={{ fontFamily: "Poppins, sans-serif" }}>
                         Enroll Now
                       </span>

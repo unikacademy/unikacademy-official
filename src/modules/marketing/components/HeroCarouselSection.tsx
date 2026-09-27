@@ -130,7 +130,7 @@ export default function HeroCarouselSection({ courses }: Props) {
 
   const realIndex = current % slides.length;
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.SubmitEvent) {
     e.preventDefault();
     const nameErr = validateName(name);
     const phoneErr = validatePhone(phone);

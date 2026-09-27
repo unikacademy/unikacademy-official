@@ -1,8 +1,29 @@
 "use client";
 
-import { useState, useEffect, FormEvent } from "react";
+import { useState, useEffect, SubmitEvent } from "react";
 import { usePathname } from "next/navigation";
+import { CheckIcon, XIcon } from "lucide-react";
 import { validateName, validatePhone } from "@/shared/validation";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 
 const STORAGE_KEY = "unik_demo_popup_dismissed";
 const DISMISS_DURATION_MS = 3 * 24 * 60 * 60 * 1000; // 3 days
@@ -50,7 +71,7 @@ export default function DemoPopup() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
     const nameErr = validateName(formData.name);
     const phoneErr = validatePhone(formData.phone);
@@ -83,187 +104,165 @@ export default function DemoPopup() {
     }
   };
 
-  if (!visible) return null;
-
   return (
-    <>
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 z-999 bg-black/50 backdrop-blur-sm"
-        onClick={dismiss}
-        aria-hidden="true"
-      />
-
-      {/* Modal */}
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="demo-popup-title"
-        className="fixed z-1000 inset-x-4 bottom-4 sm:inset-auto sm:bottom-auto sm:top-1/2 sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 w-auto sm:w-full sm:max-w-md"
+    <Dialog
+      open={visible}
+      onOpenChange={(open) => {
+        if (!open) dismiss();
+      }}
+    >
+      <DialogContent
+        showCloseButton={false}
+        className="inset-x-4 top-auto bottom-4 max-w-none translate-x-0 translate-y-0 gap-0 overflow-hidden rounded-2xl border-none bg-white p-0 shadow-2xl sm:inset-auto sm:top-1/2 sm:left-1/2 sm:bottom-auto sm:w-full sm:max-w-md sm:-translate-x-1/2 sm:-translate-y-1/2"
       >
-        <div className="relative bg-white rounded-2xl shadow-2xl overflow-hidden">
-          {/* Close button — outside overflow-hidden clipping zone */}
-          <button
-            onClick={dismiss}
-            aria-label="Close popup"
-            className="absolute top-3 right-3 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors text-white/70 hover:text-white cursor-pointer"
-          >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-
-          {/* Header */}
-          <div className="relative bg-[#0e2b49] px-6 pt-6 pb-5">
-            <div
-              className="absolute inset-0 opacity-[0.06] pointer-events-none"
-              style={{
-                backgroundImage:
-                  "radial-gradient(circle at 1px 1px, white 1px, transparent 0)",
-                backgroundSize: "24px 24px",
-              }}
+        {/* Close button */}
+        <DialogClose
+          render={
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="absolute top-3 right-3 z-10 rounded-full bg-white/10 text-white/70 hover:bg-white/20 hover:text-white"
             />
-            <div className="absolute top-0 right-0 w-40 h-40 bg-[#c0a84f]/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/4 pointer-events-none" />
+          }
+        >
+          <XIcon />
+          <span className="sr-only">Close popup</span>
+        </DialogClose>
 
-            <div className="relative">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-[#c0a84f]/40 bg-[#c0a84f]/10 text-[#c0a84f] text-[10px] font-semibold uppercase tracking-widest mb-3">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#c0a84f] animate-pulse" />
-                100% Free — No Commitment
-              </div>
-              <h2
-                id="demo-popup-title"
-                className="text-white text-xl font-bold leading-tight"
-                style={{ fontFamily: "Poppins, sans-serif" }}
+        {/* Header */}
+        <div className="relative bg-[#0e2b49] px-6 pt-6 pb-5">
+          <div
+            className="absolute inset-0 opacity-[0.06] pointer-events-none"
+            style={{
+              backgroundImage:
+                "radial-gradient(circle at 1px 1px, white 1px, transparent 0)",
+              backgroundSize: "24px 24px",
+            }}
+          />
+          <div className="absolute top-0 right-0 w-40 h-40 bg-[#c0a84f]/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/4 pointer-events-none" />
+
+          <div className="relative">
+            <Badge className="mb-3 gap-1.5 rounded-full border border-[#c0a84f]/40 bg-[#c0a84f]/10 px-3 py-1 text-[10px] font-semibold text-[#c0a84f] uppercase tracking-widest">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#c0a84f] animate-pulse" />
+              100% Free — No Commitment
+            </Badge>
+            <DialogTitle
+              className="text-white text-xl font-bold leading-tight"
+              style={{ fontFamily: "Poppins, sans-serif" }}
+            >
+              Book Your{" "}
+              <span
+                style={{
+                  background: "linear-gradient(135deg, #c0a84f, #d4bc72)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
+                }}
               >
-                Book Your{" "}
-                <span
-                  style={{
-                    background: "linear-gradient(135deg, #c0a84f, #d4bc72)",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                    backgroundClip: "text",
-                  }}
-                >
-                  Free Demo
-                </span>{" "}
-                Session
-              </h2>
-              <p className="text-white/55 text-sm mt-1">
-                30-min live 1-on-1 session — pick your slot, we&apos;ll confirm
-                within 24 hrs.
-              </p>
-            </div>
+                Free Demo
+              </span>{" "}
+              Session
+            </DialogTitle>
+            <DialogDescription className="text-white/55 text-sm mt-1">
+              30-min live 1-on-1 session — pick your slot, we&apos;ll confirm
+              within 24 hrs.
+            </DialogDescription>
           </div>
+        </div>
 
-          {/* Body */}
-          <div className="px-6 py-5">
-            {submitStatus === "success" ? (
-              <div className="text-center py-6">
-                <div className="w-14 h-14 rounded-full bg-linear-to-br from-[#c0a84f] to-[#d4bc72] flex items-center justify-center mx-auto mb-4 shadow-lg">
-                  <svg
-                    className="w-7 h-7 text-[#0e2b49]"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2.5}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M4.5 12.75l6 6 9-13.5"
-                    />
-                  </svg>
-                </div>
-                <h3
-                  className="text-lg font-bold text-[#0e2b49] mb-1"
+        {/* Body */}
+        <div className="px-6 py-5">
+          {submitStatus === "success" ? (
+            <Empty className="p-0 py-6">
+              <EmptyHeader>
+                <EmptyMedia className="mb-0 size-14 rounded-full bg-linear-to-br from-[#c0a84f] to-[#d4bc72] shadow-lg [&_svg]:size-7 [&_svg]:text-[#0e2b49]">
+                  <CheckIcon strokeWidth={2.5} />
+                </EmptyMedia>
+                <EmptyTitle
+                  className="text-lg font-bold text-[#0e2b49]"
                   style={{ fontFamily: "Poppins, sans-serif" }}
                 >
                   Demo Booked!
-                </h3>
-                <p className="text-[#64748B] text-sm">
-                  We&apos;ll reach out on WhatsApp / phone to confirm your slot.
-                </p>
-              </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label
-                    htmlFor="popup-name"
-                    className="block text-xs font-semibold text-[#0e2b49] mb-1.5"
-                  >
-                    Full Name *
-                  </label>
-                  <input
-                    type="text"
-                    id="popup-name"
-                    name="name"
-                    required
-                    value={formData.name}
-                    onChange={handleChange}
-                    placeholder="Your full name"
-                    className="w-full px-4 py-2.5 border border-[#E2E8F0] rounded-xl bg-[#F8FAFC] text-[#0e2b49] placeholder-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#c0a84f]/50 focus:border-[#c0a84f] transition-colors text-sm"
-                  />
-                  {fieldErrors.name && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {fieldErrors.name}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label
-                    htmlFor="popup-phone"
-                    className="block text-xs font-semibold text-[#0e2b49] mb-1.5"
-                  >
-                    Phone Number *
-                  </label>
-                  <input
-                    type="tel"
-                    id="popup-phone"
-                    name="phone"
-                    maxLength={10}
-                    value={formData.phone}
-                    onChange={handleChange}
-                    placeholder="10-digit mobile number"
-                    className="w-full px-4 py-2.5 border border-[#E2E8F0] rounded-xl bg-[#F8FAFC] text-[#0e2b49] placeholder-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#c0a84f]/50 focus:border-[#c0a84f] transition-colors text-sm"
-                  />
-                  {fieldErrors.phone && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {fieldErrors.phone}
-                    </p>
-                  )}
-                </div>
-                {submitStatus === "error" && (
-                  <p className="text-red-500 text-xs bg-red-50 border border-red-100 rounded-xl px-4 py-2.5">
-                    Something went wrong. Please try again.
-                  </p>
-                )}
+                </EmptyTitle>
+                <EmptyDescription className="text-[#64748B] text-sm">
+                  We&apos;ll reach out on WhatsApp / phone to confirm your
+                  slot.
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <Field data-invalid={!!fieldErrors.name}>
+                <FieldLabel
+                  htmlFor="popup-name"
+                  className="text-xs font-semibold text-[#0e2b49]"
+                >
+                  Full Name *
+                </FieldLabel>
+                <Input
+                  type="text"
+                  id="popup-name"
+                  name="name"
+                  required
+                  value={formData.name}
+                  onChange={handleChange}
+                  placeholder="Your full name"
+                  className="h-auto rounded-xl border-[#E2E8F0] bg-[#F8FAFC] px-4 py-2.5 text-sm text-[#0e2b49] placeholder-[#94a3b8] focus-visible:border-[#c0a84f] focus-visible:ring-[#c0a84f]/50"
+                />
+                <FieldError className="text-xs">
+                  {fieldErrors.name}
+                </FieldError>
+              </Field>
 
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full py-3 rounded-xl font-bold text-[#0e2b49] bg-linear-to-r from-[#c0a84f] to-[#d4bc72] hover:from-[#d4bc72] hover:to-[#c0a84f] transition-all duration-200 shadow-md hover:shadow-[0_4px_20px_rgba(192,168,79,0.4)] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-sm"
-                  style={{ fontFamily: "Poppins, sans-serif" }}
-                >fgf 
-                  {isSubmitting ? "Booking..." : "Book My Free Demo Session"}
-                </button>
-                <p className="text-center text-[#94a3b8] text-[11px]">
-                  No payment required &bull; We&apos;ll confirm within 24 hours
-                </p>
-              </form>
-            )}
-          </div>
+              <Field data-invalid={!!fieldErrors.phone}>
+                <FieldLabel
+                  htmlFor="popup-phone"
+                  className="text-xs font-semibold text-[#0e2b49]"
+                >
+                  Phone Number *
+                </FieldLabel>
+                <Input
+                  type="tel"
+                  id="popup-phone"
+                  name="phone"
+                  maxLength={10}
+                  value={formData.phone}
+                  onChange={handleChange}
+                  placeholder="10-digit mobile number"
+                  className="h-auto rounded-xl border-[#E2E8F0] bg-[#F8FAFC] px-4 py-2.5 text-sm text-[#0e2b49] placeholder-[#94a3b8] focus-visible:border-[#c0a84f] focus-visible:ring-[#c0a84f]/50"
+                />
+                <FieldError className="text-xs">
+                  {fieldErrors.phone}
+                </FieldError>
+              </Field>
+
+              {submitStatus === "error" && (
+                <Alert
+                  variant="destructive"
+                  className="border-red-100 bg-red-50 px-4 py-2.5"
+                >
+                  <AlertDescription className="text-red-500 text-xs">
+                    Something went wrong. Please try again.
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="h-auto w-full gap-2 rounded-xl bg-linear-to-r from-[#c0a84f] to-[#d4bc72] py-3 font-bold text-[#0e2b49] shadow-md hover:from-[#d4bc72] hover:to-[#c0a84f] hover:shadow-[0_4px_20px_rgba(192,168,79,0.4)]"
+                style={{ fontFamily: "Poppins, sans-serif" }}
+              >
+                {isSubmitting && <Spinner className="text-[#0e2b49]" />}
+                {isSubmitting ? "Booking..." : "Book My Free Demo Session"}
+              </Button>
+              <p className="text-center text-[#94a3b8] text-[11px]">
+                No payment required &bull; We&apos;ll confirm within 24 hours
+              </p>
+            </form>
+          )}
         </div>
-      </div>
-    </>
+      </DialogContent>
+    </Dialog>
   );
 }

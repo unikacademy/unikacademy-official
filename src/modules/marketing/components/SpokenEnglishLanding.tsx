@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, SubmitEvent } from "react";
 import Link from "next/link";
 
 function track(event: string, params?: Record<string, string>) {
@@ -93,7 +93,7 @@ export default function SpokenEnglishLanding() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
     setSubmitting(true);
     setSubmitStatus("idle");

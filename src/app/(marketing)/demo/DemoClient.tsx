@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, SubmitEvent } from "react";
 import {
   validateName,
   validatePhone,
@@ -38,7 +38,7 @@ export default function DemoPage() {
     setValidationError("");
   };
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
     setValidationError("");
     const nameErr = validateName(formData.name);

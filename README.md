@@ -71,7 +71,7 @@ src/
 ├── shared/            # reusable UI, animations, validation
 └── lib/               # Supabase clients, API helpers
 supabase-schema.sql    # database schema + RLS policies (source of truth)
-middleware.ts          # route protection for /admin, /user, /login
+src/proxy.ts           # page protection for /admin, /user, /login (Next 16 "middleware")
 ```
 
 See `CLAUDE.md` for a detailed architecture guide and `requirement.md` for the role-based dashboard plan.

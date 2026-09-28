@@ -1,21 +1,14 @@
 import type { NextResponse } from "next/server";
-import type { User } from "@supabase/supabase-js";
 import { err } from "@/lib/api";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { can, type Permission, type RoleId } from "@/modules/auth/permissions";
+import { fetchUserRoles } from "@/modules/auth/server/roles";
 
 export type SessionUser = {
   id: string;
   email: string | null;
   roles: RoleId[];
 };
-
-// TEMPORARY (RBAC phase 1, step 1): roles are derived from ADMIN_EMAIL until
-// the `user_roles` table exists. Only this function changes when we switch.
-function resolveRoles(user: User): RoleId[] {
-  const adminEmail = process.env.ADMIN_EMAIL;
-  return adminEmail && user.email === adminEmail ? ["admin"] : ["student"];
-}
 
 export async function getSessionUser(): Promise<SessionUser | null> {
   const supabase = await createSupabaseServerClient();
@@ -25,7 +18,8 @@ export async function getSessionUser(): Promise<SessionUser | null> {
 
   if (!user) return null;
 
-  return { id: user.id, email: user.email ?? null, roles: resolveRoles(user) };
+  const roles = await fetchUserRoles(supabase, user.id);
+  return { id: user.id, email: user.email ?? null, roles };
 }
 
 /**

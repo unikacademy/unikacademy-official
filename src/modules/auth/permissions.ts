@@ -6,6 +6,7 @@ export const ROLES = ["admin", "teacher", "student", "developer"] as const;
 export type RoleId = (typeof ROLES)[number];
 
 export const PERMISSIONS = [
+  "admin-dashboard:view",
   "contacts:read",
   "contacts:manage",
   "applications:read",
@@ -29,4 +30,9 @@ export const ROLE_PERMISSIONS: Record<RoleId, readonly Permission[]> = {
 // A user's permissions are the union of all their roles' permissions.
 export function can(user: { roles: readonly RoleId[] }, permission: Permission) {
   return user.roles.some((role) => ROLE_PERMISSIONS[role]?.includes(permission));
+}
+
+// Where to send a user after login (or when they hit /login already logged in).
+export function dashboardPathFor(user: { roles: readonly RoleId[] }) {
+  return can(user, "admin-dashboard:view") ? "/admin/dashboard" : "/user/dashboard";
 }

@@ -1,6 +1,8 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { dashboardPathFor } from "@/modules/auth/permissions";
+import { fetchUserRoles } from "@/modules/auth/server/roles";
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
@@ -48,8 +50,6 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/login?error=no_user`);
   }
 
-  const adminEmail = process.env.ADMIN_EMAIL;
-  const destination = user.email === adminEmail ? "/admin/dashboard" : "/user/dashboard";
-
-  return NextResponse.redirect(`${origin}${destination}`);
+  const roles = await fetchUserRoles(supabase, user.id);
+  return NextResponse.redirect(`${origin}${dashboardPathFor({ roles })}`);
 }

@@ -46,7 +46,7 @@ Don't build four separate dashboards (duplicated layout/sidebar/auth, they drift
 
 | Layer | Tool | Job |
 |---|---|---|
-| Identity + roles | Supabase Auth + `roles`/`user_roles` tables + **Custom Access Token Hook** | Hook puts the user's roles into the JWT, so middleware/server read them without an extra query |
+| Identity + roles | Supabase Auth + `roles`/`user_roles` tables, read with a **DB lookup per request** (`fetchUserRoles`) | Role changes apply immediately. _Decided 2026-09-28 over the Custom Access Token Hook (JWT claims), which would save one small query but delay role changes up to ~1h. Can switch later by changing only `fetchUserRoles`._ |
 | Can they open this page / call this API? | Our `permissions.ts` + `requirePermission()` | Role → allowed pages/actions |
 | Which rows can they see? | **Supabase RLS** | Teacher → own classes, student → own enrollments (DB enforces it) |
 | Admin sees everything | `supabaseAdmin` (existing), only after the admin permission check | Full access |
@@ -109,9 +109,9 @@ create table user_roles (
 );
 ```
 
-- New signups get the `student` role by default; admin grants teacher/developer/admin from the dashboard.
-- Custom Access Token Hook adds `roles: string[]` to the JWT claims.
-- Replaces the `ADMIN_EMAIL` comparison (seed the current admin email's user with the `admin` role during migration).
+- New signups get the `student` role by default; admin grants teacher/developer/admin from the dashboard (for now: manually in Supabase Table Editor → `user_roles`).
+- Roles are read per request from `user_roles` (no JWT hook — see Decision B).
+- Replaces the `ADMIN_EMAIL` comparison. `ADMIN_EMAIL` stays only as the notification-email inbox.
 - **Do not** store roles in Supabase `user_metadata` — users can edit it themselves.
 - Add to `supabase-schema.sql` (keep it re-runnable).
 
@@ -176,9 +176,19 @@ export async function getClasses(user: SessionUser) {
 
 ## Implementation phases
 
-1. **Security + roles** — `roles`, `user_roles`, `profiles` tables; Custom Access Token Hook; `permissions.ts` + `requireUser`/`requirePermission` guards; lock down `/api/admin/*`; update `middleware.ts` to use roles from the JWT instead of `ADMIN_EMAIL`.
+1. **Security + roles** — `roles`, `user_roles`, `profiles` tables; `permissions.ts` + `requirePermission` guard; lock down `/api/admin/*`; switch page protection and login redirects from `ADMIN_EMAIL` to roles. ✅ _Done on branch `feat/rbac-phase-1` (see Progress)._
 2. **Unified dashboard** — create `/dashboard` with permission-based sidebar; split the admin page into module panels; redirect old routes.
 3. **Teacher & student features** — `classes`, `enrollments`, demo assignment, RLS policies; build teacher and student views.
+
+## Progress
+
+### Phase 1 — branch `feat/rbac-phase-1` (2026-09-28)
+
+- [x] **Step 1** — `requirePermission()` guard on all 17 `/api/admin/*` handlers (401 not logged in / 403 no permission).
+- [x] **Step 2** — `roles`, `profiles`, `user_roles` tables + signup trigger + backfill + read-own RLS (SQL run in Supabase). Removed stale MongoDB `scripts/create-admin.js` (had hardcoded credentials — **MongoDB password still needs rotating**). README rewritten for Supabase.
+- [x] **Steps 3+4** — roles read from `user_roles` per request (`fetchUserRoles`); page protection and login redirects use `can()` / `dashboardPathFor()` instead of `ADMIN_EMAIL`.
+- [x] **Bug found & fixed:** the old `middleware.ts` was in the project root, but with a `src/app/` layout Next only loads it from `src/` — so **page protection never ran** (e.g. `/admin/dashboard` returned 200 without login). Moved to `src/proxy.ts` (Next 16 name).
+- [ ] **Step 5** — browser test with an admin and a non-admin account, then open PR.
 
 ## Open questions
 

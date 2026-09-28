@@ -1,0 +1,194 @@
+# Role-Based Dashboard — Requirements & Plan
+
+_Written: 2026-09-28 · Status: planning, not started_
+
+## Goal
+
+Support multiple user roles — **admin, teacher, student, developer** — all using one dashboard, each seeing a limited view:
+
+- **Admin** — sees everything (contacts, applications, demo bookings, jobs, courses/pricing, users).
+- **Teacher** — their own class details and demo class sessions assigned to them.
+- **Student** — their upcoming classes and other student-related info.
+- **Developer** — _TBD (see open questions)._
+
+The system must also make it easy to **add more roles later** (e.g. counselor, sales, support, parent).
+
+## Current state (as of 2026-09-28)
+
+- Two separate dashboards:
+  - `/admin/dashboard` → `src/app/admin/dashboard/page.tsx` (~3,700-line client component, tab-switched: contacts/applications/demo-bookings/jobs/courses).
+  - `/user/dashboard` → `src/app/user/dashboard/page.tsx` (99 lines, stub: welcome card + "Your courses will appear here" placeholder, no real data).
+- Single `/login` for everyone. No roles table — "admin" is just `user.email === process.env.ADMIN_EMAIL` in `middleware.ts`.
+- `middleware.ts` matcher: `/admin/:path*`, `/user/:path*`, `/login`.
+- No concept of classes, enrollments, or teacher assignment in the database yet.
+
+## ⚠️ Security issue to fix first
+
+`/api/admin/*` routes are **not protected**:
+
+- The middleware matcher does not include `/api/admin/*`.
+- The route handlers do no auth check themselves (e.g. `src/app/api/admin/contacts/route.ts` calls `getAllContacts()` directly).
+- The module functions use `supabaseAdmin` (service role), which bypasses RLS.
+
+**Impact:** anyone who knows the URL can `GET /api/admin/contacts` (and applications, demo bookings) without logging in — exposing customer names, phones, emails — and likely PATCH/DELETE via the `[id]` routes.
+
+**Fix:** a server-side guard (`requireUser()` / `requirePermission()`) called at the top of every protected API route, returning 401 (not logged in) / 403 (wrong role) as JSON.
+
+## Decisions
+
+### A. One dashboard, not one per role
+
+Don't build four separate dashboards (duplicated layout/sidebar/auth, they drift apart). Don't keep one mega page with role-hidden tabs either (that's the current 3,700-line problem).
+
+→ **One `/dashboard` with a permission-driven sidebar, separate pages per feature, and permission checks enforced server-side.**
+
+### B. Tooling: Supabase RBAC + small in-house permission map (no CASL, no third-party service)
+
+| Layer | Tool | Job |
+|---|---|---|
+| Identity + roles | Supabase Auth + `roles`/`user_roles` tables + **Custom Access Token Hook** | Hook puts the user's roles into the JWT, so middleware/server read them without an extra query |
+| Can they open this page / call this API? | Our `permissions.ts` + `requirePermission()` | Role → allowed pages/actions |
+| Which rows can they see? | **Supabase RLS** | Teacher → own classes, student → own enrollments (DB enforces it) |
+| Admin sees everything | `supabaseAdmin` (existing), only after the admin permission check | Full access |
+
+Reference: Supabase docs — "Custom Claims & Role-based Access Control (RBAC)".
+
+**Why not CASL (`@casl/ability`)?** Its main strength is conditional rules ("teacher can read a class *if* it's theirs"). RLS already enforces that at the DB level — teacher/student queries run through the user's own Supabase session, so the DB only returns their rows. That leaves the app with coarse checks only (page/API/sidebar access), which a ~30–50 line map handles. **Revisit CASL** if rules get finer-grained (e.g. "teacher can edit a class only before it starts"). Switching is cheap since all checks go through one `can()` function.
+
+**Rejected alternatives:**
+
+| Option | Examples | Why not |
+|---|---|---|
+| Auth providers with built-in RBAC | Clerk, Auth0, Kinde, WorkOS | Requires replacing Supabase Auth + migrating users; not worth it for a handful of roles. |
+| Authorization-as-a-service | Permit.io, Oso, Cerbos, OpenFGA, SpiceDB | Built for complex large-scale sharing models; extra infra + cost; overkill here. |
+| Other libraries | Casbin (`node-casbin`), `accesscontrol` | Casbin is more complex than needed; `accesscontrol` isn't actively maintained. |
+
+### C. Built to add more roles later
+
+Three rules, cheap now and expensive to retrofit:
+
+1. **Check permissions, never role names, in code.**
+   ```ts
+   // ❌ Breaks every time a role is added
+   if (user.role === "admin" || user.role === "teacher") { ... }
+
+   // ✅ Code never mentions role names
+   if (can(user, "demos:read")) { ... }
+   ```
+2. **Roles are a lookup table, not a Postgres `enum`** — enums are easy to add to but painful to rename/remove.
+3. **A user can have multiple roles from day one** (`user_roles` join table) — e.g. a teacher who is also a student. A user's permissions = union of all their roles' permissions.
+
+**Cost of adding a role later:**
+
+| Kind of new role | Example | Work needed |
+|---|---|---|
+| Same data, different access | `counselor` (sees demos + contacts), `sales`, `support` | Insert 1 row in `roles` + 1 entry in the permission map. ~10 min. |
+| Role with a new relationship | `parent` (sees their child's classes) | Above + a new table (`parent_students`) + an RLS policy. No tool avoids this — the DB must know which child belongs to which parent. |
+| Admin creates roles from the UI | Admin builds a custom role, ticks permissions in a screen | Move permissions from code into DB tables (`permissions`, `role_permissions`). Bigger change — the point where a service like Permit.io starts to make sense. Only needed if non-developers must create roles without a deploy. |
+
+## Design
+
+### 1. Roles in the database
+
+```sql
+create table roles (
+  id text primary key,          -- 'admin', 'teacher', 'student', 'developer'
+  label text not null
+);
+
+create table profiles (
+  id uuid primary key references auth.users(id) on delete cascade,
+  full_name text,
+  created_at timestamptz default now()
+);
+
+create table user_roles (
+  user_id uuid references auth.users(id) on delete cascade,
+  role_id text references roles(id),
+  primary key (user_id, role_id)
+);
+```
+
+- New signups get the `student` role by default; admin grants teacher/developer/admin from the dashboard.
+- Custom Access Token Hook adds `roles: string[]` to the JWT claims.
+- Replaces the `ADMIN_EMAIL` comparison (seed the current admin email's user with the `admin` role during migration).
+- **Do not** store roles in Supabase `user_metadata` — users can edit it themselves.
+- Add to `supabase-schema.sql` (keep it re-runnable).
+
+### 2. Single permission map
+
+`src/modules/auth/permissions.ts`:
+
+```ts
+export const ROLE_PERMISSIONS: Record<RoleId, readonly Permission[]> = {
+  admin:     ["contacts:read", "applications:manage", "courses:manage",
+              "classes:read:all", "demos:read:all", "users:manage"],
+  teacher:   ["classes:read:own", "demos:read:own"],
+  student:   ["classes:read:enrolled", "profile:read"],
+  developer: [/* TBD */],
+};
+
+// A user's permissions = union across all their roles
+export function can(user: SessionUser, perm: Permission) {
+  return user.roles.some((r) => ROLE_PERMISSIONS[r]?.includes(perm));
+}
+```
+
+Sidebar, page guards, and API guards all read from this one map. Nothing else in the codebase references role names.
+
+### 3. Route structure
+
+```
+src/app/dashboard/
+  layout.tsx          ← server-reads roles, builds sidebar from permissions
+  page.tsx            ← overview (admin: stats · teacher: today's classes · student: next class)
+  contacts/page.tsx   ← needs contacts:read
+  classes/page.tsx    ← classes:read:all → all · classes:read:own → own (same page, different scope)
+  demos/page.tsx      ← demos:read:all → all · demos:read:own → assigned to them
+  my-classes/page.tsx ← classes:read:enrolled
+  users/page.tsx      ← users:manage (assign roles)
+```
+
+- Every page calls `requirePermission(...)` server-side — typing the URL can't bypass it.
+- UI panels live in modules (e.g. `modules/contacts/components/ContactsPanel.tsx`), which also splits up the current 3,700-line admin page.
+- Redirect old `/admin/dashboard` and `/user/dashboard` to `/dashboard`.
+
+### 4. Data scoping on the server
+
+Hiding UI is not security. Every server function scopes by caller:
+
+```ts
+export async function getClasses(user: SessionUser) {
+  if (can(user, "classes:read:all")) return supabaseAdmin.from("classes").select();
+  if (can(user, "classes:read:own")) return userClient.from("classes").select(); // RLS limits to own rows
+  throw forbidden();
+}
+```
+
+- Every `/api/**` route (other than public submit endpoints) calls `requireUser()` / `requirePermission()` first.
+- Teacher/student queries use the user's session client so **RLS** enforces row-level scoping (e.g. `teacher_id = auth.uid()`); `supabaseAdmin` is used only for full-access permissions.
+
+### 5. New tables needed
+
+- `classes` / `sessions` — course, teacher_id, scheduled time, meeting link.
+- `enrollments` — student ↔ course/class.
+- `demo_bookings.teacher_id` — assign a demo to a teacher.
+
+## Implementation phases
+
+1. **Security + roles** — `roles`, `user_roles`, `profiles` tables; Custom Access Token Hook; `permissions.ts` + `requireUser`/`requirePermission` guards; lock down `/api/admin/*`; update `middleware.ts` to use roles from the JWT instead of `ADMIN_EMAIL`.
+2. **Unified dashboard** — create `/dashboard` with permission-based sidebar; split the admin page into module panels; redirect old routes.
+3. **Teacher & student features** — `classes`, `enrollments`, demo assignment, RLS policies; build teacher and student views.
+
+## Open questions
+
+- [ ] What should the **developer** role see? (system logs? read-only everything? same as admin?)
+- [x] ~~Can one person have multiple roles?~~ → **Confirmed (2026-09-28): yes**, via `user_roles` join table (see Decision C).
+- [ ] For multi-role users, should the dashboard show **one combined view** (sidebar = union of all their permissions — simplest, the default in this design) or a **role switcher** ("viewing as Teacher / Student")? A switcher helps when e.g. a teacher-who-is-also-a-student wants "my classes" to mean one thing at a time.
+- [ ] How are teachers onboarded — admin assigns role to an existing account, or invite flow?
+- [ ] What "other student-related info" should students see (payments, progress, certificates, materials)?
+- [ ] Will non-developers ever need to create new roles from the UI? (If yes, plan for DB-driven permissions — see Decision C.)
+
+## Related notes
+
+- `/spoken-english-course` landing page was removed on 2026-09-28 (page + `SpokenEnglishLanding.tsx`). Old ad links now 404 — consider a 301 redirect in `next.config.ts` (e.g. to `/courses/communication-skills` or `/demo`).

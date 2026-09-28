@@ -8,6 +8,14 @@ import ScrollTrigger from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
+declare global {
+  interface Window {
+    // Named lenisInstance (not `lenis`) — the lenis package itself already
+    // declares window.lenis as small debug metadata, not the instance.
+    lenisInstance?: Lenis;
+  }
+}
+
 export default function SmoothScrollProvider({
   children,
 }: {
@@ -23,6 +31,10 @@ export default function SmoothScrollProvider({
 
     const lenis = new Lenis({ lerp: 0.08, duration: 1.2 });
     lenisRef.current = lenis;
+    // Exposed so in-page "scroll to section" CTAs can drive Lenis directly —
+    // calling native scrollIntoView/window.scrollTo while Lenis is active
+    // fights its own RAF-driven scroll position and causes jitter.
+    window.lenisInstance = lenis;
 
     lenis.on("scroll", ScrollTrigger.update);
 
@@ -36,6 +48,7 @@ export default function SmoothScrollProvider({
       gsap.ticker.remove(rafCallback);
       lenis.destroy();
       lenisRef.current = null;
+      window.lenisInstance = undefined;
     };
   }, []);
 

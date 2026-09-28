@@ -1,151 +1,112 @@
 "use client";
 
-import { useState, FormEvent } from "react";
-import {
-  validateName,
-  validatePhone,
-  validateEmail,
-  validateCompanyName,
-} from "@/shared/validation";
+import { useState } from "react";
 import { DEMO_ORIGINAL_PRICE } from "@/modules/courses/constants";
+import DemoBookingForm, {
+  type BookingType,
+} from "@/modules/demo-bookings/components/DemoBookingForm";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Item,
+  ItemContent,
+  ItemDescription,
+  ItemGroup,
+  ItemMedia,
+  ItemTitle,
+} from "@/components/ui/item";
+import { Button } from "@/components/ui/button";
 
-type BookingType = "individual" | "corporate";
+const BOOKING_FORM_OFFSET = -80; // clears the sticky nav (h-16) + breathing room
 
-const EMPTY_FORM = {
-  name: "",
-  email: "",
-  phone: "",
-  course: "",
-  message: "",
-  companyName: "",
-  companySize: "",
-  participants: "",
-  preferredDate: "",
-};
+const steps = [
+  {
+    num: "1",
+    title: "Meet Your Instructor",
+    desc: "Get introduced to your personal trainer and understand the teaching style.",
+  },
+  {
+    num: "2",
+    title: "Share Your Goals",
+    desc: "Tell us where you are now and where you want to be.",
+  },
+  {
+    num: "3",
+    title: "Get Your Roadmap",
+    desc: "Receive a customized learning plan tailored to your needs.",
+  },
+  {
+    num: "4",
+    title: "Ask Anything",
+    desc: "Clear all your doubts about courses, schedules, and pricing.",
+  },
+];
+
+const courses = [
+  "Communication Skills",
+  "Public Speaking & Presentation",
+  "Spoken English & Grammar",
+  "Personality Development",
+];
+
+const corporateCourses = [
+  "Corporate Communication Training",
+  "Team Communication Workshop",
+  "Business Etiquette & Soft Skills",
+  "Leadership Communication",
+  "Public Speaking for Teams",
+  "Custom Training Program",
+];
+
+const faqs = [
+  {
+    q: "Who is the demo session for?",
+    a: "Anyone who wants to improve their communication, spoken English, public speaking, or personality. Whether you are a student, working professional, or homemaker — our demo is open to all.",
+  },
+  {
+    q: "Do I need to pay anything for the demo?",
+    a: "Absolutely not. The demo session is 100% free with no hidden charges and zero commitment to enroll afterwards.",
+  },
+  {
+    q: "How will UNIK Academy contact me after I submit the form?",
+    a: "We will reach out via phone or WhatsApp within 24 hours to confirm your slot and share the session link.",
+  },
+  {
+    q: "Is the session online or in-person?",
+    a: "The demo is conducted online via video call, so you can join from anywhere in India — no travel needed.",
+  },
+  {
+    q: "What happens after the demo?",
+    a: "After your demo session, you will receive a personalised course recommendation and pricing details. There is no pressure to enroll — you decide at your own pace.",
+  },
+];
 
 export default function DemoPage() {
   const [bookingType, setBookingType] = useState<BookingType>("individual");
-  const [formData, setFormData] = useState(EMPTY_FORM);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<
-    "idle" | "success" | "error"
-  >("idle");
-  const [validationError, setValidationError] = useState("");
 
-  const handleBookingTypeChange = (type: BookingType) => {
-    setBookingType(type);
-    setFormData({ ...EMPTY_FORM });
-    setValidationError("");
-  };
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setValidationError("");
-    const nameErr = validateName(formData.name);
-    if (nameErr) {
-      setValidationError(nameErr);
-      return;
-    }
-    const phoneErr = validatePhone(formData.phone);
-    if (phoneErr) {
-      setValidationError(phoneErr);
-      return;
-    }
-    if (!formData.course) {
-      setValidationError(
-        bookingType === "corporate"
-          ? "Please select a training requirement."
-          : "Please select a course of interest.",
-      );
-      return;
-    }
-    if (bookingType === "corporate") {
-      const companyErr = validateCompanyName(formData.companyName);
-      if (companyErr) {
-        setValidationError(companyErr);
-        return;
-      }
-      const emailErr = validateEmail(formData.email);
-      if (emailErr) {
-        setValidationError(emailErr);
-        return;
-      }
-    }
-    setIsSubmitting(true);
-    setSubmitStatus("idle");
-    try {
-      const response = await fetch("/api/demo-booking", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...formData,
-          bookingType,
-          participants: formData.participants
-            ? Number(formData.participants)
-            : undefined,
-        }),
+  const scrollToBookingForm = () => {
+    if (window.lenisInstance) {
+      window.lenisInstance.scrollTo("#book-demo", {
+        offset: BOOKING_FORM_OFFSET,
       });
-      if (response.ok) {
-        setSubmitStatus("success");
-        setFormData({ ...EMPTY_FORM });
-      } else {
-        setSubmitStatus("error");
-      }
-    } catch {
-      setSubmitStatus("error");
-    } finally {
-      setIsSubmitting(false);
+    } else {
+      document
+        .getElementById("book-demo")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   };
-
-  const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >,
-  ) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const steps = [
-    {
-      num: "1",
-      title: "Meet Your Instructor",
-      desc: "Get introduced to your personal trainer and understand the teaching style.",
-    },
-    {
-      num: "2",
-      title: "Share Your Goals",
-      desc: "Tell us where you are now and where you want to be.",
-    },
-    {
-      num: "3",
-      title: "Get Your Roadmap",
-      desc: "Receive a customized learning plan tailored to your needs.",
-    },
-    {
-      num: "4",
-      title: "Ask Anything",
-      desc: "Clear all your doubts about courses, schedules, and pricing.",
-    },
-  ];
-
-  const courses = [
-    "Communication Skills",
-    "Public Speaking & Presentation",
-    "Spoken English & Grammar",
-    "Personality Development",
-  ];
-
-  const corporateCourses = [
-    "Corporate Communication Training",
-    "Team Communication Workshop",
-    "Business Etiquette & Soft Skills",
-    "Leadership Communication",
-    "Public Speaking for Teams",
-    "Custom Training Program",
-  ];
-
-  const companySizes = ["1-10", "11-50", "51-200", "201-500", "500+"];
 
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
@@ -163,10 +124,10 @@ export default function DemoPage() {
         <div className="absolute bottom-0 left-0 w-80 h-80 bg-[#133a67]/80 rounded-full blur-3xl translate-y-1/2 -translate-x-1/4 pointer-events-none" />
 
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#c0a84f]/40 bg-[#c0a84f]/10 text-[#c0a84f] text-xs font-semibold uppercase tracking-widest mb-6">
+          <Badge className="h-auto gap-2 rounded-full border border-[#c0a84f]/40 bg-[#c0a84f]/10 px-4 py-1.5 text-xs font-semibold text-[#c0a84f] uppercase tracking-widest mb-6">
             <span className="w-2 h-2 rounded-full bg-[#c0a84f] animate-pulse" />
             100% Free — No Commitment
-          </div>
+          </Badge>
           <h1
             className="text-5xl md:text-6xl font-bold leading-tight mb-5"
             style={{ fontFamily: "Poppins, sans-serif" }}
@@ -186,8 +147,30 @@ export default function DemoPage() {
           </h1>
           <p className="text-white/65 text-xl leading-relaxed max-w-2xl mx-auto">
             Experience our teaching style first-hand with a free 30-minute live
-            session — no payment, no pressure, just learning.
+            session no payment, no pressure, just learning.
           </p>
+
+          <Button
+            type="button"
+            onClick={scrollToBookingForm}
+            className="h-auto mt-8 gap-2 rounded-xl bg-linear-to-r from-[#c0a84f] to-[#d4bc72] px-8 py-4 text-base font-bold text-[#0e2b49] shadow-[0_4px_24px_rgba(192,168,79,0.4)] hover:from-[#d4bc72] hover:to-[#c0a84f] hover:shadow-[0_8px_32px_rgba(192,168,79,0.55)] hover:-translate-y-0.5 transition-all duration-200"
+            style={{ fontFamily: "Poppins, sans-serif" }}
+          >
+            Book Your Free Demo Session
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2.5}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 4.5v15m7.5-7.5h-15"
+              />
+            </svg>
+          </Button>
 
           {/* Quick stats */}
           <div className="flex flex-wrap justify-center gap-6 mt-10">
@@ -245,35 +228,37 @@ export default function DemoPage() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {steps.map((step) => (
-              <div
+              <Card
                 key={step.num}
-                className="bg-white rounded-2xl p-6 border border-[#E2E8F0] hover:border-[#c0a84f]/40 hover:shadow-[0_8px_32px_rgba(14,43,73,0.08)] transition-all duration-200 group"
+                className="[--card-spacing:1.5rem] gap-0 rounded-2xl border border-[#E2E8F0] bg-white ring-0 hover:border-[#c0a84f]/40 hover:shadow-[0_8px_32px_rgba(14,43,73,0.08)] transition-all duration-200"
               >
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#c0a84f] to-[#d4bc72] flex items-center justify-center mb-4 shadow-md">
-                  <span
-                    className="text-[#0e2b49] font-bold text-sm"
+                <CardContent>
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#c0a84f] to-[#d4bc72] flex items-center justify-center mb-4 shadow-md">
+                    <span
+                      className="text-[#0e2b49] font-bold text-sm"
+                      style={{ fontFamily: "Poppins, sans-serif" }}
+                    >
+                      {step.num}
+                    </span>
+                  </div>
+                  <CardTitle
+                    className="mb-2 text-sm font-semibold text-[#0e2b49]"
                     style={{ fontFamily: "Poppins, sans-serif" }}
                   >
-                    {step.num}
-                  </span>
-                </div>
-                <h3
-                  className="text-[#0e2b49] font-semibold mb-2 text-sm"
-                  style={{ fontFamily: "Poppins, sans-serif" }}
-                >
-                  {step.title}
-                </h3>
-                <p className="text-[#64748B] text-sm leading-relaxed">
-                  {step.desc}
-                </p>
-              </div>
+                    {step.title}
+                  </CardTitle>
+                  <CardDescription className="text-sm leading-relaxed text-[#64748B]">
+                    {step.desc}
+                  </CardDescription>
+                </CardContent>
+              </Card>
             ))}
           </div>
         </div>
       </section>
 
       {/* ─── Form + Info ─── */}
-      <section className="py-16 bg-white">
+      <section id="book-demo" className="py-16 bg-white scroll-mt-20">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
             {/* Left info */}
@@ -294,7 +279,7 @@ export default function DemoPage() {
                 your questions, and decide if UNIK Academy is the right fit for
                 you.
               </p>
-              <div className="space-y-4">
+              <ItemGroup className="gap-4">
                 {[
                   {
                     title: "No payment required",
@@ -313,11 +298,11 @@ export default function DemoPage() {
                     desc: "Choose a time that works for your schedule.",
                   },
                 ].map((item, i) => (
-                  <div
+                  <Item
                     key={i}
-                    className="flex items-start gap-4 p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]"
+                    className="items-start gap-4 rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-4"
                   >
-                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-[#c0a84f] to-[#d4bc72] flex items-center justify-center mt-0.5">
+                    <ItemMedia className="mt-0.5 h-8 w-8 rounded-full bg-gradient-to-br from-[#c0a84f] to-[#d4bc72]">
                       <svg
                         className="w-4 h-4 text-[#0e2b49]"
                         fill="none"
@@ -331,21 +316,21 @@ export default function DemoPage() {
                           d="M4.5 12.75l6 6 9-13.5"
                         />
                       </svg>
-                    </div>
-                    <div>
-                      <p
-                        className="text-[#0e2b49] font-semibold text-sm"
+                    </ItemMedia>
+                    <ItemContent>
+                      <ItemTitle
+                        className="text-sm font-semibold text-[#0e2b49]"
                         style={{ fontFamily: "Poppins, sans-serif" }}
                       >
                         {item.title}
-                      </p>
-                      <p className="text-[#64748B] text-sm mt-0.5">
+                      </ItemTitle>
+                      <ItemDescription className="text-sm text-[#64748B]">
                         {item.desc}
-                      </p>
-                    </div>
-                  </div>
+                      </ItemDescription>
+                    </ItemContent>
+                  </Item>
                 ))}
-              </div>
+              </ItemGroup>
 
               {/* Price callout */}
               <div className="mt-8 flex items-center gap-4 bg-gradient-to-r from-[#0e2b49] to-[#133a67] rounded-2xl p-5">
@@ -370,318 +355,31 @@ export default function DemoPage() {
             </div>
 
             {/* Right form */}
-            <div className="bg-[#F8FAFC] rounded-2xl border border-[#E2E8F0] p-8">
-              <h3
-                className="text-2xl font-bold text-[#0e2b49] mb-1"
-                style={{ fontFamily: "Poppins, sans-serif" }}
-              >
-                {bookingType === "corporate"
-                  ? "Book Corporate Training"
-                  : "Book Your Slot"}
-              </h3>
-              <p className="text-[#64748B] text-sm mb-5">
-                {bookingType === "corporate"
-                  ? "Tell us about your company and we'll design a training plan for your team."
-                  : "Fill in your details and we'll reach out to confirm your demo session."}
-              </p>
-
-              {/* Booking type toggle */}
-              <div className="grid grid-cols-2 gap-2 p-1 mb-6 rounded-xl bg-[#E2E8F0]/60">
-                {(
-                  [
-                    { value: "individual", label: "Individual" },
-                    { value: "corporate", label: "Corporate / Company" },
-                  ] as const
-                ).map((opt) => (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    onClick={() => handleBookingTypeChange(opt.value)}
-                    className={`py-2.5 rounded-lg text-sm font-semibold transition-all cursor-pointer ${
-                      bookingType === opt.value
-                        ? "bg-white text-[#0e2b49] shadow-sm"
-                        : "text-[#64748B] hover:text-[#0e2b49]"
-                    }`}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-
-              {submitStatus === "success" ? (
-                <div className="text-center py-10">
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#c0a84f] to-[#d4bc72] flex items-center justify-center mx-auto mb-4 shadow-lg">
-                    <svg
-                      className="w-8 h-8 text-[#0e2b49]"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={2.5}
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M4.5 12.75l6 6 9-13.5"
-                      />
-                    </svg>
-                  </div>
-                  <h4
-                    className="text-xl font-bold text-[#0e2b49] mb-2"
-                    style={{ fontFamily: "Poppins, sans-serif" }}
-                  >
-                    {bookingType === "corporate"
-                      ? "Request Received!"
-                      : "Demo Booked!"}
-                  </h4>
-                  <p className="text-[#64748B] text-sm">
-                    {bookingType === "corporate"
-                      ? "Thanks for reaching out — our corporate training team will connect with you shortly."
-                      : "Thanks for submitting your details — we will connect with you as soon as possible!"}
-                  </p>
-                </div>
-              ) : (
-                <form onSubmit={handleSubmit} className="space-y-5">
-                  {bookingType === "corporate" && (
-                    <div>
-                      <label
-                        htmlFor="companyName"
-                        className="block text-sm font-semibold text-[#0e2b49] mb-1.5"
-                      >
-                        Company Name *
-                      </label>
-                      <input
-                        type="text"
-                        id="companyName"
-                        name="companyName"
-                        required
-                        autoComplete="organization"
-                        value={formData.companyName}
-                        onChange={handleChange}
-                        className="w-full px-4 py-3 border border-[#E2E8F0] rounded-xl bg-white text-[#0e2b49] placeholder-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#c0a84f]/50 focus:border-[#c0a84f] transition-colors text-sm"
-                        placeholder="Your company's name"
-                      />
-                    </div>
-                  )}
-                  <div>
-                    <label
-                      htmlFor="name"
-                      className="block text-sm font-semibold text-[#0e2b49] mb-1.5"
-                    >
-                      {bookingType === "corporate"
-                        ? "Contact Person Name *"
-                        : "Full Name *"}
-                    </label>
-                    <input
-                      type="text"
-                      id="name"
-                      name="name"
-                      required
-                      autoComplete="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 border border-[#E2E8F0] rounded-xl bg-white text-[#0e2b49] placeholder-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#c0a84f]/50 focus:border-[#c0a84f] transition-colors text-sm"
-                      placeholder={
-                        bookingType === "corporate"
-                          ? "HR / L&D contact name"
-                          : "Your full name"
-                      }
-                    />
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="phone"
-                      className="block text-sm font-semibold text-[#0e2b49] mb-1.5"
-                    >
-                      Phone Number *
-                    </label>
-                    <input
-                      type="tel"
-                      id="phone"
-                      name="phone"
-                      required
-                      inputMode="numeric"
-                      autoComplete="tel"
-                      value={formData.phone}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 border border-[#E2E8F0] rounded-xl bg-white text-[#0e2b49] placeholder-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#c0a84f]/50 focus:border-[#c0a84f] transition-colors text-sm"
-                      placeholder="Your phone number"
-                    />
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="email"
-                      className="block text-sm font-semibold text-[#0e2b49] mb-1.5"
-                    >
-                      {bookingType === "corporate"
-                        ? "Business Email *"
-                        : "Email Address"}
-                    </label>
-                    <input
-                      type="email"
-                      id="email"
-                      name="email"
-                      required={bookingType === "corporate"}
-                      autoComplete="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 border border-[#E2E8F0] rounded-xl bg-white text-[#0e2b49] placeholder-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#c0a84f]/50 focus:border-[#c0a84f] transition-colors text-sm"
-                      placeholder={
-                        bookingType === "corporate"
-                          ? "you@company.com"
-                          : "your@email.com"
-                      }
-                    />
-                  </div>
-                  {bookingType === "corporate" && (
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label
-                          htmlFor="companySize"
-                          className="block text-sm font-semibold text-[#0e2b49] mb-1.5"
-                        >
-                          Company Size
-                        </label>
-                        <select
-                          id="companySize"
-                          name="companySize"
-                          value={formData.companySize}
-                          onChange={handleChange}
-                          className="w-full px-4 py-3 border border-[#E2E8F0] rounded-xl bg-white text-[#0e2b49] focus:outline-none focus:ring-2 focus:ring-[#c0a84f]/50 focus:border-[#c0a84f] transition-colors text-sm cursor-pointer"
-                        >
-                          <option value="">Select</option>
-                          {companySizes.map((s) => (
-                            <option key={s} value={s}>
-                              {s} employees
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <div>
-                        <label
-                          htmlFor="participants"
-                          className="block text-sm font-semibold text-[#0e2b49] mb-1.5"
-                        >
-                          Participants
-                        </label>
-                        <input
-                          type="number"
-                          id="participants"
-                          name="participants"
-                          min={1}
-                          value={formData.participants}
-                          onChange={handleChange}
-                          className="w-full px-4 py-3 border border-[#E2E8F0] rounded-xl bg-white text-[#0e2b49] placeholder-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#c0a84f]/50 focus:border-[#c0a84f] transition-colors text-sm"
-                          placeholder="e.g. 20"
-                        />
-                      </div>
-                    </div>
-                  )}
-                  <div>
-                    <label
-                      htmlFor="course"
-                      className="block text-sm font-semibold text-[#0e2b49] mb-1.5"
-                    >
-                      {bookingType === "corporate"
-                        ? "Training Requirement *"
-                        : "Course of Interest *"}
-                    </label>
-                    <select
-                      id="course"
-                      name="course"
-                      required
-                      value={formData.course}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 border border-[#E2E8F0] rounded-xl bg-white text-[#0e2b49] focus:outline-none focus:ring-2 focus:ring-[#c0a84f]/50 focus:border-[#c0a84f] transition-colors text-sm cursor-pointer"
-                    >
-                      <option value="">
-                        {bookingType === "corporate"
-                          ? "Select a requirement"
-                          : "Select a course"}
-                      </option>
-                      {(bookingType === "corporate"
-                        ? corporateCourses
-                        : courses
-                      ).map((c) => (
-                        <option key={c} value={c}>
-                          {c}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  {bookingType === "corporate" && (
-                    <div>
-                      <label
-                        htmlFor="preferredDate"
-                        className="block text-sm font-semibold text-[#0e2b49] mb-1.5"
-                      >
-                        Preferred Training Date
-                      </label>
-                      <input
-                        type="date"
-                        id="preferredDate"
-                        name="preferredDate"
-                        value={formData.preferredDate}
-                        onChange={handleChange}
-                        className="w-full px-4 py-3 border border-[#E2E8F0] rounded-xl bg-white text-[#0e2b49] focus:outline-none focus:ring-2 focus:ring-[#c0a84f]/50 focus:border-[#c0a84f] transition-colors text-sm cursor-pointer"
-                      />
-                    </div>
-                  )}
-                  <div>
-                    <label
-                      htmlFor="message"
-                      className="block text-sm font-semibold text-[#0e2b49] mb-1.5"
-                    >
-                      {bookingType === "corporate"
-                        ? "Additional Requirements"
-                        : "Anything you'd like us to know?"}
-                    </label>
-                    <textarea
-                      id="message"
-                      name="message"
-                      rows={3}
-                      value={formData.message}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 border border-[#E2E8F0] rounded-xl bg-white text-[#0e2b49] placeholder-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#c0a84f]/50 focus:border-[#c0a84f] transition-colors text-sm resize-none"
-                      placeholder={
-                        bookingType === "corporate"
-                          ? "Training goals, preferred format, venue, etc."
-                          : "Your goals, preferred time slot, etc."
-                      }
-                    />
-                  </div>
-
-                  {validationError && (
-                    <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm">
-                      {validationError}
-                    </div>
-                  )}
-                  {submitStatus === "error" && (
-                    <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm">
-                      Something went wrong. Please try again or call us
-                      directly.
-                    </div>
-                  )}
-
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full py-4 rounded-xl font-bold text-[#0e2b49] bg-gradient-to-r from-[#c0a84f] to-[#d4bc72] hover:from-[#d4bc72] hover:to-[#c0a84f] transition-all duration-200 shadow-md hover:shadow-[0_4px_20px_rgba(192,168,79,0.4)] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-sm"
-                    style={{ fontFamily: "Poppins, sans-serif" }}
-                  >
-                    {isSubmitting
-                      ? "Submitting..."
-                      : bookingType === "corporate"
-                        ? "Request Corporate Training"
-                        : "Book My Free Demo Session"}
-                  </button>
-                  <p className="text-center text-[#94a3b8] text-xs">
-                    {bookingType === "corporate"
-                      ? "Our team will reach out within 24 hours to discuss your requirements"
-                      : "No payment required • We'll confirm your slot within 24 hours"}
-                  </p>
-                </form>
-              )}
-            </div>
+            <Card className="[--card-spacing:2rem] gap-5 rounded-2xl border border-[#E2E8F0] bg-[#F8FAFC] ring-0">
+              <CardHeader>
+                <CardTitle
+                  className="text-2xl font-bold text-[#0e2b49]"
+                  style={{ fontFamily: "Poppins, sans-serif" }}
+                >
+                  {bookingType === "corporate"
+                    ? "Book Corporate Training"
+                    : "Book Your Slot"}
+                </CardTitle>
+                <CardDescription className="text-sm text-[#64748B]">
+                  {bookingType === "corporate"
+                    ? "Tell us about your company and we'll design a training plan for your team."
+                    : "Fill in your details and we'll reach out to confirm your demo session."}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <DemoBookingForm
+                  variant="light"
+                  idPrefix="demo"
+                  courseOptions={{ individual: courses, corporate: corporateCourses }}
+                  onBookingTypeChange={setBookingType}
+                />
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
@@ -699,45 +397,25 @@ export default function DemoPage() {
               Frequently Asked Questions
             </h2>
           </div>
-          <div className="space-y-4">
-            {[
-              {
-                q: "Who is the demo session for?",
-                a: "Anyone who wants to improve their communication, spoken English, public speaking, or personality. Whether you are a student, working professional, or homemaker — our demo is open to all.",
-              },
-              {
-                q: "Do I need to pay anything for the demo?",
-                a: "Absolutely not. The demo session is 100% free with no hidden charges and zero commitment to enroll afterwards.",
-              },
-              {
-                q: "How will UNIK Academy contact me after I submit the form?",
-                a: "We will reach out via phone or WhatsApp within 24 hours to confirm your slot and share the session link.",
-              },
-              {
-                q: "Is the session online or in-person?",
-                a: "The demo is conducted online via video call, so you can join from anywhere in India — no travel needed.",
-              },
-              {
-                q: "What happens after the demo?",
-                a: "After your demo session, you will receive a personalised course recommendation and pricing details. There is no pressure to enroll — you decide at your own pace.",
-              },
-            ].map((faq, i) => (
-              <div
+          <Accordion className="rounded-2xl border border-[#E2E8F0] bg-white px-6">
+            {faqs.map((faq, i) => (
+              <AccordionItem
                 key={i}
-                className="bg-white rounded-2xl border border-[#E2E8F0] p-6"
+                value={`faq-${i}`}
+                className="border-[#E2E8F0]"
               >
-                <p
-                  className="text-[#0e2b49] font-semibold mb-2 text-sm"
+                <AccordionTrigger
+                  className="py-5 text-[#0e2b49] font-semibold text-sm hover:no-underline"
                   style={{ fontFamily: "Poppins, sans-serif" }}
                 >
                   {faq.q}
-                </p>
-                <p className="text-[#64748B] text-sm leading-relaxed">
+                </AccordionTrigger>
+                <AccordionContent className="text-[#64748B] text-sm leading-relaxed">
                   {faq.a}
-                </p>
-              </div>
+                </AccordionContent>
+              </AccordionItem>
             ))}
-          </div>
+          </Accordion>
         </div>
       </section>
     </div>

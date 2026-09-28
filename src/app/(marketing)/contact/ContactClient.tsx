@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, SubmitEvent } from "react";
 
 export default function ContactClient() {
   const [formData, setFormData] = useState({
@@ -14,7 +14,7 @@ export default function ContactClient() {
     "idle" | "success" | "error"
   >("idle");
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setSubmitStatus("idle");

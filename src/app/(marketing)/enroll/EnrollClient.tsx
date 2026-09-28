@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, SubmitEvent } from "react";
 import Link from "next/link";
 import { computeMRP, SESSION_FORMATS } from "@/modules/courses/constants";
 import type { SessionFormatItem } from "@/modules/courses/server/pricing";
@@ -176,7 +176,7 @@ export default function EnrollClient({
     >,
   ) => setFormData((f) => ({ ...f, [e.target.name]: e.target.value }));
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
     setStatus("submitting");
     try {

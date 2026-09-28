@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, SubmitEvent } from "react";
 
 interface Job {
   _id: string;
@@ -27,7 +27,7 @@ function ApplyForm({ jobTitle }: ApplyFormProps) {
     "idle" | "success" | "error"
   >("idle");
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setSubmitStatus("idle");

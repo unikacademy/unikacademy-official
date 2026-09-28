@@ -3,9 +3,9 @@
 import { useState, useEffect, useRef, Suspense } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { CourseIcon } from "@/modules/courses/icons";
-import { validateName, validatePhone } from "@/shared/validation";
+import DemoBookingForm from "@/modules/demo-bookings/components/DemoBookingForm";
 import { COURSE_PRICES, computeMRP, charmPrice } from "@/modules/courses/constants";
 
 const HeroScene = dynamic(() => import("./hero/HeroScene"), {
@@ -76,13 +76,6 @@ export default function HeroCarouselSection({ courses }: Props) {
   const startRef = useRef<number | null>(null);
   const pausedRef = useRef(false);
 
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [errors, setErrors] = useState<{ name?: string; phone?: string }>({});
-  const [formStatus, setFormStatus] = useState<
-    "idle" | "loading" | "success" | "error"
-  >("idle");
-
   useEffect(() => {
     if (typeof window !== "undefined") {
       setReducedMotion(
@@ -129,33 +122,6 @@ export default function HeroCarouselSection({ courses }: Props) {
   }
 
   const realIndex = current % slides.length;
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    const nameErr = validateName(name);
-    const phoneErr = validatePhone(phone);
-    if (nameErr || phoneErr) {
-      setErrors({ name: nameErr ?? undefined, phone: phoneErr ?? undefined });
-      return;
-    }
-    setErrors({});
-    setFormStatus("loading");
-    try {
-      const res = await fetch("/api/demo-booking", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: name.trim(),
-          phone: phone.trim(),
-          course: "Quick Demo Request",
-        }),
-      });
-      if (!res.ok) throw new Error();
-      setFormStatus("success");
-    } catch {
-      setFormStatus("error");
-    }
-  }
 
   return (
     <section
@@ -422,202 +388,52 @@ export default function HeroCarouselSection({ courses }: Props) {
                 }}
               />
 
-              <AnimatePresence mode="wait">
-                {formStatus === "success" ? (
-                  <motion.div
-                    key="success"
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    transition={{ duration: 0.4 }}
-                    className="flex flex-col items-center text-center px-8 py-14"
+              <div className="px-7 py-8 sm:px-9 sm:py-10">
+                {/* Header */}
+                <div className="mb-7">
+                  <div
+                    className="inline-flex items-center gap-2 px-3 py-1 rounded-full mb-4"
+                    style={{
+                      background: "rgba(192,168,79,0.12)",
+                      border: "1px solid rgba(192,168,79,0.25)",
+                    }}
                   >
-                    <motion.div
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ delay: 0.1, type: "spring", stiffness: 200, damping: 15 }}
-                      className="w-20 h-20 rounded-full flex items-center justify-center mb-5"
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#c0a84f] animate-pulse" />
+                    <span className="text-[#c0a84f] text-[10px] font-semibold uppercase tracking-widest">
+                      100% Free · No Card Needed
+                    </span>
+                  </div>
+                  <h2
+                    className="text-2xl sm:text-3xl font-bold text-white leading-tight mb-1.5"
+                    style={{ fontFamily: "Poppins, sans-serif" }}
+                  >
+                    Book Your{" "}
+                    <span
                       style={{
                         background: "linear-gradient(135deg, #c0a84f, #d4bc72)",
-                        boxShadow: "0 8px 40px rgba(192,168,79,0.5)",
+                        WebkitBackgroundClip: "text",
+                        WebkitTextFillColor: "transparent",
+                        backgroundClip: "text",
                       }}
                     >
-                      <svg className="w-9 h-9 text-[#0e2b49]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                      </svg>
-                    </motion.div>
-                    <h3 className="text-2xl font-bold text-white mb-2" style={{ fontFamily: "Poppins, sans-serif" }}>
-                      You&apos;re Booked! 🎉
-                    </h3>
-                    <p className="text-white/50 text-sm leading-relaxed">
-                      We&apos;ll call you shortly to confirm your free 30-min session.
-                    </p>
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="form"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="px-7 py-8 sm:px-9 sm:py-10"
-                  >
-                    {/* Header */}
-                    <div className="mb-7">
-                      <div
-                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full mb-4"
-                        style={{
-                          background: "rgba(192,168,79,0.12)",
-                          border: "1px solid rgba(192,168,79,0.25)",
-                        }}
-                      >
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#c0a84f] animate-pulse" />
-                        <span className="text-[#c0a84f] text-[10px] font-semibold uppercase tracking-widest">
-                          100% Free · No Card Needed
-                        </span>
-                      </div>
-                      <h2
-                        className="text-2xl sm:text-3xl font-bold text-white leading-tight mb-1.5"
-                        style={{ fontFamily: "Poppins, sans-serif" }}
-                      >
-                        Book Your{" "}
-                        <span
-                          style={{
-                            background: "linear-gradient(135deg, #c0a84f, #d4bc72)",
-                            WebkitBackgroundClip: "text",
-                            WebkitTextFillColor: "transparent",
-                            backgroundClip: "text",
-                          }}
-                        >
-                          Free Demo
-                        </span>
-                      </h2>
-                      <p className="text-white/45 text-sm">30 min · Live session · Expert trainer</p>
+                      Free Demo
+                    </span>
+                  </h2>
+                  <p className="text-white/45 text-sm">30 min · Live session · Expert trainer</p>
+                </div>
+
+                <DemoBookingForm variant="dark" idPrefix="hero" />
+
+                {/* Trust row */}
+                <div className="flex items-center justify-center gap-4 mt-5">
+                  {[["🔒", "Secure"], ["⚡", "Instant"], ["🎯", "Expert"]].map(([icon, label]) => (
+                    <div key={label} className="flex items-center gap-1.5">
+                      <span className="text-xs">{icon}</span>
+                      <span className="text-white/30 text-[11px]">{label}</span>
                     </div>
-
-                    {/* Form */}
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                      {/* Name */}
-                      <div>
-                        <label htmlFor="hero-name" className="block text-[11px] font-semibold text-white/40 uppercase tracking-widest mb-2">
-                          Your Name
-                        </label>
-                        <input
-                          id="hero-name"
-                          type="text"
-                          autoComplete="name"
-                          placeholder="Enter your name"
-                          value={name}
-                          onChange={(e) => { setName(e.target.value); setErrors((p) => ({ ...p, name: undefined })); }}
-                          className="w-full px-4 py-3.5 rounded-xl text-white placeholder:text-white/25 text-sm focus:outline-none transition-all duration-200"
-                          style={{
-                            background: "rgba(255,255,255,0.06)",
-                            border: "1px solid rgba(255,255,255,0.1)",
-                          }}
-                          onFocus={(e) => {
-                            e.currentTarget.style.border = "1px solid rgba(192,168,79,0.5)";
-                            e.currentTarget.style.background = "rgba(255,255,255,0.1)";
-                            e.currentTarget.style.boxShadow = "0 0 0 3px rgba(192,168,79,0.08)";
-                          }}
-                          onBlur={(e) => {
-                            e.currentTarget.style.border = "1px solid rgba(255,255,255,0.1)";
-                            e.currentTarget.style.background = "rgba(255,255,255,0.06)";
-                            e.currentTarget.style.boxShadow = "none";
-                          }}
-                        />
-                        {errors.name && <p className="text-red-400 text-xs mt-1.5">{errors.name}</p>}
-                      </div>
-
-                      {/* Phone */}
-                      <div>
-                        <label htmlFor="hero-phone" className="block text-[11px] font-semibold text-white/40 uppercase tracking-widest mb-2">
-                          Phone Number
-                        </label>
-                        <div className="relative flex items-center">
-                          <div className="absolute left-4 flex items-center gap-1.5 pointer-events-none">
-                            <span className="text-white/40 text-sm">🇮🇳</span>
-                            <span className="text-white/30 text-sm">+91</span>
-                            <div className="w-px h-4 bg-white/15 ml-1" />
-                          </div>
-                          <input
-                            id="hero-phone"
-                            type="tel"
-                            inputMode="numeric"
-                            autoComplete="tel"
-                            placeholder="10-digit mobile number"
-                            value={phone}
-                            onChange={(e) => { setPhone(e.target.value); setErrors((p) => ({ ...p, phone: undefined })); }}
-                            maxLength={10}
-                            className="w-full pl-[80px] pr-4 py-3.5 rounded-xl text-white placeholder:text-white/25 text-sm focus:outline-none transition-all duration-200"
-                            style={{
-                              background: "rgba(255,255,255,0.06)",
-                              border: "1px solid rgba(255,255,255,0.1)",
-                            }}
-                            onFocus={(e) => {
-                              e.currentTarget.style.border = "1px solid rgba(192,168,79,0.5)";
-                              e.currentTarget.style.background = "rgba(255,255,255,0.1)";
-                              e.currentTarget.style.boxShadow = "0 0 0 3px rgba(192,168,79,0.08)";
-                            }}
-                            onBlur={(e) => {
-                              e.currentTarget.style.border = "1px solid rgba(255,255,255,0.1)";
-                              e.currentTarget.style.background = "rgba(255,255,255,0.06)";
-                              e.currentTarget.style.boxShadow = "none";
-                            }}
-                          />
-                        </div>
-                        {errors.phone && <p className="text-red-400 text-xs mt-1.5">{errors.phone}</p>}
-                      </div>
-
-                      {formStatus === "error" && (
-                        <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="text-red-400 text-xs">
-                          Something went wrong. Please try again.
-                        </motion.p>
-                      )}
-
-                      {/* Submit */}
-                      <motion.button
-                        type="submit"
-                        disabled={formStatus === "loading"}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        className="w-full py-4 rounded-xl font-bold text-[#0e2b49] text-sm flex items-center justify-center gap-2.5 mt-2 disabled:opacity-60 cursor-pointer"
-                        style={{
-                          fontFamily: "Poppins, sans-serif",
-                          background: "linear-gradient(135deg, #c0a84f 0%, #d4bc72 50%, #c0a84f 100%)",
-                          backgroundSize: "200% 100%",
-                          boxShadow: "0 8px 32px rgba(192,168,79,0.45), inset 0 1px 0 rgba(255,255,255,0.3)",
-                        }}
-                      >
-                        {formStatus === "loading" ? (
-                          <>
-                            <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                            </svg>
-                            Booking...
-                          </>
-                        ) : (
-                          <>
-                            Book Free Demo Now
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                            </svg>
-                          </>
-                        )}
-                      </motion.button>
-                    </form>
-
-                    {/* Trust row */}
-                    <div className="flex items-center justify-center gap-4 mt-5">
-                      {[["🔒", "Secure"], ["⚡", "Instant"], ["🎯", "Expert"]].map(([icon, label]) => (
-                        <div key={label} className="flex items-center gap-1.5">
-                          <span className="text-xs">{icon}</span>
-                          <span className="text-white/30 text-[11px]">{label}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                  ))}
+                </div>
+              </div>
             </div>
           </motion.div>
         </div>

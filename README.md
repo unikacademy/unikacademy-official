@@ -1,223 +1,86 @@
-# UNIK Academy - Next.js Application
+# UNIK Academy
 
-A modern, responsive web application for UNIK Academy built with Next.js 15, TypeScript, Tailwind CSS, and MongoDB
-
-## Features
-
-- 🎨 Modern, responsive design with custom color scheme
-- 📱 Mobile-friendly navigation
-- 🏠 Home page with course pricing and core courses
-- 📖 About Us page
-- 💼 Careers/Hiring page with application form
-- 📧 Contact page with contact form
-- 📄 Terms and Conditions page
-- 🔐 Admin panel for managing contacts and applications
-- 🗄️ MongoDB integration for data storage
-- ⚡ Built with Next.js 15 App Router
+Website and admin dashboard for UNIK Academy, built with Next.js (App Router), TypeScript, Tailwind CSS, and Supabase.
 
 ## Tech Stack
 
-- **Framework:** Next.js 15
+- **Framework:** Next.js 16 (App Router)
 - **Language:** TypeScript
-- **Styling:** Tailwind CSS
-- **Database:** MongoDB with Mongoose
-- **Authentication:** Custom admin authentication
+- **Styling:** Tailwind CSS 4
+- **Database & Auth:** Supabase (Postgres + Supabase Auth with Google/GitHub login)
+- **Email:** Resend
+- **Hosting:** Vercel
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js 18+ installed
-- MongoDB instance (local or MongoDB Atlas)
+- Node.js 20+
+- A Supabase project
 
-### Installation
+### Setup
 
-1. Clone the repository or navigate to the project directory:
-
-   ```bash
-   cd unik-academy
-   ```
-
-2. Install dependencies:
+1. Install dependencies:
 
    ```bash
    npm install
    ```
 
-3. Set up environment variables:
-   - Copy `.env.local.example` to `.env.local`
-   - Update `MONGODB_URI` with your MongoDB connection string
-   - Update `ADMIN_SECRET_KEY` with a secure secret key
+2. Create your env file and fill in the values (see comments inside):
 
    ```bash
-   cp .env.local.example .env.local
+   cp .env.example .env
    ```
 
-4. Create an admin user:
+3. Set up the database: open the Supabase dashboard → **SQL Editor**, paste the whole of `supabase-schema.sql` and run it. The file is safe to re-run whenever the schema changes.
 
-   ```bash
-   node scripts/create-admin.js
-   ```
-
-   This script connects to MongoDB and creates the admin account. If the admin already exists, it will delete and recreate it.
-
-   Default credentials (edit `scripts/create-admin.js` to change):
-
-   | Field    | Value        |
-   | -------- | ------------ |
-   | Username | `admin`      |
-   | Password | `admin@2026` |
-
-5. Run the development server:
+4. Run the dev server and open [http://localhost:3000](http://localhost:3000):
 
    ```bash
    npm run dev
    ```
 
-6. Open [http://localhost:3000](http://localhost:3000) in your browser.
+### Making a user an admin
+
+There is no admin script or default password. Admins are normal users with the `admin` role:
+
+1. Log in once at `/login` (Google or GitHub) — this creates your profile with the default `student` role.
+2. In the Supabase dashboard → **Table Editor → `user_roles`**, find your row and change `role_id` from `student` to `admin` (or add a second row with `admin` to keep both roles).
+
+## Scripts
+
+```bash
+npm run dev          # dev server
+npm run build        # production build
+npm run lint         # eslint
+npm run type-check   # tsc --noEmit
+```
 
 ## Project Structure
 
 ```
-unik-academy/
-├── src/
-│   ├── app/                 # Next.js App Router pages
-│   │   ├── admin/          # Admin panel pages
-│   │   ├── api/            # API routes
-│   │   ├── about/          # About Us page
-│   │   ├── careers/        # Careers/Hiring page
-│   │   ├── contact/        # Contact page
-│   │   ├── terms/          # Terms and Conditions page
-│   │   ├── layout.tsx      # Root layout
-│   │   ├── page.tsx        # Home page
-│   │   └── not-found.tsx   # 404 error page
-│   ├── components/         # React components
-│   │   ├── Navigation.tsx
-│   │   └── Footer.tsx
-│   ├── lib/               # Utility functions
-│   │   ├── mongodb.ts     # MongoDB connection (cached)
-│   │   └── api.ts         # Shared API helpers (withDB, ok, err)
-│   └── models/            # Mongoose models
-│       ├── Contact.ts
-│       ├── Application.ts
-│       └── Admin.ts
-├── scripts/
-│   └── create-admin.js    # Admin user creation script
-├── .env.local             # Environment variables
-└── package.json
+src/
+├── app/
+│   ├── (marketing)/   # public site: home, about, careers, contact, courses, demo, enroll, terms, privacy-policy
+│   ├── admin/         # admin dashboard
+│   ├── user/          # user dashboard
+│   ├── login/         # login page (Google / GitHub)
+│   ├── auth/callback/ # Supabase OAuth callback
+│   └── api/           # thin route handlers → src/modules/*/server
+├── modules/           # feature modules (contacts, applications, demo-bookings, courses, jobs, auth, marketing)
+├── shared/            # reusable UI, animations, validation
+└── lib/               # Supabase clients, API helpers
+supabase-schema.sql    # database schema + RLS policies (source of truth)
+middleware.ts          # route protection for /admin, /user, /login
 ```
 
-## Color Scheme
+See `CLAUDE.md` for a detailed architecture guide and `requirement.md` for the role-based dashboard plan.
 
-- **Primary Dark:** `#0e2b49`
-- **Primary Medium:** `#133a67`
-- **Accent Gold:** `#c0a84f`
-
-## Pages
-
-- **Home (`/`):** Main landing page with course pricing and core courses
-- **About Us (`/about`):** Information about UNIK Academy
-- **Careers (`/careers`):** Job openings and application form
-- **Contact (`/contact`):** Contact form and contact information
-- **Terms (`/terms`):** Terms and conditions
-- **Admin Login (`/admin/login`):** Admin authentication
-- **Admin Dashboard (`/admin/dashboard`):** Admin panel for managing data
-
-## API Routes
-
-- `POST /api/contact` - Submit contact form
-- `POST /api/application` - Submit job application
-- `POST /api/auth/login` - Admin login
-- `GET /api/admin/contacts` - Get all contact messages (admin only)
-- `GET /api/admin/applications` - Get all job applications (admin only)
-- `POST /api/admin/create-admin` - Create admin user (requires secret key)
-
-## Database Models
-
-- **Contact:** Stores contact form submissions
-- **Application:** Stores job application submissions
-- **Admin:** Stores admin user credentials
-
-## Deployment
-
-1. Set up a MongoDB database (MongoDB Atlas recommended)
-2. Update `MONGODB_URI` in your deployment environment
-3. Deploy to Vercel, Netlify, or your preferred hosting platform
-4. Create an admin user using the create-admin endpoint
-
-## Contact Information
+## Contact
 
 - **Email:** unikacademy2025@gmail.com
 - **Phone:** 9217196824
 
 ## License
 
-Private - UNIK Academy
-
-create a prompt as want to appoyu same in another proejct so I will easy to use
-
-⏺ Here's a reusable prompt you can copy-paste into any new project:
-
----
-
-Build a contact form API route in Next.js 14 App Router with the following setup:
-
-## Stack
-
-- Next.js 14 App Router (route.js, not TypeScript)
-- Nodemailer with Gmail SMTP
-- MongoDB for persisting submissions
-- Zod for validation
-
-## File: app/api/[[...path]]/route.js
-
-### MongoDB
-
-- Module-level singleton connection (client + db vars)
-- connectDB() checks if db already exists before reconnecting
-- DB name from env: DB_NAME (default: "myapp")
-- Connection string from env: MONGO_URL
-
-### Email (Nodemailer)
-
-- Gmail SMTP via nodemailer.createTransport({ service: "gmail" })
-- Credentials from env: GMAIL_USER, GMAIL_APP_PASSWORD (app password, not account password)
-- Create transporter per request inside the handler function
-- Send 2 emails in parallel using Promise.all:
-  1. Admin notification → ADMIN_EMAIL env var
-  2. Auto-reply → user's submitted email
-- Wrap sendMail in try/catch — email failures should NOT fail the API response
-
-### POST /api/contact
-
-Validate body with Zod: - name: string, min 2 chars - email: valid email - phone: string, min 10 chars - company: optional string - message: string, min 10 chars
-
-On success:
-
-1. Generate unique ID: `contact_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-2. Save to MongoDB collection "contact_submissions" with { id, ...fields, createdAt, status: "new" }
-3. Send admin email (HTML table with all fields + submission ID)
-4. Send auto-reply to user (branded HTML with reference ID + website link)
-5. Return { success: true, message: "...", submissionId }
-
-On Zod error: return 400 with error.errors array
-On other error: return 500
-
-### Other routes
-
-- GET /api/ → API info JSON
-- GET /api/health → MongoDB ping, returns { status, database, timestamp }
-- PUT, DELETE, PATCH → 405 Method Not Allowed
-
-### Env vars required
-
-MONGO_URL
-DB_NAME
-GMAIL_USER
-GMAIL_APP_PASSWORD
-ADMIN_EMAIL
-NEXT_PUBLIC_BASE_URL ← used in auto-reply email as website link
-
----
-
-Save this somewhere handy — paste it as the first message when starting a new project and it will reproduce the exact same setup.
+Private — UNIK Academy

@@ -188,7 +188,56 @@ export async function getClasses(user: SessionUser) {
 - [x] **Step 2** — `roles`, `profiles`, `user_roles` tables + signup trigger + backfill + read-own RLS (SQL run in Supabase). Removed stale MongoDB `scripts/create-admin.js` (had hardcoded credentials — **MongoDB password still needs rotating**). README rewritten for Supabase.
 - [x] **Steps 3+4** — roles read from `user_roles` per request (`fetchUserRoles`); page protection and login redirects use `can()` / `dashboardPathFor()` instead of `ADMIN_EMAIL`.
 - [x] **Bug found & fixed:** the old `middleware.ts` was in the project root, but with a `src/app/` layout Next only loads it from `src/` — so **page protection never ran** (e.g. `/admin/dashboard` returned 200 without login). Moved to `src/proxy.ts` (Next 16 name).
-- [ ] **Step 5** — browser test with an admin and a non-admin account, then open PR.
+- [ ] **Step 5** — browser test with an admin and a non-admin account, then push + open PR. _All code is committed (`f9215ab`, `da23238`, `2931c9a`); tested with curl (401s, redirects, RLS) but **not yet with a real login**._
+
+## Phase 2 — detailed plan (start: 2026-09-29 morning)
+
+**Goal:** replace `/admin/dashboard` + `/user/dashboard` with one `/dashboard` whose sidebar and pages depend on the user's permissions.
+
+### Before starting (carry-overs from Phase 1)
+
+1. Browser test Phase 1 (Step 5 above):
+   - Admin account → lands on `/admin/dashboard`, all tabs load and save.
+   - Non-admin account → lands on `/user/dashboard`; `/admin/dashboard` bounces back; `/api/admin/contacts` shows `{"error":"Forbidden"}`.
+   - Logged-in admin visiting `/login` → redirected to `/admin/dashboard`.
+2. Push `feat/rbac-phase-1`, open PR, merge to `main` (the live site's admin dashboard is unprotected until this deploys).
+3. Rotate the MongoDB password (`thitainfo` cluster) that was committed in `scripts/create-admin.js`, or delete the cluster if unused.
+4. Create `feat/rbac-phase-2-dashboard` from the updated `main`.
+
+### What we're working with
+
+`src/app/admin/dashboard/page.tsx` (~3,700 lines, one client component) contains:
+- Types: `Contact`, `Application`, `DemoBooking`, `Job`, `Course`, statuses.
+- Shared UI helpers: `StatusBadge`, `BookingTypeBadge`, `StatsCards`, `SearchAndFilterBar`, `SortableTh`, `SkeletonRows`, `ToastContainer`, `ConfirmModal`, `ActionDropdown`, `SlideOver`, `EmptyState`, `formatDate`.
+- `AdminDashboard` — tab state via `activeSection` (`contacts` / `demo-bookings` / `applications` / `jobs` / `courses`), sidebar nav, data fetching from `/api/admin/*`, and all five sections' tables/forms.
+
+`/user/dashboard` (99 lines) is just a welcome card + "courses will appear here" placeholder.
+
+### Steps (one commit each, test after each)
+
+1. **Extract shared UI (pure move, no behavior change).** Move the helper components into `src/modules/dashboard/components/` and the types into each domain module (e.g. `modules/contacts/types.ts`). `/admin/dashboard` must look and work exactly as before.
+2. **Dashboard shell.**
+   - `src/modules/dashboard/nav.ts` — one list of `{ href, label, icon, permission }`.
+   - `src/app/dashboard/layout.tsx` (server) — `getSessionUser()`, redirect to `/login` if none, filter nav items with `can()`, render a client `Sidebar` + user menu (name/avatar/sign out).
+   - Add a page guard (redirect / 404 instead of a JSON response) alongside the API guard `requirePermission()`.
+3. **Move sections to pages, one at a time** — contacts → demo bookings → applications → jobs → courses:
+   - `src/app/dashboard/<section>/page.tsx` (server: page guard) renders `modules/<domain>/components/<Domain>Panel.tsx` (client: table, filters, slide-over, actions).
+   - Keep calling the existing `/api/admin/*` endpoints (already permission-guarded) — no API renames.
+   - Test each section in the browser before moving to the next.
+4. **Overview page `/dashboard`.** Role-aware cards: admin → stats (counts of new contacts/demos/applications); student → current welcome card; teacher → placeholder until Phase 3.
+5. **Switch routing over.**
+   - `dashboardPathFor()` → `/dashboard`; proxy matcher adds `/dashboard/:path*`.
+   - 301 redirects in `next.config.ts`: `/admin/dashboard` → `/dashboard`, `/user/dashboard` → `/dashboard`.
+   - Delete `src/app/admin/` and `src/app/user/`; drop the `admin-dashboard:view` permission (each page now has its own).
+6. **Users & roles page `/dashboard/users`** (`users:read` / `users:manage`) — list profiles with their roles, add/remove roles. New `modules/users/server/admin.ts` + `/api/admin/users` routes using `supabaseAdmin`. Replaces the manual Table Editor step. Safety: an admin can't remove their own `admin` role (prevents lock-out).
+7. **Verify & document.** `type-check`, `lint`, browser test as admin and as student; update `CLAUDE.md` (remove the "3,700-line page" note) and tick Phase 2 here.
+
+### Decisions to confirm when we start
+
+- [ ] Multi-role users: **combined sidebar** (default, simplest) or a "viewing as" role switcher? (Can be added later without DB changes.)
+- [ ] URL shape `/dashboard/contacts`, `/dashboard/demos`, … — OK?
+- [ ] Keep API paths as `/api/admin/*` (recommended — renaming is churn with no benefit), or move to `/api/dashboard/*`?
+- [ ] Should step 6 (users & roles page) be in Phase 2, or wait until teachers are being onboarded?
 
 ## Open questions
 

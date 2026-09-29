@@ -44,8 +44,9 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  // Protect /user/* — must be authenticated
-  if (pathname.startsWith("/user")) {
+  // Protect /user/* and /dashboard/* — must be authenticated. Per-page
+  // permissions under /dashboard are checked by the pages themselves.
+  if (pathname.startsWith("/user") || pathname.startsWith("/dashboard")) {
     if (!user) {
       return NextResponse.redirect(new URL("/login", request.url));
     }
@@ -61,5 +62,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/user/:path*", "/login"],
+  matcher: ["/admin/:path*", "/user/:path*", "/dashboard/:path*", "/login"],
 };

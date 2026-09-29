@@ -1,6 +1,6 @@
 # Role-Based Dashboard — Requirements & Plan
 
-_Written: 2026-09-28 · Status: planning, not started_
+_Written: 2026-09-28 · Status: Phase 1 done · Phase 2 in progress (branch `feat/rbac-phase-2-dashboard`)_
 
 ## Goal
 
@@ -9,7 +9,7 @@ Support multiple user roles — **admin, teacher, student, developer** — all u
 - **Admin** — sees everything (contacts, applications, demo bookings, jobs, courses/pricing, users).
 - **Teacher** — their own class details and demo class sessions assigned to them.
 - **Student** — their upcoming classes and other student-related info.
-- **Developer** — _TBD (see open questions)._
+- **Developer** — sees everything an admin sees, **read-only** (all `:read` permissions, no `:manage`). _Decided 2026-09-29._
 
 The system must also make it easy to **add more roles later** (e.g. counselor, sales, support, parent).
 
@@ -177,7 +177,7 @@ export async function getClasses(user: SessionUser) {
 ## Implementation phases
 
 1. **Security + roles** — `roles`, `user_roles`, `profiles` tables; `permissions.ts` + `requirePermission` guard; lock down `/api/admin/*`; switch page protection and login redirects from `ADMIN_EMAIL` to roles. ✅ _Done on branch `feat/rbac-phase-1` (see Progress)._
-2. **Unified dashboard** — create `/dashboard` with permission-based sidebar; split the admin page into module panels; redirect old routes.
+2. **Unified dashboard** — create `/dashboard` with permission-based sidebar; split the admin page into module panels; redirect old routes. 🚧 _In progress (see Phase 2 progress)._
 3. **Teacher & student features** — `classes`, `enrollments`, demo assignment, RLS policies; build teacher and student views.
 
 ## Progress
@@ -185,10 +185,25 @@ export async function getClasses(user: SessionUser) {
 ### Phase 1 — branch `feat/rbac-phase-1` (2026-09-28)
 
 - [x] **Step 1** — `requirePermission()` guard on all 17 `/api/admin/*` handlers (401 not logged in / 403 no permission).
-- [x] **Step 2** — `roles`, `profiles`, `user_roles` tables + signup trigger + backfill + read-own RLS (SQL run in Supabase). Removed stale MongoDB `scripts/create-admin.js` (had hardcoded credentials — **MongoDB password still needs rotating**). README rewritten for Supabase.
+- [x] **Step 2** — `roles`, `profiles`, `user_roles` tables + signup trigger + backfill + read-own RLS (SQL run in Supabase). Removed stale MongoDB `scripts/create-admin.js` (had hardcoded credentials — MongoDB password rotated by user on 2026-09-29). README rewritten for Supabase.
 - [x] **Steps 3+4** — roles read from `user_roles` per request (`fetchUserRoles`); page protection and login redirects use `can()` / `dashboardPathFor()` instead of `ADMIN_EMAIL`.
 - [x] **Bug found & fixed:** the old `middleware.ts` was in the project root, but with a `src/app/` layout Next only loads it from `src/` — so **page protection never ran** (e.g. `/admin/dashboard` returned 200 without login). Moved to `src/proxy.ts` (Next 16 name).
 - [ ] **Step 5** — browser test with an admin and a non-admin account, then push + open PR. _All code is committed (`f9215ab`, `da23238`, `2931c9a`); tested with curl (401s, redirects, RLS) but **not yet with a real login**._
+
+### Phase 2 — branch `feat/rbac-phase-2-dashboard` (2026-09-29)
+
+- [x] **Step 1** — shared types/UI extracted from the admin page (3,710 → 2,695 lines, no behavior change) — `74c7ca4`
+- [x] **Step 2** — `/dashboard` shell: permission-filtered sidebar, page guards, proxy covers `/dashboard/*` — `196bef8`
+- [ ] **Step 3** — sections to pages:
+  - [x] contacts → `/dashboard/contacts` (+ shared hooks `useAdminRecords`, `useTableControls`, `useToasts`) — `0ba2942` — _awaiting user's browser check_
+  - [ ] demo bookings → `/dashboard/demos`
+  - [ ] applications → `/dashboard/applications`
+  - [ ] jobs → `/dashboard/jobs`
+  - [ ] courses → `/dashboard/courses`
+- [ ] **Step 4** — role-aware overview page
+- [ ] **Step 5** — switch routing to `/dashboard`, redirect + delete old `/admin` and `/user` dashboards
+- [x] **Step 6** — Users & Roles page `/dashboard/users`; developer role = read-only admin — `af64dd9` — _awaiting user's browser check_
+- [ ] **Step 7** — verify (type-check, lint, build, browser as admin/developer/student), update `CLAUDE.md`
 
 ## Phase 2 — detailed plan (start: 2026-09-29 morning)
 
@@ -196,13 +211,13 @@ export async function getClasses(user: SessionUser) {
 
 ### Before starting (carry-overs from Phase 1)
 
-1. Browser test Phase 1 (Step 5 above):
+1. Browser test Phase 1 (Step 5 above) — _user will test phases 1+2 together on staging:_
    - Admin account → lands on `/admin/dashboard`, all tabs load and save.
    - Non-admin account → lands on `/user/dashboard`; `/admin/dashboard` bounces back; `/api/admin/contacts` shows `{"error":"Forbidden"}`.
    - Logged-in admin visiting `/login` → redirected to `/admin/dashboard`.
-2. Push `feat/rbac-phase-1`, open PR, merge to `main` (the live site's admin dashboard is unprotected until this deploys).
-3. Rotate the MongoDB password (`thitainfo` cluster) that was committed in `scripts/create-admin.js`, or delete the cluster if unused.
-4. Create `feat/rbac-phase-2-dashboard` from the updated `main`.
+2. Push + PR + merge — _now done as one branch (`feat/rbac-phase-2-dashboard`, includes phase 1) after staging testing. The live site's admin dashboard stays unprotected until this deploys._
+3. ~~Rotate the MongoDB password~~ — ✅ done by user (2026-09-29).
+4. ✅ Created `feat/rbac-phase-2-dashboard` from `feat/rbac-phase-1` (2026-09-29) — user will test phases 1+2 together on staging, so phase 2 builds on the unmerged phase 1 branch.
 
 ### What we're working with
 
@@ -226,22 +241,22 @@ export async function getClasses(user: SessionUser) {
    - Test each section in the browser before moving to the next.
 4. **Overview page `/dashboard`.** Role-aware cards: admin → stats (counts of new contacts/demos/applications); student → current welcome card; teacher → placeholder until Phase 3.
 5. **Switch routing over.**
-   - `dashboardPathFor()` → `/dashboard`; proxy matcher adds `/dashboard/:path*`.
+   - `dashboardPathFor()` → `/dashboard`. (Proxy matcher already covers `/dashboard/:path*` since step 2.)
    - 301 redirects in `next.config.ts`: `/admin/dashboard` → `/dashboard`, `/user/dashboard` → `/dashboard`.
    - Delete `src/app/admin/` and `src/app/user/`; drop the `admin-dashboard:view` permission (each page now has its own).
-6. **Users & roles page `/dashboard/users`** (`users:read` / `users:manage`) — list profiles with their roles, add/remove roles. New `modules/users/server/admin.ts` + `/api/admin/users` routes using `supabaseAdmin`. Replaces the manual Table Editor step. Safety: an admin can't remove their own `admin` role (prevents lock-out).
+6. **Users & roles page `/dashboard/users`** (`users:read` / `users:manage`) — list profiles with their roles, add/remove roles. New `modules/users/server/admin.ts` + `/api/admin/users` routes using `supabaseAdmin`. Replaces the manual Table Editor step. Safety: an admin can't remove their own `admin` role, and the last admin can't be removed (prevents lock-out). ✅ _Built 2026-09-29, ahead of steps 3–5._
 7. **Verify & document.** `type-check`, `lint`, browser test as admin and as student; update `CLAUDE.md` (remove the "3,700-line page" note) and tick Phase 2 here.
 
 ### Decisions to confirm when we start
 
 - [ ] Multi-role users: **combined sidebar** (default, simplest) or a "viewing as" role switcher? (Can be added later without DB changes.)
-- [ ] URL shape `/dashboard/contacts`, `/dashboard/demos`, … — OK?
-- [ ] Keep API paths as `/api/admin/*` (recommended — renaming is churn with no benefit), or move to `/api/dashboard/*`?
-- [ ] Should step 6 (users & roles page) be in Phase 2, or wait until teachers are being onboarded?
+- [x] ~~URL shape~~ → `/dashboard/<section>` (went with recommended default, 2026-09-29).
+- [x] ~~API paths~~ → keep `/api/admin/*` (went with recommended default, 2026-09-29).
+- [x] ~~Users & roles page in Phase 2?~~ → **Yes**, built (2026-09-29).
 
 ## Open questions
 
-- [ ] What should the **developer** role see? (system logs? read-only everything? same as admin?)
+- [x] ~~What should the developer role see?~~ → **Everything admin sees, read-only** (2026-09-29). Change `ROLE_PERMISSIONS.developer` in `permissions.ts` to give full admin rights instead.
 - [x] ~~Can one person have multiple roles?~~ → **Confirmed (2026-09-28): yes**, via `user_roles` join table (see Decision C).
 - [ ] For multi-role users, should the dashboard show **one combined view** (sidebar = union of all their permissions — simplest, the default in this design) or a **role switcher** ("viewing as Teacher / Student")? A switcher helps when e.g. a teacher-who-is-also-a-student wants "my classes" to mean one thing at a time.
 - [ ] How are teachers onboarded — admin assigns role to an existing account, or invite flow?

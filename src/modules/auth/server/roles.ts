@@ -21,5 +21,7 @@ export async function fetchUserRoles(
   // Ignore roles that exist in the DB but not yet in code
   return data
     .map((row) => row.role_id as string)
-    .filter((role): role is RoleId => (ROLES as readonly string[]).includes(role));
+    .filter((role): role is RoleId =>
+      (ROLES as readonly string[]).includes(role),
+    );
 }

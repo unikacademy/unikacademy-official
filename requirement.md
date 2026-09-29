@@ -201,8 +201,8 @@ export async function getClasses(user: SessionUser) {
    - Non-admin account → lands on `/user/dashboard`; `/admin/dashboard` bounces back; `/api/admin/contacts` shows `{"error":"Forbidden"}`.
    - Logged-in admin visiting `/login` → redirected to `/admin/dashboard`.
 2. Push `feat/rbac-phase-1`, open PR, merge to `main` (the live site's admin dashboard is unprotected until this deploys).
-3. Rotate the MongoDB password (`thitainfo` cluster) that was committed in `scripts/create-admin.js`, or delete the cluster if unused.
-4. Create `feat/rbac-phase-2-dashboard` from the updated `main`.
+3. ~~Rotate the MongoDB password~~ — ✅ done by user (2026-09-29).
+4. ✅ Created `feat/rbac-phase-2-dashboard` from `feat/rbac-phase-1` (2026-09-29) — user will test phases 1+2 together on staging, so phase 2 builds on the unmerged phase 1 branch.
 
 ### What we're working with
 

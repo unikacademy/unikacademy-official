@@ -52,5 +52,7 @@ export const NAV_ITEMS: NavItem[] = [
 ];
 
 export function navItemsFor(user: { roles: readonly RoleId[] }): NavItem[] {
-  return NAV_ITEMS.filter((item) => !item.permission || can(user, item.permission));
+  return NAV_ITEMS.filter(
+    (item) => !item.permission || can(user, item.permission),
+  );
 }

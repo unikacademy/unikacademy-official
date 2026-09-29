@@ -5,6 +5,13 @@
 export const ROLES = ["admin", "teacher", "student", "developer"] as const;
 export type RoleId = (typeof ROLES)[number];
 
+export const ROLE_LABELS: Record<RoleId, string> = {
+  admin: "Admin",
+  teacher: "Teacher",
+  student: "Student",
+  developer: "Developer",
+};
+
 export const PERMISSIONS = [
   "admin-dashboard:view",
   "contacts:read",

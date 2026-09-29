@@ -9,7 +9,7 @@ Support multiple user roles — **admin, teacher, student, developer** — all u
 - **Admin** — sees everything (contacts, applications, demo bookings, jobs, courses/pricing, users).
 - **Teacher** — their own class details and demo class sessions assigned to them.
 - **Student** — their upcoming classes and other student-related info.
-- **Developer** — _TBD (see open questions)._
+- **Developer** — sees everything an admin sees, **read-only** (all `:read` permissions, no `:manage`). _Decided 2026-09-29._
 
 The system must also make it easy to **add more roles later** (e.g. counselor, sales, support, parent).
 
@@ -229,7 +229,7 @@ export async function getClasses(user: SessionUser) {
    - `dashboardPathFor()` → `/dashboard`; proxy matcher adds `/dashboard/:path*`.
    - 301 redirects in `next.config.ts`: `/admin/dashboard` → `/dashboard`, `/user/dashboard` → `/dashboard`.
    - Delete `src/app/admin/` and `src/app/user/`; drop the `admin-dashboard:view` permission (each page now has its own).
-6. **Users & roles page `/dashboard/users`** (`users:read` / `users:manage`) — list profiles with their roles, add/remove roles. New `modules/users/server/admin.ts` + `/api/admin/users` routes using `supabaseAdmin`. Replaces the manual Table Editor step. Safety: an admin can't remove their own `admin` role (prevents lock-out).
+6. **Users & roles page `/dashboard/users`** (`users:read` / `users:manage`) — list profiles with their roles, add/remove roles. New `modules/users/server/admin.ts` + `/api/admin/users` routes using `supabaseAdmin`. Replaces the manual Table Editor step. Safety: an admin can't remove their own `admin` role, and the last admin can't be removed (prevents lock-out). ✅ _Built 2026-09-29, ahead of steps 3–5._
 7. **Verify & document.** `type-check`, `lint`, browser test as admin and as student; update `CLAUDE.md` (remove the "3,700-line page" note) and tick Phase 2 here.
 
 ### Decisions to confirm when we start
@@ -237,11 +237,11 @@ export async function getClasses(user: SessionUser) {
 - [ ] Multi-role users: **combined sidebar** (default, simplest) or a "viewing as" role switcher? (Can be added later without DB changes.)
 - [ ] URL shape `/dashboard/contacts`, `/dashboard/demos`, … — OK?
 - [ ] Keep API paths as `/api/admin/*` (recommended — renaming is churn with no benefit), or move to `/api/dashboard/*`?
-- [ ] Should step 6 (users & roles page) be in Phase 2, or wait until teachers are being onboarded?
+- [x] ~~Users & roles page in Phase 2?~~ → **Yes**, built (2026-09-29).
 
 ## Open questions
 
-- [ ] What should the **developer** role see? (system logs? read-only everything? same as admin?)
+- [x] ~~What should the developer role see?~~ → **Everything admin sees, read-only** (2026-09-29). Change `ROLE_PERMISSIONS.developer` in `permissions.ts` to give full admin rights instead.
 - [x] ~~Can one person have multiple roles?~~ → **Confirmed (2026-09-28): yes**, via `user_roles` join table (see Decision C).
 - [ ] For multi-role users, should the dashboard show **one combined view** (sidebar = union of all their permissions — simplest, the default in this design) or a **role switcher** ("viewing as Teacher / Student")? A switcher helps when e.g. a teacher-who-is-also-a-student wants "my classes" to mean one thing at a time.
 - [ ] How are teachers onboarded — admin assigns role to an existing account, or invite flow?

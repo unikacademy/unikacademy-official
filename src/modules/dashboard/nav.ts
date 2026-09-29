@@ -49,6 +49,13 @@ export const NAV_ITEMS: NavItem[] = [
     group: "Management",
     permission: "courses:read",
   },
+  {
+    href: "/dashboard/users",
+    label: "Users & Roles",
+    icon: "users",
+    group: "Administration",
+    permission: "users:read",
+  },
 ];
 
 export function navItemsFor(user: { roles: readonly RoleId[] }): NavItem[] {

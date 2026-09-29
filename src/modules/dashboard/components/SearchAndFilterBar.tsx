@@ -5,6 +5,7 @@ export function SearchAndFilterBar({
   onFilterChange,
   filterOptions,
   resultCount,
+  placeholder = "Search by name, email or phone…",
 }: {
   query: string;
   onQueryChange: (v: string) => void;
@@ -12,6 +13,7 @@ export function SearchAndFilterBar({
   onFilterChange: (v: string) => void;
   filterOptions: { value: string; label: string }[];
   resultCount: number;
+  placeholder?: string;
 }) {
   return (
     <div className="mb-4 space-y-3">
@@ -34,7 +36,7 @@ export function SearchAndFilterBar({
           type="text"
           value={query}
           onChange={(e) => onQueryChange(e.target.value)}
-          placeholder="Search by name, email or phone…"
+          placeholder={placeholder}
           className="w-full pl-10 pr-9 py-2.5 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition placeholder:text-gray-400"
         />
         {query && (

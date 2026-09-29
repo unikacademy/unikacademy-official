@@ -24,14 +24,21 @@ export const PERMISSIONS = [
   "courses:manage",
   "jobs:read",
   "jobs:manage",
+  "users:read",
+  "users:manage",
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];
+
+// Everything an admin can see, without the ability to change anything
+const READ_ONLY_PERMISSIONS = PERMISSIONS.filter(
+  (p) => p === "admin-dashboard:view" || p.endsWith(":read"),
+);
 
 export const ROLE_PERMISSIONS: Record<RoleId, readonly Permission[]> = {
   admin: PERMISSIONS,
   teacher: [],
   student: [],
-  developer: [], // TBD — see open questions in requirement.md
+  developer: READ_ONLY_PERMISSIONS,
 };
 
 // A user's permissions are the union of all their roles' permissions.

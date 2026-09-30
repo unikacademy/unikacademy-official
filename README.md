@@ -40,12 +40,24 @@ Website and admin dashboard for UNIK Academy, built with Next.js (App Router), T
    npm run dev
    ```
 
-### Making a user an admin
+### Roles and the dashboard
 
-There is no admin script or default password. Admins are normal users with the `admin` role:
+Everyone logs in at `/login` (Google or GitHub) and lands on `/dashboard`. What they see there depends on their roles:
 
-1. Log in once at `/login` (Google or GitHub) — this creates your profile with the default `student` role.
-2. In the Supabase dashboard → **Table Editor → `user_roles`**, find your row and change `role_id` from `student` to `admin` (or add a second row with `admin` to keep both roles).
+| Role | Access |
+|---|---|
+| Admin | Everything — view and manage contacts, demo bookings, applications, jobs, courses, users & roles |
+| Developer | Sees everything an admin sees, read-only |
+| Teacher, Student | Overview only for now (their own pages are planned) |
+
+New signups get the `student` role. A user can have several roles.
+
+**Making the first admin** (one-time, on a fresh database — there is no admin script or default password):
+
+1. Log in once at `/login` — this creates your profile with the default `student` role.
+2. In the Supabase dashboard → **Table Editor → `user_roles`**, find your row and change `role_id` from `student` to `admin`.
+
+After that, manage everyone's roles from **Dashboard → Users & Roles** (`/dashboard/users`).
 
 ## Scripts
 
@@ -62,16 +74,15 @@ npm run type-check   # tsc --noEmit
 src/
 ├── app/
 │   ├── (marketing)/   # public site: home, about, careers, contact, courses, demo, enroll, terms, privacy-policy
-│   ├── admin/         # admin dashboard
-│   ├── user/          # user dashboard
+│   ├── dashboard/     # one dashboard for all roles; pages shown by permission
 │   ├── login/         # login page (Google / GitHub)
 │   ├── auth/callback/ # Supabase OAuth callback
 │   └── api/           # thin route handlers → src/modules/*/server
-├── modules/           # feature modules (contacts, applications, demo-bookings, courses, jobs, auth, marketing)
+├── modules/           # feature modules (contacts, applications, demo-bookings, courses, jobs, users, auth, dashboard, marketing)
 ├── shared/            # reusable UI, animations, validation
 └── lib/               # Supabase clients, API helpers
 supabase-schema.sql    # database schema + RLS policies (source of truth)
-src/proxy.ts           # page protection for /admin, /user, /login (Next 16 "middleware")
+src/proxy.ts           # login required for /dashboard/* (Next 16 "middleware")
 ```
 
 See `CLAUDE.md` for a detailed architecture guide and `requirement.md` for the role-based dashboard plan.

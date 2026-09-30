@@ -204,7 +204,7 @@ _Steps 1, 2, 3 (contacts) and 6 shipped to `main` with Phase 1 (PR #3). Remainin
   - [x] courses → `/dashboard/courses` (2026-09-30) — `CourseFormModal` as a real component (fixes the second "component created during render" + the ref-during-render lint errors); save payload unchanged so website pricing is unaffected — _awaiting user's browser check_
 - [x] **Step 3 complete** — every sidebar item has a page (2026-09-30).
 - [x] **Step 4** — overview page (2026-09-30): welcome card + "At a glance" stat cards (total + unread/live) for every section the user can read, counted server-side; users with no section permissions (students/teachers until phase 3) get the "classes will appear here" placeholder — _awaiting user's browser check_
-- [ ] **Step 5** — switch routing to `/dashboard`, redirect + delete old `/admin` and `/user` dashboards
+- [x] **Step 5** — switch-over (2026-09-30): everyone lands on `/dashboard` after login; `/admin`, `/admin/*`, `/user`, `/user/*` → 308 to `/dashboard` (`next.config.ts`); deleted `src/app/admin` + `src/app/user` (2,803 lines incl. the admin page's 4 lint errors); removed `admin-dashboard:view` + `dashboardPathFor`; proxy now only guards `/dashboard/*` + `/login`; `robots.ts` disallows `/dashboard`. `/api/admin/*` paths unchanged. — _user testing on staging_
 - [x] **Step 6** — Users & Roles page `/dashboard/users`; developer role = read-only admin — `af64dd9` — ✅ verified by user
 - [ ] **Step 7** — verify (type-check, lint, build, browser as admin/developer/student), update `CLAUDE.md`
 

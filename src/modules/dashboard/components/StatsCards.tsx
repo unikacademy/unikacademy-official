@@ -6,6 +6,12 @@ export interface StatCard {
   icon: React.ReactNode;
 }
 
+// Full class names so Tailwind picks them up
+const GRID_COLS: Record<number, string> = {
+  3: "sm:grid-cols-3",
+  4: "sm:grid-cols-2 lg:grid-cols-4",
+};
+
 export function StatsCards({
   cards,
   loading,
@@ -13,10 +19,12 @@ export function StatsCards({
   cards: StatCard[];
   loading: boolean;
 }) {
+  const gridClass = `grid grid-cols-1 ${GRID_COLS[cards.length] ?? GRID_COLS[3]} gap-4 mb-6`;
+
   if (loading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        {[0, 1, 2].map((i) => (
+      <div className={gridClass}>
+        {cards.map((_, i) => (
           <div
             key={i}
             className="bg-white rounded-2xl border border-gray-100 shadow-sm px-5 py-4 flex items-center gap-4"
@@ -32,7 +40,7 @@ export function StatsCards({
     );
   }
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+    <div className={gridClass}>
       {cards.map((card) => (
         <div
           key={card.label}

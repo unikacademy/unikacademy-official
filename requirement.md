@@ -1,6 +1,12 @@
 # Role-Based Dashboard — Requirements & Plan
 
-_Written: 2026-09-28 · Status: Phase 1 done · Phase 2 in progress (branch `feat/rbac-phase-2-dashboard`)_
+_Written: 2026-09-28 · Last updated: 2026-09-30_
+
+| Phase | Status |
+|---|---|
+| **1. Security + roles** | ✅ Complete — live on `main` (PR #3) |
+| **2. Unified dashboard** | ✅ Complete — branch `feat/rbac-phase-2-sections`; user merging to `main` and testing (2026-09-30) |
+| **3. Teacher & student features** | 📋 Planned & fully specified (see "Phase 3") — starts after Phase 2 is merged and tested |
 
 ## Goal
 
@@ -13,7 +19,7 @@ Support multiple user roles — **admin, teacher, student, developer** — all u
 
 The system must also make it easy to **add more roles later** (e.g. counselor, sales, support, parent).
 
-## Current state (as of 2026-09-28)
+## Starting point (as of 2026-09-28 — historical; see Progress for what changed)
 
 - Two separate dashboards:
   - `/admin/dashboard` → `src/app/admin/dashboard/page.tsx` (~3,700-line client component, tab-switched: contacts/applications/demo-bookings/jobs/courses).
@@ -22,7 +28,7 @@ The system must also make it easy to **add more roles later** (e.g. counselor, s
 - `middleware.ts` matcher: `/admin/:path*`, `/user/:path*`, `/login`.
 - No concept of classes, enrollments, or teacher assignment in the database yet.
 
-## ⚠️ Security issue to fix first
+## ✅ Security issue (found 2026-09-28 — fixed in Phase 1, live since 2026-09-30)
 
 `/api/admin/*` routes are **not protected**:
 
@@ -86,7 +92,9 @@ Three rules, cheap now and expensive to retrofit:
 | Role with a new relationship | `parent` (sees their child's classes) | Above + a new table (`parent_students`) + an RLS policy. No tool avoids this — the DB must know which child belongs to which parent. |
 | Admin creates roles from the UI | Admin builds a custom role, ticks permissions in a screen | Move permissions from code into DB tables (`permissions`, `role_permissions`). Bigger change — the point where a service like Permit.io starts to make sense. Only needed if non-developers must create roles without a deploy. |
 
-## Design
+## Design (original, 2026-09-28)
+
+_Sections 1–4 describe what was built in Phases 1–2 (the permission names ended up as `<resource>:read` / `<resource>:manage`). Section 5 was an early guess — the current Phase 3 scope is in "Phase 3" below._
 
 ### 1. Roles in the database
 
@@ -176,34 +184,46 @@ export async function getClasses(user: SessionUser) {
 
 ## Implementation phases
 
-1. **Security + roles** — `roles`, `user_roles`, `profiles` tables; `permissions.ts` + `requirePermission` guard; lock down `/api/admin/*`; switch page protection and login redirects from `ADMIN_EMAIL` to roles. ✅ _Done on branch `feat/rbac-phase-1` (see Progress)._
-2. **Unified dashboard** — create `/dashboard` with permission-based sidebar; split the admin page into module panels; redirect old routes. 🚧 _In progress (see Phase 2 progress)._
-3. **Teacher & student features** — `classes`, `enrollments`, demo assignment, RLS policies; build teacher and student views.
+1. **Security + roles** — `roles`, `user_roles`, `profiles` tables; `permissions.ts` + `requirePermission` guard; lock down `/api/admin/*`; switch page protection and login redirects from `ADMIN_EMAIL` to roles. ✅ _Done — live on `main` since 2026-09-30 (PR #3, `4c10f05`)._
+2. **Unified dashboard** — create `/dashboard` with permission-based sidebar; split the admin page into module panels; redirect old routes. ✅ _Complete 2026-09-30 (`feat/rbac-phase-2-sections`); user merging to `main` for testing._
+3. **Teacher & student features** — first scope (decided 2026-09-30): profiles for students/teachers + demo assignment (admin assigns teacher/time/Meet link; teacher sees assigned demos; student sees their demo). Classes/enrollments/payments etc. come later, one at a time. 📋 _Planned — see "Phase 3"._
 
 ## Progress
 
-### Phase 1 — branch `feat/rbac-phase-1` (2026-09-28)
+### Phase 1 — ✅ complete (branch `feat/rbac-phase-1`, 2026-09-28 → 2026-09-30)
 
 - [x] **Step 1** — `requirePermission()` guard on all 17 `/api/admin/*` handlers (401 not logged in / 403 no permission).
 - [x] **Step 2** — `roles`, `profiles`, `user_roles` tables + signup trigger + backfill + read-own RLS (SQL run in Supabase). Removed stale MongoDB `scripts/create-admin.js` (had hardcoded credentials — MongoDB password rotated by user on 2026-09-29). README rewritten for Supabase.
 - [x] **Steps 3+4** — roles read from `user_roles` per request (`fetchUserRoles`); page protection and login redirects use `can()` / `dashboardPathFor()` instead of `ADMIN_EMAIL`.
 - [x] **Bug found & fixed:** the old `middleware.ts` was in the project root, but with a `src/app/` layout Next only loads it from `src/` — so **page protection never ran** (e.g. `/admin/dashboard` returned 200 without login). Moved to `src/proxy.ts` (Next 16 name).
-- [ ] **Step 5** — browser test with an admin and a non-admin account, then push + open PR. _All code is committed (`f9215ab`, `da23238`, `2931c9a`); tested with curl (401s, redirects, RLS) but **not yet with a real login**._
+- [x] **Step 5** — tested by user on staging and production with admin + student accounts; merged to `main` (PR #2 → `feat/rbac-phase-1`, PR #3 → `main`, `4c10f05`, 2026-09-30). Verified on production: `/api/admin/*` → 401 without login, `/admin` + `/dashboard` → redirect to `/login`.
 
-### Phase 2 — branch `feat/rbac-phase-2-dashboard` (2026-09-29)
+### Phase 2 — ✅ complete (2026-09-29 → 2026-09-30)
+
+_Steps 1, 2, 3 (contacts) and 6 shipped to `main` with Phase 1 (PR #3). The rest is on branch `feat/rbac-phase-2-sections` (from `main`, 2026-09-30), which the user is merging to `main` and testing. Phase 2 has **no database changes** — nothing to run in Supabase._
 
 - [x] **Step 1** — shared types/UI extracted from the admin page (3,710 → 2,695 lines, no behavior change) — `74c7ca4`
 - [x] **Step 2** — `/dashboard` shell: permission-filtered sidebar, page guards, proxy covers `/dashboard/*` — `196bef8`
-- [ ] **Step 3** — sections to pages:
-  - [x] contacts → `/dashboard/contacts` (+ shared hooks `useAdminRecords`, `useTableControls`, `useToasts`) — `0ba2942` — _awaiting user's browser check_
-  - [ ] demo bookings → `/dashboard/demos`
-  - [ ] applications → `/dashboard/applications`
-  - [ ] jobs → `/dashboard/jobs`
-  - [ ] courses → `/dashboard/courses`
-- [ ] **Step 4** — role-aware overview page
-- [ ] **Step 5** — switch routing to `/dashboard`, redirect + delete old `/admin` and `/user` dashboards
-- [x] **Step 6** — Users & Roles page `/dashboard/users`; developer role = read-only admin — `af64dd9` — _awaiting user's browser check_
-- [ ] **Step 7** — verify (type-check, lint, build, browser as admin/developer/student), update `CLAUDE.md`
+- [x] **Step 3** — sections to pages (every sidebar item has a page):
+  - [x] contacts → `/dashboard/contacts` (+ shared hooks `useAdminRecords`, `useTableControls`, `useToasts`) — `0ba2942` — ✅ verified by user
+  - [x] demo bookings → `/dashboard/demos` — `0f4e37b` — ✅ verified by user
+  - [x] applications → `/dashboard/applications` — `ebf8baf` — search also matches position
+  - [x] jobs → `/dashboard/jobs` — `04ce661` — form is now a real component (`JobFormModal`), fixing the "component created during render" lint error; shared `BulletListInput`
+  - [x] courses → `/dashboard/courses` — `e396538` — `CourseFormModal` as a real component (fixes the second "component created during render" + the ref-during-render lint errors); save payload unchanged so website pricing is unaffected
+- [x] **Step 4** — overview page — `4987c18`: welcome card + "At a glance" stat cards (total + unread/live) for every section the user can read, counted server-side; users with no section permissions (students/teachers until phase 3) get the "classes will appear here" placeholder
+- [x] **Step 5** — switch-over — `f939ea0`: everyone lands on `/dashboard` after login; `/admin`, `/admin/*`, `/user`, `/user/*` → 308 to `/dashboard` (`next.config.ts`); deleted `src/app/admin` + `src/app/user` (2,803 lines incl. the admin page's 4 lint errors); removed `admin-dashboard:view` + `dashboardPathFor`; proxy now only guards `/dashboard/*` + `/login`; `robots.ts` disallows `/dashboard`. `/api/admin/*` paths unchanged.
+- [x] **Step 6** — Users & Roles page `/dashboard/users`; developer role = read-only admin — `af64dd9` — ✅ verified by user
+- [x] **Step 7** — verify + docs (2026-09-30): type-check ✅, production build ✅, lint: 0 errors in dashboard/auth code (project total 8 → 4; the 4 left are pre-existing `set-state-in-effect` in `components/ui/carousel.tsx`, `hooks/use-mobile.ts`, `HeroCarouselSection.tsx`, `SaleBanner.tsx`). `CLAUDE.md` (local, gitignored) and `README.md` updated for the unified dashboard.
+- [ ] **Merge + test** (user, in progress 2026-09-30) — merge `feat/rbac-phase-2-sections` → `main`, then test:
+  1. Admin login → lands on `/dashboard`, 6 stat cards, every section loads and saves.
+  2. Courses: edit a price → homepage / course page / enroll page update; change it back.
+  3. Jobs: create, edit, publish/hide, delete a test job.
+  4. Student login → `/dashboard` with Overview only; `/dashboard/contacts` bounces back to Overview.
+  5. Old bookmark `/admin/dashboard` → opens `/dashboard`.
+  6. Users & Roles: give a test account `developer` → sees everything, no edit/delete/toggle controls.
+  - ⚠️ The old-URL redirects are permanent (308) — browsers cache them, which only matters if we ever roll back to the old dashboard.
+
+**Phase 2 result:** one `/dashboard` for all roles; 6 sections + overview, each its own page guarded by permission; old 3,710-line admin page and user stub deleted.
 
 ## Phase 2 — detailed plan (start: 2026-09-29 morning)
 
@@ -211,11 +231,11 @@ export async function getClasses(user: SessionUser) {
 
 ### Before starting (carry-overs from Phase 1)
 
-1. Browser test Phase 1 (Step 5 above) — _user will test phases 1+2 together on staging:_
+1. ✅ Browser test Phase 1 — done by user on staging + production (2026-09-30):
    - Admin account → lands on `/admin/dashboard`, all tabs load and save.
    - Non-admin account → lands on `/user/dashboard`; `/admin/dashboard` bounces back; `/api/admin/contacts` shows `{"error":"Forbidden"}`.
    - Logged-in admin visiting `/login` → redirected to `/admin/dashboard`.
-2. Push + PR + merge — _now done as one branch (`feat/rbac-phase-2-dashboard`, includes phase 1) after staging testing. The live site's admin dashboard stays unprotected until this deploys._
+2. ✅ Push + PR + merge — done (PR #3 → `main`, 2026-09-30). The admin API/pages are now protected on the live site.
 3. ~~Rotate the MongoDB password~~ — ✅ done by user (2026-09-29).
 4. ✅ Created `feat/rbac-phase-2-dashboard` from `feat/rbac-phase-1` (2026-09-29) — user will test phases 1+2 together on staging, so phase 2 builds on the unmerged phase 1 branch.
 
@@ -249,19 +269,104 @@ export async function getClasses(user: SessionUser) {
 
 ### Decisions to confirm when we start
 
-- [ ] Multi-role users: **combined sidebar** (default, simplest) or a "viewing as" role switcher? (Can be added later without DB changes.)
+- [x] ~~Multi-role users~~ → **combined sidebar** (decided 2026-09-30).
 - [x] ~~URL shape~~ → `/dashboard/<section>` (went with recommended default, 2026-09-29).
 - [x] ~~API paths~~ → keep `/api/admin/*` (went with recommended default, 2026-09-29).
 - [x] ~~Users & roles page in Phase 2?~~ → **Yes**, built (2026-09-29).
+- [x] ~~Sidebar items for sections not yet moved?~~ → **Keep them visible** (option B, 2026-09-30): Demo Bookings / Job Applications / Job Postings / Courses 404 on `/dashboard` until each page is built. Acceptable because admins still land on `/admin/dashboard`, where all sections work.
 
 ## Open questions
 
 - [x] ~~What should the developer role see?~~ → **Everything admin sees, read-only** (2026-09-29). Change `ROLE_PERMISSIONS.developer` in `permissions.ts` to give full admin rights instead.
 - [x] ~~Can one person have multiple roles?~~ → **Confirmed (2026-09-28): yes**, via `user_roles` join table (see Decision C).
-- [ ] For multi-role users, should the dashboard show **one combined view** (sidebar = union of all their permissions — simplest, the default in this design) or a **role switcher** ("viewing as Teacher / Student")? A switcher helps when e.g. a teacher-who-is-also-a-student wants "my classes" to mean one thing at a time.
-- [ ] How are teachers onboarded — admin assigns role to an existing account, or invite flow?
-- [ ] What "other student-related info" should students see (payments, progress, certificates, materials)?
-- [ ] Will non-developers ever need to create new roles from the UI? (If yes, plan for DB-driven permissions — see Decision C.)
+- [x] ~~Multi-role users: combined view or role switcher?~~ → **Combined view** (2026-09-30). Phase 3 pages get distinct names ("My Demo" vs "My Demo Classes") so overlapping roles stay clear.
+- [x] ~~How are teachers onboarded?~~ → **Option A** (2026-09-30): teacher logs in once, admin grants `teacher` on Users & Roles. Invite flow later if needed.
+- [x] ~~What should students see?~~ → Built **one priority at a time** (2026-09-30). First: (1) **their own profile** (edit info + photo), (2) **their demo booking** (booked time + teacher info). Everything else (payments, progress, certificates, materials) later.
+- [x] ~~Custom roles from the UI?~~ → **Not needed now** (2026-09-30). Roles stay defined in code.
+
+## Phase 3 — Teacher & student features (final plan, 2026-09-30)
+
+**Status:** 📋 Fully specified, not started. **Start after** Phase 2 is merged to `main` and tested. Create branch `feat/rbac-phase-3` from the updated `main`.
+
+### Requirements (from user, 2026-09-30)
+
+**Student**
+1. **My Profile** — add/edit their info: name, email, college, field of study, photo, "and so on".
+2. **My Demo** — see their demo booking: when it's scheduled, and the assigned teacher's info.
+
+**Teacher**
+1. **My Profile** — add/edit their info (same idea as students).
+2. **My Demo Classes** — see the demo classes **assigned to them by an admin**: the time, and the student's info. Teachers only see their own assigned demos.
+
+**Admin**
+- Assigns a teacher (and a time) to each demo booking.
+
+### What the data looks like today (checked 2026-09-30)
+
+- `demo_bookings` are submitted from the public form **without login**: `name`, `phone` (required), `email` (optional), `course`, `message`, plus corporate fields and an optional `preferred_date` (date only).
+- 63 bookings: 30 have an email, **0 match any logged-in user's email**, 0 have a preferred date.
+- There is **no** `student_id`, `teacher_id`, or scheduled time column → needs schema changes.
+- `profiles` has only `email`, `full_name`, `avatar_url` (from Google/GitHub).
+
+### Decisions (confirmed by user, 2026-09-30)
+
+- [x] **Linking a booking to a student** → **admin links it by hand** in the Demo Bookings slide-over (pick a student account). No auto-link by email, no login-to-book.
+- [x] **Student profile fields** → name, email (read-only — it's the login), photo, phone, date of birth, city, college, field of study, year of study.
+- [x] **Teacher profile fields** → name, email (read-only), photo, phone, qualification, years of experience, specialization, short bio.
+- [x] **Teacher sees about the student** → name, **phone**, course, message, date of birth/city, college, field of study, year of study, photo. **Not email.**
+- [x] **Student sees about the teacher** → name, photo, qualification, experience, specialization, bio. **No phone, no email.**
+- [x] **Meeting link** → **Google Meet** link per demo, entered by admin (validated as `https://meet.google.com/...`). Shown to the assigned teacher and the student.
+- [x] **Demo lifecycle** → `pending` (new, no teacher/time) → `scheduled` → `completed` / `cancelled` / `no_show` / `rescheduled` (scheduled again at a new time). Separate from the inbox status (not_read/read/replied).
+- [x] **Time zone** → everything shown and entered in **IST (Asia/Kolkata)**; stored as `timestamptz`.
+
+### Design
+
+**Database (`supabase-schema.sql`, re-runnable — user runs it in the Supabase SQL editor):**
+
+**`profiles` new columns:** `phone`, `date_of_birth date`, `city`, `college`, `field_of_study`, `year_of_study`, `qualification`, `experience_years int`, `specialization`, `bio`, `updated_at`. Student fields and teacher fields are all nullable; the profile form shows the student section to users with the student role and the teacher section to teachers (both if they have both). `avatar_url` becomes the uploaded photo when set (falls back to the Google/GitHub picture).
+
+**`demo_bookings` new columns:** `student_id uuid → profiles`, `teacher_id uuid → profiles`, `scheduled_at timestamptz`, `meet_link text`, `demo_status text default 'pending'` (check constraint on the 6 values), `updated_at`.
+
+**Field whitelists (enforced server-side, not just hidden in the UI):**
+- Teacher's view of a demo: time, meet link, course, message, demo status + student `full_name, phone, avatar_url, date_of_birth, city, college, field_of_study, year_of_study`. **No student email.**
+- Student's view of a demo: time, meet link, course, demo status + teacher `full_name, avatar_url, qualification, experience_years, specialization, bio`. **No teacher phone/email.**
+
+**A student can have more than one booking** → My Demo lists all bookings linked to them, next upcoming first.
+
+**Photo storage:** Supabase Storage bucket `avatars` — each user uploads to `avatars/<user_id>/…`; storage RLS lets a user write only their own folder; public read (photos are shown to teachers/students).
+
+**Permissions (added to `permissions.ts`):**
+
+| Permission | Who | Allows |
+|---|---|---|
+| _(none — any logged-in user)_ | everyone | My Profile: view/edit own profile + photo |
+| `demos:assign` | admin | Link student, assign teacher, set time + Meet link, change demo stage |
+| `demos:read:assigned` | teacher | My Demo Classes: only demos where `teacher_id = me` |
+| `demos:read:own` | student | My Demo: only demos where `student_id = me` |
+
+Admin keeps `demos:read` / `demos:manage`; developer gets the new `:read`-style permissions read-only as today.
+
+**Data scoping:** teacher/student queries are always filtered to the caller on the server (`teacher_id = me` / `student_id = me`) **and** return only the whitelisted fields above. RLS policies on `demo_bookings` as a second layer.
+
+**Pages:**
+- `/dashboard/profile` — **My Profile** (every logged-in user). Common fields + student section and/or teacher section depending on roles; photo upload.
+- `/dashboard/my-demo` — **My Demo** (student): each linked booking — date/time (IST), stage, Meet link, teacher card.
+- `/dashboard/my-demo-classes` — **My Demo Classes** (teacher): upcoming + past assigned demos — date/time (IST), stage, Meet link, course/message, student card (with phone).
+- Admin **Demo Bookings** slide-over: new "Assign" section — link student (pick from student accounts), assign teacher (pick from teacher accounts), date + time (IST), Google Meet link, demo stage. Table gets Teacher / Scheduled columns.
+- **Overview:** "Your next demo" card for students and teachers.
+
+### Steps (one commit each, test after each)
+
+1. **Database** — `profiles` columns, `demo_bookings` columns + check constraint, `avatars` bucket + storage policies, RLS. → user runs SQL in Supabase.
+2. **My Profile** page + photo upload (all roles).
+3. **Admin assigning** in Demo Bookings (link student, teacher, time, Meet link, stage).
+4. **Teacher: My Demo Classes.**
+5. **Student: My Demo.**
+6. **Overview "next demo" cards**, verify (type-check, lint, build, browser as admin/teacher/student), docs.
+
+### Later (not in this scope)
+
+Classes / enrollments, payments & receipts, progress / attendance, certificates, study materials — one at a time, when prioritised. Email notifications when a demo is assigned. Teacher invite flow.
 
 ## Related notes
 

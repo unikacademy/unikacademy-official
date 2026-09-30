@@ -1,8 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { dashboardPathFor } from "@/modules/auth/permissions";
-import { fetchUserRoles } from "@/modules/auth/server/roles";
+import { DASHBOARD_HOME } from "@/modules/dashboard/nav";
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
@@ -10,7 +9,9 @@ export async function GET(request: Request) {
   const error = searchParams.get("error");
 
   if (error) {
-    return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(error)}`);
+    return NextResponse.redirect(
+      `${origin}/login?error=${encodeURIComponent(error)}`,
+    );
   }
 
   if (!code) {
@@ -36,7 +37,8 @@ export async function GET(request: Request) {
     },
   );
 
-  const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+  const { error: exchangeError } =
+    await supabase.auth.exchangeCodeForSession(code);
 
   if (exchangeError) {
     return NextResponse.redirect(`${origin}/login?error=exchange_failed`);
@@ -50,6 +52,5 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/login?error=no_user`);
   }
 
-  const roles = await fetchUserRoles(supabase, user.id);
-  return NextResponse.redirect(`${origin}${dashboardPathFor({ roles })}`);
+  return NextResponse.redirect(`${origin}${DASHBOARD_HOME}`);
 }

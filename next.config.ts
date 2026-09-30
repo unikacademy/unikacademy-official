@@ -41,13 +41,29 @@ const retiredCourseSlugs = [
   "communication-skills-advanced",
 ];
 
+// Old role-specific dashboards, replaced by the unified /dashboard (the
+// sidebar adapts to each user's permissions). Keeps bookmarks working.
+const retiredDashboardPaths = [
+  "/admin",
+  "/admin/:path*",
+  "/user",
+  "/user/:path*",
+];
+
 const nextConfig: NextConfig = {
   async redirects() {
-    return retiredCourseSlugs.map((slug) => ({
-      source: `/courses/${slug}`,
-      destination: "/courses/communication-skills",
-      permanent: true,
-    }));
+    return [
+      ...retiredCourseSlugs.map((slug) => ({
+        source: `/courses/${slug}`,
+        destination: "/courses/communication-skills",
+        permanent: true,
+      })),
+      ...retiredDashboardPaths.map((source) => ({
+        source,
+        destination: "/dashboard",
+        permanent: true,
+      })),
+    ];
   },
   async headers() {
     return [

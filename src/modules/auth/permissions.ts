@@ -13,7 +13,6 @@ export const ROLE_LABELS: Record<RoleId, string> = {
 };
 
 export const PERMISSIONS = [
-  "admin-dashboard:view",
   "contacts:read",
   "contacts:manage",
   "applications:read",
@@ -30,9 +29,7 @@ export const PERMISSIONS = [
 export type Permission = (typeof PERMISSIONS)[number];
 
 // Everything an admin can see, without the ability to change anything
-const READ_ONLY_PERMISSIONS = PERMISSIONS.filter(
-  (p) => p === "admin-dashboard:view" || p.endsWith(":read"),
-);
+const READ_ONLY_PERMISSIONS = PERMISSIONS.filter((p) => p.endsWith(":read"));
 
 export const ROLE_PERMISSIONS: Record<RoleId, readonly Permission[]> = {
   admin: PERMISSIONS,
@@ -49,11 +46,4 @@ export function can(
   return user.roles.some((role) =>
     ROLE_PERMISSIONS[role]?.includes(permission),
   );
-}
-
-// Where to send a user after login (or when they hit /login already logged in).
-export function dashboardPathFor(user: { roles: readonly RoleId[] }) {
-  return can(user, "admin-dashboard:view")
-    ? "/admin/dashboard"
-    : "/user/dashboard";
 }

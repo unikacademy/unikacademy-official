@@ -1,6 +1,9 @@
 import { can, type Permission, type RoleId } from "@/modules/auth/permissions";
 import type { NavIconKey } from "@/modules/dashboard/icons";
 
+// Where every user lands after login — the sidebar adapts to their permissions.
+export const DASHBOARD_HOME = "/dashboard";
+
 export type NavItem = {
   href: string;
   label: string;

@@ -6,7 +6,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/admin/", "/api/", "/auth/", "/user/"],
+        disallow: ["/dashboard", "/api/", "/auth/"],
       },
     ],
     sitemap: "https://www.unikacademy.in/sitemap.xml",

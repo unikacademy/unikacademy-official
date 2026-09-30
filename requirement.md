@@ -1,6 +1,6 @@
 # Role-Based Dashboard — Requirements & Plan
 
-_Written: 2026-09-28 · Status: Phase 1 done · Phase 2 in progress (branch `feat/rbac-phase-2-dashboard`)_
+_Written: 2026-09-28 · Status: Phase 1 done & live · Phase 2 in progress (branch `feat/rbac-phase-2-sections`)_
 
 ## Goal
 
@@ -176,7 +176,7 @@ export async function getClasses(user: SessionUser) {
 
 ## Implementation phases
 
-1. **Security + roles** — `roles`, `user_roles`, `profiles` tables; `permissions.ts` + `requirePermission` guard; lock down `/api/admin/*`; switch page protection and login redirects from `ADMIN_EMAIL` to roles. ✅ _Done on branch `feat/rbac-phase-1` (see Progress)._
+1. **Security + roles** — `roles`, `user_roles`, `profiles` tables; `permissions.ts` + `requirePermission` guard; lock down `/api/admin/*`; switch page protection and login redirects from `ADMIN_EMAIL` to roles. ✅ _Done — live on `main` since 2026-09-30 (PR #3, `4c10f05`)._
 2. **Unified dashboard** — create `/dashboard` with permission-based sidebar; split the admin page into module panels; redirect old routes. 🚧 _In progress (see Phase 2 progress)._
 3. **Teacher & student features** — `classes`, `enrollments`, demo assignment, RLS policies; build teacher and student views.
 
@@ -188,21 +188,23 @@ export async function getClasses(user: SessionUser) {
 - [x] **Step 2** — `roles`, `profiles`, `user_roles` tables + signup trigger + backfill + read-own RLS (SQL run in Supabase). Removed stale MongoDB `scripts/create-admin.js` (had hardcoded credentials — MongoDB password rotated by user on 2026-09-29). README rewritten for Supabase.
 - [x] **Steps 3+4** — roles read from `user_roles` per request (`fetchUserRoles`); page protection and login redirects use `can()` / `dashboardPathFor()` instead of `ADMIN_EMAIL`.
 - [x] **Bug found & fixed:** the old `middleware.ts` was in the project root, but with a `src/app/` layout Next only loads it from `src/` — so **page protection never ran** (e.g. `/admin/dashboard` returned 200 without login). Moved to `src/proxy.ts` (Next 16 name).
-- [ ] **Step 5** — browser test with an admin and a non-admin account, then push + open PR. _All code is committed (`f9215ab`, `da23238`, `2931c9a`); tested with curl (401s, redirects, RLS) but **not yet with a real login**._
+- [x] **Step 5** — tested by user on staging and production with admin + student accounts; merged to `main` (PR #2 → `feat/rbac-phase-1`, PR #3 → `main`, `4c10f05`, 2026-09-30). Verified on production: `/api/admin/*` → 401 without login, `/admin` + `/dashboard` → redirect to `/login`.
 
-### Phase 2 — branch `feat/rbac-phase-2-dashboard` (2026-09-29)
+### Phase 2 (2026-09-29 →)
+
+_Steps 1, 2, 3 (contacts) and 6 shipped to `main` with Phase 1 (PR #3). Remaining work on branch `feat/rbac-phase-2-sections` (from `main`, 2026-09-30)._
 
 - [x] **Step 1** — shared types/UI extracted from the admin page (3,710 → 2,695 lines, no behavior change) — `74c7ca4`
 - [x] **Step 2** — `/dashboard` shell: permission-filtered sidebar, page guards, proxy covers `/dashboard/*` — `196bef8`
 - [ ] **Step 3** — sections to pages:
-  - [x] contacts → `/dashboard/contacts` (+ shared hooks `useAdminRecords`, `useTableControls`, `useToasts`) — `0ba2942` — _awaiting user's browser check_
+  - [x] contacts → `/dashboard/contacts` (+ shared hooks `useAdminRecords`, `useTableControls`, `useToasts`) — `0ba2942` — ✅ verified by user
   - [ ] demo bookings → `/dashboard/demos`
   - [ ] applications → `/dashboard/applications`
   - [ ] jobs → `/dashboard/jobs`
   - [ ] courses → `/dashboard/courses`
 - [ ] **Step 4** — role-aware overview page
 - [ ] **Step 5** — switch routing to `/dashboard`, redirect + delete old `/admin` and `/user` dashboards
-- [x] **Step 6** — Users & Roles page `/dashboard/users`; developer role = read-only admin — `af64dd9` — _awaiting user's browser check_
+- [x] **Step 6** — Users & Roles page `/dashboard/users`; developer role = read-only admin — `af64dd9` — ✅ verified by user
 - [ ] **Step 7** — verify (type-check, lint, build, browser as admin/developer/student), update `CLAUDE.md`
 
 ## Phase 2 — detailed plan (start: 2026-09-29 morning)
@@ -211,11 +213,11 @@ export async function getClasses(user: SessionUser) {
 
 ### Before starting (carry-overs from Phase 1)
 
-1. Browser test Phase 1 (Step 5 above) — _user will test phases 1+2 together on staging:_
+1. ✅ Browser test Phase 1 — done by user on staging + production (2026-09-30):
    - Admin account → lands on `/admin/dashboard`, all tabs load and save.
    - Non-admin account → lands on `/user/dashboard`; `/admin/dashboard` bounces back; `/api/admin/contacts` shows `{"error":"Forbidden"}`.
    - Logged-in admin visiting `/login` → redirected to `/admin/dashboard`.
-2. Push + PR + merge — _now done as one branch (`feat/rbac-phase-2-dashboard`, includes phase 1) after staging testing. The live site's admin dashboard stays unprotected until this deploys._
+2. ✅ Push + PR + merge — done (PR #3 → `main`, 2026-09-30). The admin API/pages are now protected on the live site.
 3. ~~Rotate the MongoDB password~~ — ✅ done by user (2026-09-29).
 4. ✅ Created `feat/rbac-phase-2-dashboard` from `feat/rbac-phase-1` (2026-09-29) — user will test phases 1+2 together on staging, so phase 2 builds on the unmerged phase 1 branch.
 
@@ -253,6 +255,7 @@ export async function getClasses(user: SessionUser) {
 - [x] ~~URL shape~~ → `/dashboard/<section>` (went with recommended default, 2026-09-29).
 - [x] ~~API paths~~ → keep `/api/admin/*` (went with recommended default, 2026-09-29).
 - [x] ~~Users & roles page in Phase 2?~~ → **Yes**, built (2026-09-29).
+- [x] ~~Sidebar items for sections not yet moved?~~ → **Keep them visible** (option B, 2026-09-30): Demo Bookings / Job Applications / Job Postings / Courses 404 on `/dashboard` until each page is built. Acceptable because admins still land on `/admin/dashboard`, where all sections work.
 
 ## Open questions
 

@@ -255,7 +255,7 @@ _Steps 1, 2, 3 (contacts) and 6 shipped to `main` with Phase 1 (PR #3). Remainin
 
 ### Decisions to confirm when we start
 
-- [ ] Multi-role users: **combined sidebar** (default, simplest) or a "viewing as" role switcher? (Can be added later without DB changes.)
+- [x] ~~Multi-role users~~ → **combined sidebar** (decided 2026-09-30).
 - [x] ~~URL shape~~ → `/dashboard/<section>` (went with recommended default, 2026-09-29).
 - [x] ~~API paths~~ → keep `/api/admin/*` (went with recommended default, 2026-09-29).
 - [x] ~~Users & roles page in Phase 2?~~ → **Yes**, built (2026-09-29).
@@ -265,10 +265,74 @@ _Steps 1, 2, 3 (contacts) and 6 shipped to `main` with Phase 1 (PR #3). Remainin
 
 - [x] ~~What should the developer role see?~~ → **Everything admin sees, read-only** (2026-09-29). Change `ROLE_PERMISSIONS.developer` in `permissions.ts` to give full admin rights instead.
 - [x] ~~Can one person have multiple roles?~~ → **Confirmed (2026-09-28): yes**, via `user_roles` join table (see Decision C).
-- [ ] For multi-role users, should the dashboard show **one combined view** (sidebar = union of all their permissions — simplest, the default in this design) or a **role switcher** ("viewing as Teacher / Student")? A switcher helps when e.g. a teacher-who-is-also-a-student wants "my classes" to mean one thing at a time.
-- [ ] How are teachers onboarded — admin assigns role to an existing account, or invite flow?
-- [ ] What "other student-related info" should students see (payments, progress, certificates, materials)?
-- [ ] Will non-developers ever need to create new roles from the UI? (If yes, plan for DB-driven permissions — see Decision C.)
+- [x] ~~Multi-role users: combined view or role switcher?~~ → **Combined view** (2026-09-30). Phase 3 pages get distinct names ("My Demo" vs "My Demo Classes") so overlapping roles stay clear.
+- [x] ~~How are teachers onboarded?~~ → **Option A** (2026-09-30): teacher logs in once, admin grants `teacher` on Users & Roles. Invite flow later if needed.
+- [x] ~~What should students see?~~ → Built **one priority at a time** (2026-09-30). First: (1) **their own profile** (edit info + photo), (2) **their demo booking** (booked time + teacher info). Everything else (payments, progress, certificates, materials) later.
+- [x] ~~Custom roles from the UI?~~ → **Not needed now** (2026-09-30). Roles stay defined in code.
+
+## Phase 3 — Teacher & student features (draft plan, 2026-09-30)
+
+### Requirements (from user, 2026-09-30)
+
+**Student**
+1. **My Profile** — add/edit their info: name, email, college, field of study, photo, "and so on".
+2. **My Demo** — see their demo booking: when it's scheduled, and the assigned teacher's info.
+
+**Teacher**
+1. **My Profile** — add/edit their info (same idea as students).
+2. **My Demo Classes** — see the demo classes **assigned to them by an admin**: the time, and the student's info. Teachers only see their own assigned demos.
+
+**Admin**
+- Assigns a teacher (and a time) to each demo booking.
+
+### What the data looks like today (checked 2026-09-30)
+
+- `demo_bookings` are submitted from the public form **without login**: `name`, `phone` (required), `email` (optional), `course`, `message`, plus corporate fields and an optional `preferred_date` (date only).
+- 63 bookings: 30 have an email, **0 match any logged-in user's email**, 0 have a preferred date.
+- There is **no** `student_id`, `teacher_id`, or scheduled time column → needs schema changes.
+- `profiles` has only `email`, `full_name`, `avatar_url` (from Google/GitHub).
+
+### Proposed design
+
+**Database (`supabase-schema.sql`, re-runnable):**
+- `profiles`: add `phone`, `bio`, and role-specific nullable fields — student: `college`, `field_of_study`; teacher: e.g. `qualification`, `experience_years`, `specialization` _(field list to confirm)_. Keep email = login email (read-only).
+- **Supabase Storage** bucket `avatars` — users upload their own photo to `avatars/<user_id>/…`; RLS lets each user write only their own folder; public read.
+- `demo_bookings`: add `student_id` (→ profiles), `teacher_id` (→ profiles), `scheduled_at timestamptz`, `meeting_link` _(to confirm)_, and a demo lifecycle `demo_status` (`pending` / `scheduled` / `completed` / `cancelled`) separate from the inbox `status` (not_read/read/replied).
+
+**Permissions:** `profile:manage` (own profile — everyone), `demos:read:own` (student), `demos:read:assigned` (teacher), `demos:assign` (admin). Admin keeps `demos:read`/`demos:manage`.
+
+**Data scoping:** teacher/student queries are always filtered to the caller server-side (`teacher_id = me` / `student_id = me`) and return a **whitelist of fields** (e.g. students don't get teacher's phone unless decided). RLS policies on `demo_bookings` as a second layer.
+
+**Pages:**
+- `/dashboard/profile` — My Profile (every logged-in user; fields shown per role).
+- `/dashboard/my-demo` — student: booking details, scheduled time, teacher card.
+- `/dashboard/my-demo-classes` — teacher: upcoming/past assigned demos with student info.
+- Admin **Demo Bookings** slide-over: assign teacher, set date/time, link to a student account.
+- Overview: "Your next demo" card for students and teachers.
+
+### Steps (proposed)
+
+1. Schema: profile fields, avatars bucket + policies, demo_bookings columns, RLS.
+2. My Profile page + photo upload (all roles).
+3. Admin: assign teacher + schedule + link student in Demo Bookings.
+4. Teacher: My Demo Classes.
+5. Student: My Demo.
+6. Overview cards for teacher/student, verify, docs.
+
+### Decisions needed before step 1
+
+- [ ] **Linking a booking to a student account** (bookings are anonymous today). Options:
+  - **A.** Auto-link by **verified login email**: when a student logs in with the same email they booked with, the booking appears. Only covers bookings that included an email (30/63). Safe because Google/GitHub emails are verified.
+  - **B.** **Require login to book** a demo → `student_id` set at booking time. Cleanest going forward, but adds friction to the public form (hurts conversions).
+  - **C.** **Admin links manually** in the Demo Bookings slide-over (pick a student account).
+  - _Recommended:_ **A + C** now (auto-link by email, admin fixes the rest); consider B later.
+- [ ] **Student profile fields** — name, email (read-only), photo, college, field of study — anything else? (phone, year of study, city, date of birth…)
+- [ ] **Teacher profile fields** — name, photo, phone, + ? (qualification, experience, specialization, short bio…)
+- [ ] **What the teacher sees about the student** — name, course, message, college/field of study; **phone/email too?** (needed if the teacher contacts the student directly).
+- [ ] **What the student sees about the teacher** — name, photo, qualification/bio; **phone/email too?**
+- [ ] **Meeting link** — store a Google Meet/Zoom link per demo (entered by admin)? Or handled outside the app for now?
+- [ ] **Demo lifecycle statuses** — `pending → scheduled → completed / cancelled` enough? (no-show? rescheduled?)
+- [ ] **Time zone** — all times in IST (Asia/Kolkata)?
 
 ## Related notes
 

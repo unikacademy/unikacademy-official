@@ -198,8 +198,8 @@ _Steps 1, 2, 3 (contacts) and 6 shipped to `main` with Phase 1 (PR #3). Remainin
 - [x] **Step 2** — `/dashboard` shell: permission-filtered sidebar, page guards, proxy covers `/dashboard/*` — `196bef8`
 - [ ] **Step 3** — sections to pages:
   - [x] contacts → `/dashboard/contacts` (+ shared hooks `useAdminRecords`, `useTableControls`, `useToasts`) — `0ba2942` — ✅ verified by user
-  - [x] demo bookings → `/dashboard/demos` (2026-09-30) — _awaiting user's browser check_
-  - [ ] applications → `/dashboard/applications`
+  - [x] demo bookings → `/dashboard/demos` (2026-09-30) — ✅ verified by user
+  - [x] applications → `/dashboard/applications` (2026-09-30) — search also matches position — _awaiting user's browser check_
   - [ ] jobs → `/dashboard/jobs`
   - [ ] courses → `/dashboard/courses`
 - [ ] **Step 4** — role-aware overview page

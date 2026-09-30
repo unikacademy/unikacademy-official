@@ -115,3 +115,106 @@ create policy "Public insert applications"
 
 -- All other access (admin reads, updates, deletes, course/job management)
 -- is handled server-side using the service role key which bypasses RLS entirely.
+
+-- ============================================================
+-- Roles & users (RBAC) — see requirement.md
+-- A user can have multiple roles; permissions per role live in code
+-- (src/modules/auth/permissions.ts), not in the database.
+-- ============================================================
+
+-- roles — lookup table (not an enum, so roles can be added/renamed easily)
+create table if not exists roles (
+  id    text primary key,
+  label text not null
+);
+
+insert into roles (id, label) values
+  ('admin',     'Admin'),
+  ('teacher',   'Teacher'),
+  ('student',   'Student'),
+  ('developer', 'Developer')
+on conflict (id) do update set label = excluded.label;
+
+-- profiles — one row per auth user (email copied here because the app
+-- can't query the auth schema through the API)
+create table if not exists profiles (
+  id         uuid primary key references auth.users(id) on delete cascade,
+  email      text,
+  full_name  text,
+  avatar_url text,
+  created_at timestamptz default now()
+);
+
+-- user_roles — which roles each user has (many-to-many)
+create table if not exists user_roles (
+  user_id    uuid not null references profiles(id) on delete cascade,
+  role_id    text not null references roles(id) on update cascade on delete restrict,
+  created_at timestamptz default now(),
+  primary key (user_id, role_id)
+);
+
+-- New signups get a profile and the default 'student' role automatically
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer set search_path = ''
+as $$
+begin
+  insert into public.profiles (id, email, full_name, avatar_url)
+  values (
+    new.id,
+    new.email,
+    coalesce(new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'name'),
+    coalesce(new.raw_user_meta_data->>'avatar_url', new.raw_user_meta_data->>'picture')
+  )
+  on conflict (id) do nothing;
+
+  insert into public.user_roles (user_id, role_id)
+  values (new.id, 'student')
+  on conflict do nothing;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute function public.handle_new_user();
+
+-- Backfill users who signed up before this existed (safe to re-run)
+insert into profiles (id, email, full_name, avatar_url)
+select
+  u.id,
+  u.email,
+  coalesce(u.raw_user_meta_data->>'full_name', u.raw_user_meta_data->>'name'),
+  coalesce(u.raw_user_meta_data->>'avatar_url', u.raw_user_meta_data->>'picture')
+from auth.users u
+on conflict (id) do nothing;
+
+insert into user_roles (user_id, role_id)
+select p.id, 'student'
+from profiles p
+where not exists (select 1 from user_roles ur where ur.user_id = p.id);
+
+-- RLS: logged-in users can read the role list and their own profile/roles.
+-- There are deliberately NO insert/update/delete policies — users must never
+-- be able to grant themselves roles. Role changes go through supabaseAdmin.
+alter table roles      enable row level security;
+alter table profiles   enable row level security;
+alter table user_roles enable row level security;
+
+drop policy if exists "Authenticated read roles" on roles;
+create policy "Authenticated read roles"
+  on roles for select to authenticated using (true);
+
+drop policy if exists "Users read own profile" on profiles;
+create policy "Users read own profile"
+  on profiles for select to authenticated using ((select auth.uid()) = id);
+
+drop policy if exists "Users read own roles" on user_roles;
+create policy "Users read own roles"
+  on user_roles for select to authenticated using ((select auth.uid()) = user_id);
+
+-- Making a user admin: the user logs in once (gets the default 'student'
+-- role), then in Table Editor → user_roles change their role_id to 'admin'.

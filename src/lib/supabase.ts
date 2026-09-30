@@ -1,7 +1,7 @@
 import { createBrowserClient } from "@supabase/ssr";
 
 // Browser / client-component client — uses the public anon key.
-// Uses @supabase/ssr so the session is cookie-based and readable by middleware.
+// Uses @supabase/ssr so the session is cookie-based and readable by the proxy (src/proxy.ts).
 export function getSupabase() {
   return createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

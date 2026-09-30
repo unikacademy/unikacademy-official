@@ -319,20 +319,28 @@ _Steps 1, 2, 3 (contacts) and 6 shipped to `main` with Phase 1 (PR #3). Remainin
 5. Student: My Demo.
 6. Overview cards for teacher/student, verify, docs.
 
-### Decisions needed before step 1
+### Decisions (confirmed by user, 2026-09-30)
 
-- [ ] **Linking a booking to a student account** (bookings are anonymous today). Options:
-  - **A.** Auto-link by **verified login email**: when a student logs in with the same email they booked with, the booking appears. Only covers bookings that included an email (30/63). Safe because Google/GitHub emails are verified.
-  - **B.** **Require login to book** a demo → `student_id` set at booking time. Cleanest going forward, but adds friction to the public form (hurts conversions).
-  - **C.** **Admin links manually** in the Demo Bookings slide-over (pick a student account).
-  - _Recommended:_ **A + C** now (auto-link by email, admin fixes the rest); consider B later.
-- [ ] **Student profile fields** — name, email (read-only), photo, college, field of study — anything else? (phone, year of study, city, date of birth…)
-- [ ] **Teacher profile fields** — name, photo, phone, + ? (qualification, experience, specialization, short bio…)
-- [ ] **What the teacher sees about the student** — name, course, message, college/field of study; **phone/email too?** (needed if the teacher contacts the student directly).
-- [ ] **What the student sees about the teacher** — name, photo, qualification/bio; **phone/email too?**
-- [ ] **Meeting link** — store a Google Meet/Zoom link per demo (entered by admin)? Or handled outside the app for now?
-- [ ] **Demo lifecycle statuses** — `pending → scheduled → completed / cancelled` enough? (no-show? rescheduled?)
-- [ ] **Time zone** — all times in IST (Asia/Kolkata)?
+- [x] **Linking a booking to a student** → **admin links it by hand** in the Demo Bookings slide-over (pick a student account). No auto-link by email, no login-to-book.
+- [x] **Student profile fields** → name, email (read-only — it's the login), photo, phone, date of birth, city, college, field of study, year of study.
+- [x] **Teacher profile fields** → name, email (read-only), photo, phone, qualification, years of experience, specialization, short bio.
+- [x] **Teacher sees about the student** → name, **phone**, course, message, date of birth/city, college, field of study, year of study, photo. **Not email.**
+- [x] **Student sees about the teacher** → name, photo, qualification, experience, specialization, bio. **No phone, no email.**
+- [x] **Meeting link** → **Google Meet** link per demo, entered by admin (validated as `https://meet.google.com/...`). Shown to the assigned teacher and the student.
+- [x] **Demo lifecycle** → `pending` (new, no teacher/time) → `scheduled` → `completed` / `cancelled` / `no_show` / `rescheduled` (scheduled again at a new time). Separate from the inbox status (not_read/read/replied).
+- [x] **Time zone** → everything shown and entered in **IST (Asia/Kolkata)**; stored as `timestamptz`.
+
+### Final design (replaces "Proposed design" above where they differ)
+
+**`profiles` new columns:** `phone`, `date_of_birth date`, `city`, `college`, `field_of_study`, `year_of_study`, `qualification`, `experience_years int`, `specialization`, `bio`, `updated_at`. Student fields and teacher fields are all nullable; the profile form shows the student section to users with the student role and the teacher section to teachers (both if they have both). `avatar_url` becomes the uploaded photo when set (falls back to the Google/GitHub picture).
+
+**`demo_bookings` new columns:** `student_id uuid → profiles`, `teacher_id uuid → profiles`, `scheduled_at timestamptz`, `meet_link text`, `demo_status text default 'pending'` (check constraint on the 6 values), `updated_at`.
+
+**Field whitelists (enforced server-side, not just hidden in the UI):**
+- Teacher's view of a demo: time, meet link, course, message, demo status + student `full_name, phone, avatar_url, date_of_birth, city, college, field_of_study, year_of_study`. **No student email.**
+- Student's view of a demo: time, meet link, course, demo status + teacher `full_name, avatar_url, qualification, experience_years, specialization, bio`. **No teacher phone/email.**
+
+**A student can have more than one booking** → My Demo lists all bookings linked to them, next upcoming first.
 
 ## Related notes
 

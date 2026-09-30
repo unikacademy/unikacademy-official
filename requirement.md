@@ -202,7 +202,8 @@ _Steps 1, 2, 3 (contacts) and 6 shipped to `main` with Phase 1 (PR #3). Remainin
   - [x] applications → `/dashboard/applications` (2026-09-30) — search also matches position — _awaiting user's browser check_
   - [x] jobs → `/dashboard/jobs` (2026-09-30) — form is now a real component (`JobFormModal`), fixing the "component created during render" lint error; shared `BulletListInput` — _awaiting user's browser check_
   - [x] courses → `/dashboard/courses` (2026-09-30) — `CourseFormModal` as a real component (fixes the second "component created during render" + the ref-during-render lint errors); save payload unchanged so website pricing is unaffected — _awaiting user's browser check_
-- [ ] **Step 4** — role-aware overview page
+- [x] **Step 3 complete** — every sidebar item has a page (2026-09-30).
+- [x] **Step 4** — overview page (2026-09-30): welcome card + "At a glance" stat cards (total + unread/live) for every section the user can read, counted server-side; users with no section permissions (students/teachers until phase 3) get the "classes will appear here" placeholder — _awaiting user's browser check_
 - [ ] **Step 5** — switch routing to `/dashboard`, redirect + delete old `/admin` and `/user` dashboards
 - [x] **Step 6** — Users & Roles page `/dashboard/users`; developer role = read-only admin — `af64dd9` — ✅ verified by user
 - [ ] **Step 7** — verify (type-check, lint, build, browser as admin/developer/student), update `CLAUDE.md`

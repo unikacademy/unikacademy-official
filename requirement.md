@@ -201,7 +201,7 @@ _Steps 1, 2, 3 (contacts) and 6 shipped to `main` with Phase 1 (PR #3). Remainin
   - [x] demo bookings → `/dashboard/demos` (2026-09-30) — ✅ verified by user
   - [x] applications → `/dashboard/applications` (2026-09-30) — search also matches position — _awaiting user's browser check_
   - [x] jobs → `/dashboard/jobs` (2026-09-30) — form is now a real component (`JobFormModal`), fixing the "component created during render" lint error; shared `BulletListInput` — _awaiting user's browser check_
-  - [ ] courses → `/dashboard/courses`
+  - [x] courses → `/dashboard/courses` (2026-09-30) — `CourseFormModal` as a real component (fixes the second "component created during render" + the ref-during-render lint errors); save payload unchanged so website pricing is unaffected — _awaiting user's browser check_
 - [ ] **Step 4** — role-aware overview page
 - [ ] **Step 5** — switch routing to `/dashboard`, redirect + delete old `/admin` and `/user` dashboards
 - [x] **Step 6** — Users & Roles page `/dashboard/users`; developer role = read-only admin — `af64dd9` — ✅ verified by user

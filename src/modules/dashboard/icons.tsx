@@ -26,6 +26,9 @@ const STAT_ICON_PATHS = {
   academicCap:
     "M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z",
   bookOpen: NAV_ICON_PATHS.courses,
+  calendar: NAV_ICON_PATHS.demos,
+  building:
+    "M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21",
 } as const;
 
 export type StatIconKey = keyof typeof STAT_ICON_PATHS;

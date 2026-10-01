@@ -24,6 +24,13 @@ export const NAV_ITEMS: NavItem[] = [
     group: "General",
   },
   {
+    href: "/dashboard/my-demo",
+    label: "My Demo",
+    icon: "demos",
+    group: "Learning",
+    permission: "demos:read:own",
+  },
+  {
     href: "/dashboard/my-demo-classes",
     label: "My Demo Classes",
     icon: "demos",

@@ -19,6 +19,7 @@ export const PERMISSIONS = [
   "applications:manage",
   "demos:read",
   "demos:manage",
+  "demos:assign", // link student, assign teacher, schedule, Meet link, stage
   "courses:read",
   "courses:manage",
   "jobs:read",

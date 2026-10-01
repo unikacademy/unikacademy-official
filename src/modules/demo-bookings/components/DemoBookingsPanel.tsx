@@ -2,9 +2,11 @@
 
 import { useCallback, useState } from "react";
 import { CONTACT_STATUSES, type ContactStatus } from "@/modules/contacts/types";
-import type { DemoBooking } from "@/modules/demo-bookings/types";
+import type { Assignees, DemoBooking } from "@/modules/demo-bookings/types";
 import { BookingTypeBadge } from "@/modules/demo-bookings/components/BookingTypeBadge";
-import { formatDate } from "@/modules/dashboard/format";
+import { DemoStageBadge } from "@/modules/demo-bookings/components/DemoStageBadge";
+import { DemoAssignment } from "@/modules/demo-bookings/components/DemoAssignment";
+import { formatDate, formatDateTimeIST } from "@/modules/dashboard/format";
 import { thClass, tdClass, rowClass } from "@/modules/dashboard/table";
 import { StatIcon } from "@/modules/dashboard/icons";
 import { useToasts } from "@/modules/dashboard/hooks/useToasts";
@@ -31,19 +33,51 @@ const searchText = (d: DemoBooking) => [
   d.phone,
   d.companyName,
   d.bookingType,
+  d.teacher?.fullName,
+  d.student?.fullName,
 ];
 
-export function DemoBookingsPanel({ canManage }: { canManage: boolean }) {
+export function DemoBookingsPanel({
+  canManage,
+  canAssign,
+}: {
+  canManage: boolean;
+  canAssign: boolean;
+}) {
   const { toasts, showToast } = useToasts();
   const handleError = useCallback(
     (message: string) => showToast(message, "error"),
     [showToast],
   );
-  const { rows, loading, refreshing, refresh, patchLocal, remove } =
+  const { rows, setRows, loading, refreshing, refresh, patchLocal, remove } =
     useAdminRecords<DemoBooking>(ENDPOINT, handleError);
   const table = useTableControls(rows, searchText);
 
   const [detailItem, setDetailItem] = useState<DemoBooking | null>(null);
+
+  // Teacher/student pickers — loaded once, the first time a booking is opened
+  const [assignees, setAssignees] = useState<Assignees | null>(null);
+  const [assigneesRequested, setAssigneesRequested] = useState(false);
+
+  const openDetail = (booking: DemoBooking) => {
+    setDetailItem(booking);
+    if (canAssign && !assigneesRequested) {
+      setAssigneesRequested(true);
+      fetch(`${ENDPOINT}/assignees`)
+        .then((res) => (res.ok ? res.json() : Promise.reject(res.status)))
+        .then((data: Assignees) => setAssignees(data))
+        .catch(() => {
+          setAssigneesRequested(false); // allow a retry on next open
+          showToast("Failed to load teachers and students", "error");
+        });
+    }
+  };
+
+  const handleAssigned = (saved: DemoBooking) => {
+    setRows((prev) => prev.map((d) => (d._id === saved._id ? saved : d)));
+    setDetailItem(saved);
+    showToast("Assignment saved");
+  };
   const [deleteTarget, setDeleteTarget] = useState<{
     id: string;
     name: string;
@@ -72,7 +106,7 @@ export function DemoBookingsPanel({ canManage }: { canManage: boolean }) {
   };
 
   const unread = rows.filter((d) => d.status === "not_read").length;
-  const cols = canManage ? 10 : 9;
+  const cols = canManage ? 11 : 10;
 
   return (
     <>
@@ -93,6 +127,17 @@ export function DemoBookingsPanel({ canManage }: { canManage: boolean }) {
         onStatusChange={handleStatusChange}
         statuses={CONTACT_STATUSES}
         readOnly={!canManage}
+        extra={
+          detailItem && (
+            <DemoAssignment
+              key={detailItem._id}
+              booking={detailItem}
+              canAssign={canAssign}
+              assignees={assignees}
+              onSaved={handleAssigned}
+            />
+          )
+        }
       />
 
       <PanelToolbar
@@ -195,6 +240,13 @@ export function DemoBookingsPanel({ canManage }: { canManage: boolean }) {
                     currentSortDir={table.sortDir}
                     onSort={table.handleSort}
                   />
+                  <SortableTh
+                    label="Demo"
+                    sortKey="scheduledAt"
+                    currentSortKey={table.sortKey}
+                    currentSortDir={table.sortDir}
+                    onSort={table.handleSort}
+                  />
                   <th className={thClass}>Message</th>
                   <SortableTh
                     label="Status"
@@ -221,7 +273,7 @@ export function DemoBookingsPanel({ canManage }: { canManage: boolean }) {
                     <tr
                       key={d._id}
                       className={rowClass(d.status)}
-                      onClick={() => setDetailItem(d)}
+                      onClick={() => openDetail(d)}
                     >
                       <td className={tdClass}>
                         <BookingTypeBadge type={d.bookingType} />
@@ -262,6 +314,21 @@ export function DemoBookingsPanel({ canManage }: { canManage: boolean }) {
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary whitespace-nowrap">
                           {d.course}
                         </span>
+                      </td>
+                      <td className={tdClass}>
+                        <div className="flex flex-col items-start gap-1">
+                          <DemoStageBadge stage={d.demoStatus} />
+                          {d.scheduledAt && (
+                            <span className="text-xs text-gray-600 whitespace-nowrap">
+                              {formatDateTimeIST(d.scheduledAt)}
+                            </span>
+                          )}
+                          {d.teacher && (
+                            <span className="text-xs text-gray-400 whitespace-nowrap">
+                              with {d.teacher.fullName ?? d.teacher.email}
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td
                         className={`${tdClass} text-gray-600 max-w-xs truncate`}

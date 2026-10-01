@@ -16,6 +16,7 @@ export function SlideOver({
   onStatusChange,
   statuses,
   readOnly = false,
+  extra,
 }: {
   item: AnyRecord | null;
   section: ActiveSection;
@@ -24,6 +25,8 @@ export function SlideOver({
   statuses: { value: string; label: string; color: string }[];
   // Hide the status selector for users who can view but not manage
   readOnly?: boolean;
+  // Section-specific content shown above the message (e.g. demo assignment)
+  extra?: React.ReactNode;
 }) {
   const [updating, setUpdating] = useState(false);
 
@@ -255,6 +258,8 @@ export function SlideOver({
               </div>
             </div>
           )}
+
+          {extra}
 
           {/* Message */}
           {(contact?.message || booking?.message || application?.message) && (

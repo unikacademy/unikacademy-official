@@ -9,13 +9,17 @@ import { fetchUserRoles } from "@/modules/auth/server/roles";
 export type SessionUser = {
   id: string;
   email: string | null;
+  // From the user's profile (editable on My Profile), falling back to the
+  // Google/GitHub login values
   fullName: string | null;
   avatarUrl: string | null;
+  // The Google/GitHub picture — what "Remove photo" reverts to
+  loginAvatarUrl: string | null;
   roles: RoleId[];
 };
 
 // Wrapped in `cache` so a layout and page rendering in the same request share
-// one auth check + roles query.
+// one auth check + roles/profile query.
 export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
   const supabase = await createSupabaseServerClient();
   const {
@@ -24,16 +28,39 @@ export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
 
   if (!user) return null;
 
-  const roles = await fetchUserRoles(supabase, user.id);
+  const [roles, { data: profile }] = await Promise.all([
+    fetchUserRoles(supabase, user.id),
+    // RLS lets users read their own profile row
+    supabase
+      .from("profiles")
+      .select("full_name, avatar_url")
+      .eq("id", user.id)
+      .maybeSingle(),
+  ]);
+
   const meta = user.user_metadata ?? {};
+  const loginAvatarUrl: string | null = meta.avatar_url ?? meta.picture ?? null;
   return {
     id: user.id,
     email: user.email ?? null,
-    fullName: meta.full_name ?? meta.name ?? null,
-    avatarUrl: meta.avatar_url ?? meta.picture ?? null,
+    fullName: profile?.full_name ?? meta.full_name ?? meta.name ?? null,
+    avatarUrl: profile?.avatar_url ?? loginAvatarUrl,
+    loginAvatarUrl,
     roles,
   };
 });
+
+/**
+ * API guard for endpoints any logged-in user may call (e.g. their own
+ * profile). Returns the user, or a 401 response to send back.
+ */
+export async function authenticate(): Promise<
+  { user: SessionUser; denied: null } | { user: null; denied: NextResponse }
+> {
+  const user = await getSessionUser();
+  if (!user) return { user: null, denied: err("Unauthorized", 401) };
+  return { user, denied: null };
+}
 
 /**
  * API guard. Returns an error response to send back if the caller is not

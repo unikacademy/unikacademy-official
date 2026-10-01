@@ -38,6 +38,25 @@ export const ROLE_PERMISSIONS: Record<RoleId, readonly Permission[]> = {
   developer: READ_ONLY_PERMISSIONS,
 };
 
+// Extra My Profile sections per role (everyone gets the basic section).
+// Someone with several roles gets every matching section.
+export type ProfileSection = "student" | "teacher";
+
+const ROLE_PROFILE_SECTIONS: Record<RoleId, readonly ProfileSection[]> = {
+  admin: [],
+  developer: [],
+  teacher: ["teacher"],
+  student: ["student"],
+};
+
+export function profileSectionsFor(user: {
+  roles: readonly RoleId[];
+}): ProfileSection[] {
+  return [
+    ...new Set(user.roles.flatMap((r) => ROLE_PROFILE_SECTIONS[r] ?? [])),
+  ];
+}
+
 // A user's permissions are the union of all their roles' permissions.
 export function can(
   user: { roles: readonly RoleId[] },

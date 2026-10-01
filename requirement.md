@@ -357,8 +357,8 @@ Admin keeps `demos:read` / `demos:manage`; developer gets the new `:read`-style 
 
 ### Steps (one commit each, test after each)
 
-1. **Database** — `profiles` columns, `demo_bookings` columns + check constraint, `avatars` bucket + storage policies, RLS. → user runs SQL in Supabase.
-2. **My Profile** page + photo upload (all roles).
+1. ✅ **Database** — `profiles` columns, `demo_bookings` columns + check constraint, `avatars` bucket + storage policies. Run in Supabase + verified 2026-10-01 — `277e1c4`. _Changed from plan: no select/update RLS policies for teachers/students on `profiles`/`demo_bookings` (RLS is row-level and would expose e.g. student email); all reads/writes go through the server with field whitelists._
+2. ✅ **My Profile** `/dashboard/profile` (2026-10-01) — every role; basic section + Education (student) / Teaching (teacher) sections via `profileSectionsFor()`; shared validation (client + server); server writes only whitelisted fields; photo resized in-browser to 512px JPEG, uploaded to `avatars/<user id>/`, server verifies path + file before saving, old upload deleted, "Remove photo" reverts to the Google/GitHub picture; sidebar/top bar now show the profile name/photo. — _awaiting user's browser check_
 3. **Admin assigning** in Demo Bookings (link student, teacher, time, Meet link, stage).
 4. **Teacher: My Demo Classes.**
 5. **Student: My Demo.**

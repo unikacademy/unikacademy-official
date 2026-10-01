@@ -1,6 +1,10 @@
 import Link from "next/link";
-import { ROLE_LABELS } from "@/modules/auth/permissions";
+import { ROLE_LABELS, can } from "@/modules/auth/permissions";
 import { requirePageUser } from "@/modules/auth/server/session";
+import { listAssignedDemos } from "@/modules/demo-bookings/server/teacher";
+import { listOwnDemos } from "@/modules/demo-bookings/server/student";
+import { isUpcomingDemo } from "@/modules/demo-bookings/schedule";
+import { NextDemoCard } from "@/modules/demo-bookings/components/NextDemoCard";
 import { NAV_ITEMS } from "@/modules/dashboard/nav";
 import { NavIcon } from "@/modules/dashboard/icons";
 import {
@@ -57,8 +61,21 @@ function StatCardLink({ card }: { card: OverviewCard }) {
 
 export default async function DashboardOverviewPage() {
   const user = await requirePageUser();
-  const cards = await getOverviewCards(user);
+  const canTeach = can(user, "demos:read:assigned");
+  const canStudy = can(user, "demos:read:own");
+  const [cards, teachingDemos, ownDemos] = await Promise.all([
+    getOverviewCards(user),
+    canTeach ? listAssignedDemos(user.id) : [],
+    canStudy ? listOwnDemos(user.id) : [],
+  ]);
   const name = user.fullName ?? user.email ?? "there";
+
+  // Lists are sorted soonest first, so the first upcoming one is "next"
+  const upcomingTeaching = teachingDemos.filter((d) => isUpcomingDemo(d));
+  const upcomingOwn = ownDemos.filter((d) => isUpcomingDemo(d));
+  const nextTeaching = upcomingTeaching[0];
+  const nextOwn = upcomingOwn[0];
+  const hasPersonal = canTeach || canStudy;
 
   return (
     <div className="space-y-6">
@@ -90,6 +107,49 @@ export default async function DashboardOverviewPage() {
         </div>
       </div>
 
+      {hasPersonal && (
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+          {canStudy && (
+            <NextDemoCard
+              title="Your next demo"
+              href="/dashboard/my-demo"
+              linkLabel="My Demo"
+              upcomingCount={upcomingOwn.length}
+              next={
+                nextOwn && {
+                  scheduledAt: nextOwn.scheduledAt,
+                  demoStatus: nextOwn.demoStatus,
+                  course: nextOwn.course,
+                  meetLink: nextOwn.meetLink,
+                  withLabel: nextOwn.teacher?.fullName ?? null,
+                }
+              }
+              emptyText="No upcoming demo linked to your account yet."
+              emptyAction={{ href: "/demo", label: "Book a free demo" }}
+            />
+          )}
+          {canTeach && (
+            <NextDemoCard
+              title="Your next demo class"
+              href="/dashboard/my-demo-classes"
+              linkLabel="My Demo Classes"
+              upcomingCount={upcomingTeaching.length}
+              next={
+                nextTeaching && {
+                  scheduledAt: nextTeaching.scheduledAt,
+                  demoStatus: nextTeaching.demoStatus,
+                  course: nextTeaching.course,
+                  meetLink: nextTeaching.meetLink,
+                  withLabel:
+                    nextTeaching.student?.fullName || nextTeaching.bookedName,
+                }
+              }
+              emptyText="No upcoming demo classes assigned to you."
+            />
+          )}
+        </div>
+      )}
+
       {cards.length > 0 ? (
         <section>
           <h3 className="text-sm font-bold text-primary uppercase tracking-wider mb-3">
@@ -101,8 +161,8 @@ export default async function DashboardOverviewPage() {
             ))}
           </div>
         </section>
-      ) : (
-        // No section permissions yet (students/teachers until phase 3)
+      ) : hasPersonal ? null : (
+        // Nothing to show yet (e.g. a role with no pages)
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center text-gray-400">
           <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <svg

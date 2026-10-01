@@ -6,7 +6,7 @@ _Written: 2026-09-28 · Last updated: 2026-09-30_
 |---|---|
 | **1. Security + roles** | ✅ Complete — live on `main` (PR #3) |
 | **2. Unified dashboard** | ✅ Complete — branch `feat/rbac-phase-2-sections`; user merging to `main` and testing (2026-09-30) |
-| **3. Teacher & student features** | 📋 Planned & fully specified (see "Phase 3") — starts after Phase 2 is merged and tested |
+| **3. Teacher & student features** | ✅ Code complete (2026-10-01) on `feat/rbac-phase-3` — awaiting user's browser test + merge (see "Phase 3") |
 
 ## Goal
 
@@ -186,7 +186,7 @@ export async function getClasses(user: SessionUser) {
 
 1. **Security + roles** — `roles`, `user_roles`, `profiles` tables; `permissions.ts` + `requirePermission` guard; lock down `/api/admin/*`; switch page protection and login redirects from `ADMIN_EMAIL` to roles. ✅ _Done — live on `main` since 2026-09-30 (PR #3, `4c10f05`)._
 2. **Unified dashboard** — create `/dashboard` with permission-based sidebar; split the admin page into module panels; redirect old routes. ✅ _Complete 2026-09-30 (`feat/rbac-phase-2-sections`); user merging to `main` for testing._
-3. **Teacher & student features** — first scope (decided 2026-09-30): profiles for students/teachers + demo assignment (admin assigns teacher/time/Meet link; teacher sees assigned demos; student sees their demo). Classes/enrollments/payments etc. come later, one at a time. 📋 _Planned — see "Phase 3"._
+3. **Teacher & student features** — first scope (decided 2026-09-30): profiles for students/teachers + demo assignment (admin assigns teacher/time/Meet link; teacher sees assigned demos; student sees their demo). Classes/enrollments/payments etc. come later, one at a time. ✅ _Code complete 2026-10-01 — see "Phase 3"._
 
 ## Progress
 
@@ -286,7 +286,7 @@ _Steps 1, 2, 3 (contacts) and 6 shipped to `main` with Phase 1 (PR #3). The rest
 
 ## Phase 3 — Teacher & student features (final plan, 2026-09-30)
 
-**Status:** 📋 Fully specified, not started. **Start after** Phase 2 is merged to `main` and tested. Create branch `feat/rbac-phase-3` from the updated `main`.
+**Status:** ✅ Code complete 2026-10-01 on branch `feat/rbac-phase-3` (from `main` after PR #4). Database SQL already run in Supabase. Awaiting user's browser test (checklist under Steps) → PR → `main`.
 
 ### Requirements (from user, 2026-09-30)
 
@@ -362,7 +362,19 @@ Admin keeps `demos:read` / `demos:manage`; developer gets the new `:read`-style 
 3. ✅ **Admin assigning** in Demo Bookings (2026-10-01) — "Demo assignment" section in the booking slide-over: student account, teacher, date & time (IST), Google Meet link, stage (picking teacher + time auto-moves a pending demo to Scheduled). New `demos:assign` permission (admin only; developers see a read-only summary). `PATCH /api/admin/demo-bookings/[id]/assign` validates stage, IST time, Meet link, and that the picked accounts actually have the student/teacher role; scheduled/rescheduled/completed/no-show require a teacher + time. `GET …/assignees` lists teacher/student accounts. Table gets a sortable "Demo" column (stage, IST time, teacher); search matches teacher/student names. — _awaiting user's browser check_
 4. ✅ **Teacher: My Demo Classes** `/dashboard/my-demo-classes` (2026-10-01) — server-rendered (no API); `demos:read:assigned` (teacher only — "personal" permissions are excluded from admin's all-permissions so admins don't get an empty page); only demos with `teacher_id = me`; Upcoming (not finished, until 1 h after start) / Past; card: IST time, stage, course, Join Google Meet, message, student card (name, phone, photo, age, city, college, field, year; falls back to booking-form name/phone if no account linked). Student email is never selected from the DB. Also gives students `demos:read:own` (used in step 5). — _awaiting user's browser check_
 5. ✅ **Student: My Demo** `/dashboard/my-demo` (2026-10-01) — server-rendered; `demos:read:own`; only bookings with `student_id = me`; Upcoming / Past; card: IST time (or "to be confirmed"), stage + friendly note, course, booked date, Join Google Meet, teacher card (name, photo, qualification, experience, specialization, bio — or "a teacher will be assigned soon"). Teacher phone/email never selected from the DB. Empty state explains the admin links bookings + "Book a free demo" → `/demo`. — _awaiting user's browser check_
-6. **Overview "next demo" cards**, verify (type-check, lint, build, browser as admin/teacher/student), docs.
+6. ✅ **Overview "next demo" cards + verify + docs** (2026-10-01) — Overview shows "Your next demo" (student) / "Your next demo class" (teacher) with IST time, stage, other person's name, Join Google Meet, link to the full page; the empty placeholder only remains for users with nothing to show. Verified: 0 type errors, build ✅, lint unchanged (same 4 pre-existing marketing/ui errors, 0 in phase 3 code), all logged-out checks 307/401; logic + privacy checks (permissions, IST conversion in 3 time zones, upcoming/past, age, no email/phone in whitelisted rows, assignment validation without writes) all pass. `README.md` + `CLAUDE.md` (local) updated.
+
+### Browser test checklist (user)
+
+_Prerequisite: on Users & Roles, give one test account **teacher** and another **student** (there are none yet)._
+
+1. **My Profile** (each role): fill in fields + save; upload a photo (sidebar avatar updates), then Remove (back to Google photo); bad phone / future DOB show errors; student sees Education, teacher sees Teaching.
+2. **Admin → Demo Bookings:** open a booking → link the student, pick the teacher, set a future IST time + Meet link → Save. Stage becomes Scheduled; table "Demo" column shows time + teacher. A Zoom link is rejected; "Scheduled" without teacher/time is rejected.
+3. **Teacher → My Demo Classes:** the demo is under Upcoming with correct IST time, working Meet button, student card with phone — **no email**.
+4. **Student → My Demo:** same demo with teacher card (qualification, experience, bio) — **no teacher phone/email**.
+5. **Overview** for teacher and student shows the "next demo" card.
+6. Set the demo to Completed / Cancelled → moves to Past on both pages.
+7. Developer account: Demo Bookings shows the assignment read-only (no Save).
 
 ### Later (not in this scope)
 

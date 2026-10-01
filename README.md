@@ -46,11 +46,16 @@ Everyone logs in at `/login` (Google or GitHub) and lands on `/dashboard`. What 
 
 | Role | Access |
 |---|---|
-| Admin | Everything — view and manage contacts, demo bookings, applications, jobs, courses, users & roles |
+| Admin | Everything — view and manage contacts, demo bookings (incl. assigning teachers), applications, jobs, courses, users & roles |
 | Developer | Sees everything an admin sees, read-only |
-| Teacher, Student | Overview only for now (their own pages are planned) |
+| Teacher | My Profile (incl. teaching details) · **My Demo Classes** — demos assigned to them, with time, Meet link and student details (phone, not email) |
+| Student | My Profile (incl. education details) · **My Demo** — their demo bookings, with time, Meet link and teacher details (no phone/email) |
 
-New signups get the `student` role. A user can have several roles.
+Everyone has **My Profile** (name, phone, photo, etc.). New signups get the `student` role. A user can have several roles and sees the pages for all of them.
+
+**Demo workflow:** a visitor books a demo on the website (no login needed) → an admin opens it in **Demo Bookings**, links it to the student's account, assigns a teacher, sets the date/time (IST) and Google Meet link → the teacher sees it under My Demo Classes and the student under My Demo.
+
+Profile photos are stored in the Supabase Storage bucket `avatars` (created by `supabase-schema.sql`).
 
 **Making the first admin** (one-time, on a fresh database — there is no admin script or default password):
 

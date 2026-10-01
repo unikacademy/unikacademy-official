@@ -1,11 +1,11 @@
 # Role-Based Dashboard — Requirements & Plan
 
-_Written: 2026-09-28 · Last updated: 2026-09-30_
+_Written: 2026-09-28 · Last updated: 2026-10-01_
 
 | Phase | Status |
 |---|---|
 | **1. Security + roles** | ✅ Complete — live on `main` (PR #3) |
-| **2. Unified dashboard** | ✅ Complete — branch `feat/rbac-phase-2-sections`; user merging to `main` and testing (2026-09-30) |
+| **2. Unified dashboard** | ✅ Complete — tested by user and merged to `main` (PR #4, `f608e01`) |
 | **3. Teacher & student features** | ✅ Code complete (2026-10-01) on `feat/rbac-phase-3` — awaiting user's browser test + merge (see "Phase 3") |
 
 ## Goal
@@ -185,7 +185,7 @@ export async function getClasses(user: SessionUser) {
 ## Implementation phases
 
 1. **Security + roles** — `roles`, `user_roles`, `profiles` tables; `permissions.ts` + `requirePermission` guard; lock down `/api/admin/*`; switch page protection and login redirects from `ADMIN_EMAIL` to roles. ✅ _Done — live on `main` since 2026-09-30 (PR #3, `4c10f05`)._
-2. **Unified dashboard** — create `/dashboard` with permission-based sidebar; split the admin page into module panels; redirect old routes. ✅ _Complete 2026-09-30 (`feat/rbac-phase-2-sections`); user merging to `main` for testing._
+2. **Unified dashboard** — create `/dashboard` with permission-based sidebar; split the admin page into module panels; redirect old routes. ✅ _Complete — tested and merged to `main` (PR #4, `f608e01`)._
 3. **Teacher & student features** — first scope (decided 2026-09-30): profiles for students/teachers + demo assignment (admin assigns teacher/time/Meet link; teacher sees assigned demos; student sees their demo). Classes/enrollments/payments etc. come later, one at a time. ✅ _Code complete 2026-10-01 — see "Phase 3"._
 
 ## Progress
@@ -200,7 +200,7 @@ export async function getClasses(user: SessionUser) {
 
 ### Phase 2 — ✅ complete (2026-09-29 → 2026-09-30)
 
-_Steps 1, 2, 3 (contacts) and 6 shipped to `main` with Phase 1 (PR #3). The rest is on branch `feat/rbac-phase-2-sections` (from `main`, 2026-09-30), which the user is merging to `main` and testing. Phase 2 has **no database changes** — nothing to run in Supabase._
+_Steps 1, 2, 3 (contacts) and 6 shipped to `main` with Phase 1 (PR #3). The rest was on `feat/rbac-phase-2-sections`, tested by the user and merged to `main` (PR #4, `f608e01`, 2026-10-01). Phase 2 has no database changes._
 
 - [x] **Step 1** — shared types/UI extracted from the admin page (3,710 → 2,695 lines, no behavior change) — `74c7ca4`
 - [x] **Step 2** — `/dashboard` shell: permission-filtered sidebar, page guards, proxy covers `/dashboard/*` — `196bef8`
@@ -214,7 +214,7 @@ _Steps 1, 2, 3 (contacts) and 6 shipped to `main` with Phase 1 (PR #3). The rest
 - [x] **Step 5** — switch-over — `f939ea0`: everyone lands on `/dashboard` after login; `/admin`, `/admin/*`, `/user`, `/user/*` → 308 to `/dashboard` (`next.config.ts`); deleted `src/app/admin` + `src/app/user` (2,803 lines incl. the admin page's 4 lint errors); removed `admin-dashboard:view` + `dashboardPathFor`; proxy now only guards `/dashboard/*` + `/login`; `robots.ts` disallows `/dashboard`. `/api/admin/*` paths unchanged.
 - [x] **Step 6** — Users & Roles page `/dashboard/users`; developer role = read-only admin — `af64dd9` — ✅ verified by user
 - [x] **Step 7** — verify + docs (2026-09-30): type-check ✅, production build ✅, lint: 0 errors in dashboard/auth code (project total 8 → 4; the 4 left are pre-existing `set-state-in-effect` in `components/ui/carousel.tsx`, `hooks/use-mobile.ts`, `HeroCarouselSection.tsx`, `SaleBanner.tsx`). `CLAUDE.md` (local, gitignored) and `README.md` updated for the unified dashboard.
-- [ ] **Merge + test** (user, in progress 2026-09-30) — merge `feat/rbac-phase-2-sections` → `main`, then test:
+- [x] **Merge + test** — ✅ done by user (PR #4, 2026-10-01; "all things working fine"). Checklist used:
   1. Admin login → lands on `/dashboard`, 6 stat cards, every section loads and saves.
   2. Courses: edit a price → homepage / course page / enroll page update; change it back.
   3. Jobs: create, edit, publish/hide, delete a test job.
@@ -346,7 +346,7 @@ _Steps 1, 2, 3 (contacts) and 6 shipped to `main` with Phase 1 (PR #3). The rest
 
 Admin keeps `demos:read` / `demos:manage`; developer gets the new `:read`-style permissions read-only as today.
 
-**Data scoping:** teacher/student queries are always filtered to the caller on the server (`teacher_id = me` / `student_id = me`) **and** return only the whitelisted fields above. RLS policies on `demo_bookings` as a second layer.
+**Data scoping:** teacher/student queries are always filtered to the caller on the server (`teacher_id = me` / `student_id = me`) **and** return only the whitelisted fields above. _(Originally planned RLS select policies as a second layer — dropped in step 1: RLS is row-level and would expose every column, e.g. the student's email to the teacher. Teachers/students have no direct DB read access to `demo_bookings`.)_
 
 **Pages:**
 - `/dashboard/profile` — **My Profile** (every logged-in user). Common fields + student section and/or teacher section depending on roles; photo upload.

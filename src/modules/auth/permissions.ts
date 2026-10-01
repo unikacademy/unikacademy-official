@@ -26,16 +26,32 @@ export const PERMISSIONS = [
   "jobs:manage",
   "users:read",
   "users:manage",
+  // Personal views — only for people who actually teach / study, so they're
+  // not part of admin's "everything"
+  "demos:read:assigned", // teacher: demos assigned to me
+  "demos:read:own", // student: my own demo bookings
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];
 
+const PERSONAL_PERMISSIONS: readonly Permission[] = [
+  "demos:read:assigned",
+  "demos:read:own",
+];
+
+// Everything across the academy (excludes the personal views)
+const ALL_ADMIN_PERMISSIONS = PERMISSIONS.filter(
+  (p) => !PERSONAL_PERMISSIONS.includes(p),
+);
+
 // Everything an admin can see, without the ability to change anything
-const READ_ONLY_PERMISSIONS = PERMISSIONS.filter((p) => p.endsWith(":read"));
+const READ_ONLY_PERMISSIONS = ALL_ADMIN_PERMISSIONS.filter((p) =>
+  p.endsWith(":read"),
+);
 
 export const ROLE_PERMISSIONS: Record<RoleId, readonly Permission[]> = {
-  admin: PERMISSIONS,
-  teacher: [],
-  student: [],
+  admin: ALL_ADMIN_PERMISSIONS,
+  teacher: ["demos:read:assigned"],
+  student: ["demos:read:own"],
   developer: READ_ONLY_PERMISSIONS,
 };
 

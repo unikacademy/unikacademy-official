@@ -4,5 +4,10 @@ import { DemoBookingsPanel } from "@/modules/demo-bookings/components/DemoBookin
 
 export default async function DemoBookingsPage() {
   const user = await requirePagePermission("demos:read");
-  return <DemoBookingsPanel canManage={can(user, "demos:manage")} />;
+  return (
+    <DemoBookingsPanel
+      canManage={can(user, "demos:manage")}
+      canAssign={can(user, "demos:assign")}
+    />
+  );
 }

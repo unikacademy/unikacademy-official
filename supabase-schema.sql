@@ -117,7 +117,7 @@ create policy "Public insert applications"
 -- is handled server-side using the service role key which bypasses RLS entirely.
 
 -- ============================================================
--- Roles & users (RBAC) — see requirement.md
+-- Roles & users (RBAC)
 -- A user can have multiple roles; permissions per role live in code
 -- (src/modules/auth/permissions.ts), not in the database.
 -- ============================================================
@@ -218,3 +218,98 @@ create policy "Users read own roles"
 
 -- Making a user admin: the user logs in once (gets the default 'student'
 -- role), then in Table Editor → user_roles change their role_id to 'admin'.
+-- After the first admin exists, manage roles on /dashboard/users.
+
+-- ============================================================
+-- Student/teacher profiles + demo assignment
+-- All teacher/student reads/writes for these columns go
+-- through the server (supabaseAdmin) with field whitelists — there are
+-- deliberately no new select/update policies, because RLS is row-level and
+-- would expose every column (e.g. a student's email to their teacher).
+-- ============================================================
+
+-- Keeps updated_at current on any row update
+create or replace function public.set_updated_at()
+returns trigger
+language plpgsql
+set search_path = ''
+as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
+
+-- profiles: common + student + teacher fields (all optional)
+alter table profiles add column if not exists phone            text;
+alter table profiles add column if not exists date_of_birth    date;
+alter table profiles add column if not exists city             text;
+-- student
+alter table profiles add column if not exists college          text;
+alter table profiles add column if not exists field_of_study   text;
+alter table profiles add column if not exists year_of_study    text;
+-- teacher
+alter table profiles add column if not exists qualification    text;
+alter table profiles add column if not exists experience_years integer
+  check (experience_years is null or experience_years between 0 and 80);
+alter table profiles add column if not exists specialization   text;
+alter table profiles add column if not exists bio              text;
+alter table profiles add column if not exists updated_at       timestamptz default now();
+
+drop trigger if exists profiles_set_updated_at on profiles;
+create trigger profiles_set_updated_at
+  before update on profiles
+  for each row execute function public.set_updated_at();
+
+-- demo_bookings: link a student account, assign a teacher, schedule (IST is
+-- applied in the app; stored as timestamptz), Google Meet link, demo stage.
+-- demo_status is the demo's lifecycle; `status` stays the inbox state
+-- (not_read / read / replied).
+alter table demo_bookings add column if not exists student_id uuid
+  references profiles(id) on delete set null;
+alter table demo_bookings add column if not exists teacher_id uuid
+  references profiles(id) on delete set null;
+alter table demo_bookings add column if not exists scheduled_at timestamptz;
+alter table demo_bookings add column if not exists meet_link text
+  check (meet_link is null or meet_link ~ '^https://meet\.google\.com/[A-Za-z0-9-]+(\?.*)?$');
+alter table demo_bookings add column if not exists demo_status text not null default 'pending'
+  check (demo_status in ('pending', 'scheduled', 'completed', 'cancelled', 'no_show', 'rescheduled'));
+alter table demo_bookings add column if not exists updated_at timestamptz default now();
+
+create index if not exists demo_bookings_teacher_id_idx on demo_bookings (teacher_id);
+create index if not exists demo_bookings_student_id_idx on demo_bookings (student_id);
+
+drop trigger if exists demo_bookings_set_updated_at on demo_bookings;
+create trigger demo_bookings_set_updated_at
+  before update on demo_bookings
+  for each row execute function public.set_updated_at();
+
+-- Profile photos: public bucket (photos are shown to teachers/students),
+-- 2 MB max, images only. Each user may only write inside their own folder:
+-- avatars/<user_id>/<file>
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('avatars', 'avatars', true, 2097152, array['image/jpeg', 'image/png', 'image/webp'])
+on conflict (id) do update set
+  public             = excluded.public,
+  file_size_limit    = excluded.file_size_limit,
+  allowed_mime_types = excluded.allowed_mime_types;
+
+drop policy if exists "Users read own avatar folder" on storage.objects;
+create policy "Users read own avatar folder"
+  on storage.objects for select to authenticated
+  using (bucket_id = 'avatars' and (storage.foldername(name))[1] = (select auth.uid())::text);
+
+drop policy if exists "Users upload own avatar" on storage.objects;
+create policy "Users upload own avatar"
+  on storage.objects for insert to authenticated
+  with check (bucket_id = 'avatars' and (storage.foldername(name))[1] = (select auth.uid())::text);
+
+drop policy if exists "Users update own avatar" on storage.objects;
+create policy "Users update own avatar"
+  on storage.objects for update to authenticated
+  using (bucket_id = 'avatars' and (storage.foldername(name))[1] = (select auth.uid())::text);
+
+drop policy if exists "Users delete own avatar" on storage.objects;
+create policy "Users delete own avatar"
+  on storage.objects for delete to authenticated
+  using (bucket_id = 'avatars' and (storage.foldername(name))[1] = (select auth.uid())::text);

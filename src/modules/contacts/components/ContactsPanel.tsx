@@ -7,26 +7,104 @@ import {
   type ContactStatus,
 } from "@/modules/contacts/types";
 import { formatDate } from "@/modules/dashboard/format";
-import { thClass, tdClass, rowClass } from "@/modules/dashboard/table";
-import { StatIcon } from "@/modules/dashboard/icons";
 import { useToasts } from "@/modules/dashboard/hooks/useToasts";
 import { useAdminRecords } from "@/modules/dashboard/hooks/useAdminRecords";
-import { useTableControls } from "@/modules/dashboard/hooks/useTableControls";
-import { PanelToolbar } from "@/modules/dashboard/components/PanelToolbar";
-import { StatsCards } from "@/modules/dashboard/components/StatsCards";
-import { SearchAndFilterBar } from "@/modules/dashboard/components/SearchAndFilterBar";
-import { SortableTh } from "@/modules/dashboard/components/SortableTh";
-import { SkeletonRows } from "@/modules/dashboard/components/SkeletonRows";
-import { StatusBadge } from "@/modules/dashboard/components/StatusBadge";
-import { ActionDropdown } from "@/modules/dashboard/components/ActionDropdown";
+import { PageHeader } from "@/modules/dashboard/components/PageHeader";
+import {
+  StatusPill,
+  type PillTone,
+} from "@/modules/dashboard/components/StatusPill";
 import { SlideOver } from "@/modules/dashboard/components/SlideOver";
-import { ConfirmModal } from "@/modules/dashboard/components/ConfirmModal";
 import { ToastContainer } from "@/modules/dashboard/components/ToastContainer";
-import { EmptyState } from "@/modules/dashboard/components/EmptyState";
+import { ListView } from "@/modules/dashboard/list/ListView";
+import { useListView } from "@/modules/dashboard/list/useListView";
+import type {
+  ListBulkAction,
+  ListColumn,
+  ListFilter,
+} from "@/modules/dashboard/list/types";
 
 const ENDPOINT = "/api/admin/contacts";
-const FILTER_OPTIONS = [{ value: "all", label: "All" }, ...CONTACT_STATUSES];
-const searchText = (c: Contact) => [c.name, c.email, c.phone];
+
+const STATUS_TONE: Record<ContactStatus, PillTone> = {
+  not_read: "blue",
+  read: "gray",
+  replied: "green",
+};
+const statusLabel = (s: ContactStatus) =>
+  CONTACT_STATUSES.find((x) => x.value === s)?.label ?? s;
+
+const COLUMNS: ListColumn<Contact>[] = [
+  {
+    id: "name",
+    header: "Name",
+    hideable: false,
+    sortValue: (c) => c.name.toLowerCase(),
+    cell: (c) => (
+      <span className="flex items-center gap-2 font-medium text-gray-900">
+        {c.status === "not_read" && (
+          <span
+            className="size-1.5 shrink-0 rounded-full bg-blue-500"
+            aria-label="Unread"
+          />
+        )}
+        {c.name}
+      </span>
+    ),
+  },
+  {
+    id: "status",
+    header: "Status",
+    sortValue: (c) => c.status,
+    cell: (c) => (
+      <StatusPill tone={STATUS_TONE[c.status]}>
+        {statusLabel(c.status)}
+      </StatusPill>
+    ),
+  },
+  {
+    id: "email",
+    header: "Email",
+    sortValue: (c) => c.email.toLowerCase(),
+    cell: (c) => <span className="text-gray-600">{c.email}</span>,
+  },
+  {
+    id: "phone",
+    header: "Phone",
+    cell: (c) => <span className="text-gray-600">{c.phone || "—"}</span>,
+  },
+  {
+    id: "message",
+    header: "Message",
+    className: "max-w-[320px]",
+    cell: (c) => (
+      <span className="block truncate text-gray-500">{c.message}</span>
+    ),
+  },
+  {
+    id: "received",
+    header: "Received",
+    sortValue: (c) => c.createdAt,
+    cell: (c) => (
+      <span className="text-gray-600">{formatDate(c.createdAt)}</span>
+    ),
+  },
+];
+
+const FILTERS: ListFilter<Contact>[] = [
+  { id: "name", type: "text", label: "Name", value: (c) => c.name },
+  { id: "email", type: "text", label: "Email", value: (c) => c.email },
+  { id: "phone", type: "text", label: "Phone", value: (c) => c.phone },
+  {
+    id: "status",
+    type: "select",
+    label: "Status",
+    options: CONTACT_STATUSES.map((s) => ({ value: s.value, label: s.label })),
+    value: (c) => c.status,
+  },
+];
+
+const getId = (c: Contact) => c._id;
 
 export function ContactsPanel({ canManage }: { canManage: boolean }) {
   const { toasts, showToast } = useToasts();
@@ -36,13 +114,17 @@ export function ContactsPanel({ canManage }: { canManage: boolean }) {
   );
   const { rows, loading, refreshing, refresh, patchLocal, remove } =
     useAdminRecords<Contact>(ENDPOINT, handleError);
-  const table = useTableControls(rows, searchText);
+
+  const list = useListView({
+    listId: "contacts",
+    rows,
+    columns: COLUMNS,
+    filters: FILTERS,
+    defaultSort: { id: "received", direction: "desc" },
+    getRowId: getId,
+  });
 
   const [detailItem, setDetailItem] = useState<Contact | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<{
-    id: string;
-    name: string;
-  } | null>(null);
 
   const handleStatusChange = (id: string, status: string) => {
     patchLocal(id, { status: status as ContactStatus });
@@ -54,31 +136,64 @@ export function ContactsPanel({ canManage }: { canManage: boolean }) {
     showToast("Status updated");
   };
 
-  const confirmDelete = async () => {
-    if (!deleteTarget) return;
-    const { id } = deleteTarget;
-    if (await remove(id)) {
-      if (detailItem?._id === id) setDetailItem(null);
-      showToast("Record deleted");
-    } else {
-      showToast("Failed to delete record", "error");
-    }
-    setDeleteTarget(null);
+  // Bulk: PATCH each selected row; report how many failed
+  const setStatus = async (selected: Contact[], status: ContactStatus) => {
+    const results = await Promise.all(
+      selected.map(async (c) => {
+        const res = await fetch(`${ENDPOINT}/${c._id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status }),
+        }).catch(() => null);
+        if (res?.ok) patchLocal(c._id, { status });
+        return res?.ok ?? false;
+      }),
+    );
+    const failed = results.filter((ok) => !ok).length;
+    if (failed)
+      showToast(`${failed} of ${selected.length} failed to update`, "error");
+    else showToast(`Marked ${selected.length} as ${statusLabel(status)}`);
   };
 
-  const unread = rows.filter((c) => c.status === "not_read").length;
+  const deleteRows = async (selected: Contact[]) => {
+    const results = await Promise.all(selected.map((c) => remove(c._id)));
+    const failed = results.filter((ok) => !ok).length;
+    if (detailItem && selected.some((c) => c._id === detailItem._id)) {
+      setDetailItem(null);
+    }
+    if (failed)
+      showToast(`${failed} of ${selected.length} failed to delete`, "error");
+    else
+      showToast(
+        `Deleted ${selected.length} message${selected.length > 1 ? "s" : ""}`,
+      );
+  };
+
+  const bulkActions: ListBulkAction<Contact>[] = canManage
+    ? [
+        ...CONTACT_STATUSES.map((s) => ({
+          id: `status-${s.value}`,
+          label: `Mark as ${s.label}`,
+          run: (selected: Contact[]) => setStatus(selected, s.value),
+        })),
+        {
+          id: "delete",
+          label: "Delete",
+          destructive: true,
+          confirm: {
+            title: "Delete messages?",
+            description: (n: number) =>
+              `This permanently deletes ${n} contact message${n > 1 ? "s" : ""}. This can't be undone.`,
+            actionLabel: "Delete",
+          },
+          run: deleteRows,
+        },
+      ]
+    : [];
 
   return (
     <>
       <ToastContainer toasts={toasts} />
-
-      {deleteTarget && (
-        <ConfirmModal
-          name={deleteTarget.name}
-          onConfirm={confirmDelete}
-          onCancel={() => setDeleteTarget(null)}
-        />
-      )}
 
       <SlideOver
         item={detailItem}
@@ -89,180 +204,23 @@ export function ContactsPanel({ canManage }: { canManage: boolean }) {
         readOnly={!canManage}
       />
 
-      <PanelToolbar
-        summary={`${rows.length} total${unread > 0 ? ` · ${unread} unread` : ""}`}
-        refreshing={refreshing}
+      <PageHeader
+        title="Contact Messages"
         onRefresh={refresh}
+        refreshing={refreshing}
       />
 
-      <StatsCards
+      <ListView
+        list={list}
+        columns={COLUMNS}
+        filters={FILTERS}
+        getRowId={getId}
+        onRowClick={setDetailItem}
+        timestamp={(c) => c.createdAt}
+        bulkActions={bulkActions}
         loading={loading}
-        cards={[
-          {
-            label: "Total Messages",
-            value: rows.length,
-            bgColor: "bg-gray-100",
-            textColor: "text-gray-600",
-            icon: <StatIcon name="mail" />,
-          },
-          {
-            label: "Unread",
-            value: unread,
-            bgColor: "bg-blue-50",
-            textColor: "text-blue-600",
-            icon: <StatIcon name="bell" />,
-          },
-          {
-            label: "Replied",
-            value: rows.filter((c) => c.status === "replied").length,
-            bgColor: "bg-green-50",
-            textColor: "text-green-600",
-            icon: <StatIcon name="checkCircle" />,
-          },
-        ]}
+        emptyMessage="No contact messages yet"
       />
-
-      {!loading && (
-        <SearchAndFilterBar
-          query={table.query}
-          onQueryChange={table.setQuery}
-          activeFilter={table.statusFilter}
-          onFilterChange={table.setStatusFilter}
-          filterOptions={FILTER_OPTIONS}
-          resultCount={table.filtered.length}
-        />
-      )}
-
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden min-h-[240px]">
-        {!loading && table.filtered.length === 0 ? (
-          <EmptyState
-            label={
-              table.isFiltering
-                ? "No results match your filters"
-                : "No contact messages yet"
-            }
-            icon={
-              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                />
-              </svg>
-            }
-          />
-        ) : (
-          <div className="overflow-x-auto max-h-[calc(100vh-380px)] overflow-y-auto">
-            <table className="w-full text-sm">
-              <thead className="sticky top-0 z-10 bg-gray-50 border-b border-gray-100">
-                <tr>
-                  <SortableTh
-                    label="Name"
-                    sortKey="name"
-                    currentSortKey={table.sortKey}
-                    currentSortDir={table.sortDir}
-                    onSort={table.handleSort}
-                  />
-                  <SortableTh
-                    label="Email"
-                    sortKey="email"
-                    currentSortKey={table.sortKey}
-                    currentSortDir={table.sortDir}
-                    onSort={table.handleSort}
-                  />
-                  <th className={thClass}>Phone</th>
-                  <th className={thClass}>Message</th>
-                  <SortableTh
-                    label="Status"
-                    sortKey="status"
-                    currentSortKey={table.sortKey}
-                    currentSortDir={table.sortDir}
-                    onSort={table.handleSort}
-                  />
-                  <SortableTh
-                    label="Date"
-                    sortKey="createdAt"
-                    currentSortKey={table.sortKey}
-                    currentSortDir={table.sortDir}
-                    onSort={table.handleSort}
-                  />
-                  {canManage && <th className={thClass}>Actions</th>}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {loading ? (
-                  <SkeletonRows cols={canManage ? 7 : 6} />
-                ) : (
-                  table.filtered.map((c) => (
-                    <tr
-                      key={c._id}
-                      className={rowClass(c.status)}
-                      onClick={() => setDetailItem(c)}
-                    >
-                      <td
-                        className={`${tdClass} font-medium text-gray-900 whitespace-nowrap`}
-                      >
-                        {c.name}
-                      </td>
-                      <td className={tdClass}>
-                        <a
-                          href={`mailto:${c.email}`}
-                          onClick={(e) => e.stopPropagation()}
-                          className="text-accent hover:underline"
-                        >
-                          {c.email}
-                        </a>
-                      </td>
-                      <td className={`${tdClass} whitespace-nowrap`}>
-                        {c.phone ? (
-                          <a
-                            href={`tel:${c.phone}`}
-                            onClick={(e) => e.stopPropagation()}
-                            className="text-gray-600 hover:text-accent transition"
-                          >
-                            {c.phone}
-                          </a>
-                        ) : (
-                          <span className="text-gray-400">—</span>
-                        )}
-                      </td>
-                      <td
-                        className={`${tdClass} text-gray-600 max-w-xs truncate`}
-                      >
-                        {c.message}
-                      </td>
-                      <td className={tdClass}>
-                        <StatusBadge status={c.status} />
-                      </td>
-                      <td
-                        className={`${tdClass} text-gray-500 whitespace-nowrap`}
-                      >
-                        {formatDate(c.createdAt)}
-                      </td>
-                      {canManage && (
-                        <td className={tdClass}>
-                          <ActionDropdown
-                            id={c._id}
-                            name={c.name}
-                            currentStatus={c.status}
-                            statuses={CONTACT_STATUSES}
-                            endpoint={ENDPOINT}
-                            onStatusChange={handleStatusChange}
-                            onDelete={(id, name) =>
-                              setDeleteTarget({ id, name })
-                            }
-                          />
-                        </td>
-                      )}
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
     </>
   );
 }

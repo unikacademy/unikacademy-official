@@ -18,6 +18,26 @@ export type NavItem = {
 export const NAV_ITEMS: NavItem[] = [
   { href: "/dashboard", label: "Overview", icon: "overview", group: "General" },
   {
+    href: "/dashboard/profile",
+    label: "My Profile",
+    icon: "profile",
+    group: "General",
+  },
+  {
+    href: "/dashboard/my-demo",
+    label: "My Demo",
+    icon: "demos",
+    group: "Learning",
+    permission: "demos:read:own",
+  },
+  {
+    href: "/dashboard/my-demo-classes",
+    label: "My Demo Classes",
+    icon: "demos",
+    group: "Teaching",
+    permission: "demos:read:assigned",
+  },
+  {
     href: "/dashboard/contacts",
     label: "Contact Messages",
     icon: "contacts",

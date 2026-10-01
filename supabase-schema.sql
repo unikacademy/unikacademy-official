@@ -117,7 +117,7 @@ create policy "Public insert applications"
 -- is handled server-side using the service role key which bypasses RLS entirely.
 
 -- ============================================================
--- Roles & users (RBAC) — see requirement.md
+-- Roles & users (RBAC)
 -- A user can have multiple roles; permissions per role live in code
 -- (src/modules/auth/permissions.ts), not in the database.
 -- ============================================================
@@ -221,8 +221,8 @@ create policy "Users read own roles"
 -- After the first admin exists, manage roles on /dashboard/users.
 
 -- ============================================================
--- Phase 3: student/teacher profiles + demo assignment
--- See requirement.md ("Phase 3"). All reads/writes for these columns go
+-- Student/teacher profiles + demo assignment
+-- All teacher/student reads/writes for these columns go
 -- through the server (supabaseAdmin) with field whitelists — there are
 -- deliberately no new select/update policies, because RLS is row-level and
 -- would expose every column (e.g. a student's email to their teacher).

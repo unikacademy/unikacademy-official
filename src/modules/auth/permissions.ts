@@ -1,6 +1,7 @@
 // Single source of truth for role-based access. Code elsewhere checks
 // permissions via `can()` — never role names — so adding a role is just a new
-// entry here. See requirement.md ("Decisions" B and C).
+// entry here (plus a row in the `roles` table). A user can have several roles;
+// their permissions are the union of all of them.
 
 export const ROLES = ["admin", "teacher", "student", "developer"] as const;
 export type RoleId = (typeof ROLES)[number];

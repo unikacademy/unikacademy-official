@@ -90,7 +90,7 @@ supabase-schema.sql    # database schema + RLS policies (source of truth)
 src/proxy.ts           # login required for /dashboard/* (Next 16 "middleware")
 ```
 
-See `CLAUDE.md` for a detailed architecture guide and `requirement.md` for the role-based dashboard plan.
+See `CLAUDE.md` for a detailed architecture guide.
 
 ## Contact
 

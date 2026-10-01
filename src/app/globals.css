@@ -394,3 +394,18 @@ h6 {
     @apply font-sans;
   }
 }
+/* ── Dashboard theme (ERPNext-style density, brand colours) ─────────────────
+   Applied with :has() on <body> so shadcn popups (menus, sheets, dialogs) —
+   which portal to the end of <body> — get it too. Only affects pages that
+   render an element with .dashboard-theme (src/app/dashboard). */
+body:has(.dashboard-theme) {
+  --primary: #0e2b49;
+  --primary-foreground: #ffffff;
+  --ring: #133a67;
+  --radius: 0.5rem;
+  font-size: 13px;
+  line-height: 1.45;
+}
+body:has(.dashboard-theme) :is(h1, h2, h3, h4, h5, h6) {
+  font-family: inherit;
+}

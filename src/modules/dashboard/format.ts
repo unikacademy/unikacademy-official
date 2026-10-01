@@ -49,3 +49,23 @@ export function fromISTInputValue(value: string): string | null {
   const date = new Date(`${value}:00${IST_OFFSET}`);
   return Number.isNaN(date.getTime()) ? null : date.toISOString();
 }
+
+/**
+ * ERPNext-style compact age: "now", "5 m", "3 h", "2 d", "3 w", "8 M", "1 y".
+ * (m = minutes, M = months)
+ */
+export function formatRelativeShort(iso: string, now = Date.now()) {
+  const seconds = Math.max(0, (now - new Date(iso).getTime()) / 1000);
+  const units: [number, string][] = [
+    [60 * 60 * 24 * 365, "y"],
+    [60 * 60 * 24 * 30, "M"],
+    [60 * 60 * 24 * 7, "w"],
+    [60 * 60 * 24, "d"],
+    [60 * 60, "h"],
+    [60, "m"],
+  ];
+  for (const [size, label] of units) {
+    if (seconds >= size) return `${Math.floor(seconds / size)} ${label}`;
+  }
+  return "now";
+}

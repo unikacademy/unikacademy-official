@@ -6,6 +6,14 @@ import { usePathname, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import type { NavItem } from "@/modules/dashboard/nav";
 import { NavIcon } from "@/modules/dashboard/icons";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 
 export type ShellUser = {
   name: string;
@@ -156,7 +164,7 @@ export function DashboardShell({
   );
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-100">
+    <div className="dashboard-theme flex h-screen overflow-hidden bg-gray-50">
       {/* Desktop sidebar */}
       <div className="hidden lg:flex lg:w-64 lg:flex-col lg:flex-shrink-0">
         {sidebar}
@@ -177,7 +185,7 @@ export function DashboardShell({
 
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top bar */}
-        <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between gap-4 flex-shrink-0">
+        <header className="bg-white border-b border-gray-200 h-12 px-4 sm:px-6 flex items-center justify-between gap-4 flex-shrink-0">
           <div className="flex items-center gap-3 min-w-0">
             <button
               className="lg:hidden p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 transition"
@@ -198,17 +206,31 @@ export function DashboardShell({
                 />
               </svg>
             </button>
-            <h1 className="text-lg font-bold text-primary truncate">
-              {current?.label ?? "Dashboard"}
-            </h1>
+            <Breadcrumb>
+              <BreadcrumbList className="text-[13px]">
+                <BreadcrumbItem>
+                  <BreadcrumbLink render={<Link href="/dashboard" />}>
+                    Dashboard
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                {current && current.href !== "/dashboard" && (
+                  <>
+                    <BreadcrumbSeparator />
+                    <BreadcrumbItem>
+                      <BreadcrumbPage>{current.label}</BreadcrumbPage>
+                    </BreadcrumbItem>
+                  </>
+                )}
+              </BreadcrumbList>
+            </Breadcrumb>
           </div>
 
           <div className="flex items-center gap-3 flex-shrink-0">
             <div className="hidden sm:block text-right">
-              <p className="text-sm font-semibold text-gray-800 leading-tight">
+              <p className="text-[13px] font-medium text-gray-800 leading-tight">
                 {user.name}
               </p>
-              <p className="text-xs text-gray-500">
+              <p className="text-[11px] text-gray-500">
                 {user.roleLabels.join(" · ") || "No role"}
               </p>
             </div>
@@ -217,11 +239,11 @@ export function DashboardShell({
               <img
                 src={user.avatarUrl}
                 alt={user.name}
-                className="w-9 h-9 rounded-full object-cover"
+                className="w-8 h-8 rounded-full object-cover"
               />
             ) : (
-              <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center">
-                <span className="text-accent font-bold text-sm">
+              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+                <span className="text-accent font-bold text-xs">
                   {user.name[0]?.toUpperCase()}
                 </span>
               </div>
@@ -229,7 +251,7 @@ export function DashboardShell({
           </div>
         </header>
 
-        <main className="flex-1 overflow-auto p-6">{children}</main>
+        <main className="flex-1 overflow-auto p-4 sm:p-6">{children}</main>
       </div>
     </div>
   );

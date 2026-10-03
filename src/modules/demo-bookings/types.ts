@@ -1,4 +1,5 @@
 import type { ContactStatus } from "@/modules/contacts/types";
+import type { PillTone } from "@/modules/dashboard/components/StatusPill";
 
 export type BookingType = "individual" | "corporate";
 
@@ -14,38 +15,14 @@ export type DemoStage =
 export const DEMO_STAGES: {
   value: DemoStage;
   label: string;
-  className: string;
+  tone: PillTone;
 }[] = [
-  {
-    value: "pending",
-    label: "Pending",
-    className: "bg-gray-100 text-gray-600",
-  },
-  {
-    value: "scheduled",
-    label: "Scheduled",
-    className: "bg-blue-50 text-blue-700",
-  },
-  {
-    value: "rescheduled",
-    label: "Rescheduled",
-    className: "bg-indigo-50 text-indigo-700",
-  },
-  {
-    value: "completed",
-    label: "Completed",
-    className: "bg-green-50 text-green-700",
-  },
-  {
-    value: "no_show",
-    label: "No-show",
-    className: "bg-amber-50 text-amber-700",
-  },
-  {
-    value: "cancelled",
-    label: "Cancelled",
-    className: "bg-red-50 text-red-600",
-  },
+  { value: "pending", label: "Pending", tone: "gray" },
+  { value: "scheduled", label: "Scheduled", tone: "blue" },
+  { value: "rescheduled", label: "Rescheduled", tone: "indigo" },
+  { value: "completed", label: "Completed", tone: "green" },
+  { value: "no_show", label: "No-show", tone: "orange" },
+  { value: "cancelled", label: "Cancelled", tone: "red" },
 ];
 
 // Stages that only make sense once a teacher and time are set

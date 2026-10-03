@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { PageHeader } from "@/modules/dashboard/components/PageHeader";
 import { profileSectionsFor } from "@/modules/auth/permissions";
 import { requirePageUser } from "@/modules/auth/server/session";
 import { getProfile } from "@/modules/profile/server/profile";
@@ -11,10 +12,13 @@ export default async function ProfilePage() {
   if (!profile) notFound();
 
   return (
-    <ProfileForm
-      profile={profile}
-      sections={profileSectionsFor(user)}
-      loginAvatarUrl={user.loginAvatarUrl}
-    />
+    <>
+      <PageHeader title="My Profile" />
+      <ProfileForm
+        profile={profile}
+        sections={profileSectionsFor(user)}
+        loginAvatarUrl={user.loginAvatarUrl}
+      />
+    </>
   );
 }

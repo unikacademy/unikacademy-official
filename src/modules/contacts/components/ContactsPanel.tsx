@@ -7,6 +7,11 @@ import {
   type ContactStatus,
 } from "@/modules/contacts/types";
 import { formatDate } from "@/modules/dashboard/format";
+import {
+  bulkResultMessage,
+  deleteEach,
+  patchEach,
+} from "@/modules/dashboard/bulk";
 import { useToasts } from "@/modules/dashboard/hooks/useToasts";
 import { useAdminRecords } from "@/modules/dashboard/hooks/useAdminRecords";
 import { PageHeader } from "@/modules/dashboard/components/PageHeader";
@@ -137,36 +142,29 @@ export function ContactsPanel({ canManage }: { canManage: boolean }) {
   };
 
   // Bulk: PATCH each selected row; report how many failed
+  const report = (r: { text: string; ok: boolean }) =>
+    showToast(r.text, r.ok ? "success" : "error");
+
   const setStatus = async (selected: Contact[], status: ContactStatus) => {
-    const results = await Promise.all(
-      selected.map(async (c) => {
-        const res = await fetch(`${ENDPOINT}/${c._id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status }),
-        }).catch(() => null);
-        if (res?.ok) patchLocal(c._id, { status });
-        return res?.ok ?? false;
-      }),
+    const failed = await patchEach(ENDPOINT, selected, { status }, (c) =>
+      patchLocal(c._id, { status }),
     );
-    const failed = results.filter((ok) => !ok).length;
-    if (failed)
-      showToast(`${failed} of ${selected.length} failed to update`, "error");
-    else showToast(`Marked ${selected.length} as ${statusLabel(status)}`);
+    report(
+      bulkResultMessage(
+        `Marked as ${statusLabel(status)}:`,
+        "message",
+        selected.length,
+        failed,
+      ),
+    );
   };
 
   const deleteRows = async (selected: Contact[]) => {
-    const results = await Promise.all(selected.map((c) => remove(c._id)));
-    const failed = results.filter((ok) => !ok).length;
+    const failed = await deleteEach(selected, remove);
     if (detailItem && selected.some((c) => c._id === detailItem._id)) {
       setDetailItem(null);
     }
-    if (failed)
-      showToast(`${failed} of ${selected.length} failed to delete`, "error");
-    else
-      showToast(
-        `Deleted ${selected.length} message${selected.length > 1 ? "s" : ""}`,
-      );
+    report(bulkResultMessage("Deleted", "message", selected.length, failed));
   };
 
   const bulkActions: ListBulkAction<Contact>[] = canManage

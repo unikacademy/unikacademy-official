@@ -1,4 +1,5 @@
 import { requirePagePermission } from "@/modules/auth/server/session";
+import { PageHeader } from "@/modules/dashboard/components/PageHeader";
 import { listAssignedDemos } from "@/modules/demo-bookings/server/teacher";
 import { isUpcomingDemo } from "@/modules/demo-bookings/schedule";
 import { TeacherDemoCard } from "@/modules/demo-bookings/components/TeacherDemoCard";
@@ -14,20 +15,24 @@ export default async function MyDemoClassesPage() {
 
   if (demos.length === 0) {
     return (
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-10 text-center text-gray-400">
-        <p className="font-medium text-gray-500">
-          No demo classes assigned yet
-        </p>
-        <p className="text-sm mt-1">
-          When an admin assigns you a demo, it will appear here with the time
-          and student details.
-        </p>
-      </div>
+      <>
+        <PageHeader title="My Demo Classes" />
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-10 text-center text-gray-400">
+          <p className="font-medium text-gray-500">
+            No demo classes assigned yet
+          </p>
+          <p className="text-sm mt-1">
+            When an admin assigns you a demo, it will appear here with the time
+            and student details.
+          </p>
+        </div>
+      </>
     );
   }
 
   return (
     <div className="space-y-8">
+      <PageHeader title="My Demo Classes" />
       <section>
         <h3 className="text-sm font-bold text-primary uppercase tracking-wider mb-3">
           Upcoming ({upcoming.length})

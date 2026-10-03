@@ -23,7 +23,10 @@ function compare(a: SortValue, b: SortValue) {
 function matches<T>(row: T, filter: ListFilter<T>, raw: string) {
   const query = raw.trim().toLowerCase();
   if (!query) return true;
-  if (filter.type === "select") return (filter.value(row) ?? "") === raw;
+  if (filter.type === "select") {
+    const value = filter.value(row);
+    return Array.isArray(value) ? value.includes(raw) : (value ?? "") === raw;
+  }
   const value = filter.value(row);
   const values = Array.isArray(value) ? value : [value];
   return values.some((v) => (v ?? "").toLowerCase().includes(query));

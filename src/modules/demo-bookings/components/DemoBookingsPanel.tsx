@@ -2,40 +2,192 @@
 
 import { useCallback, useState } from "react";
 import { CONTACT_STATUSES, type ContactStatus } from "@/modules/contacts/types";
-import type { Assignees, DemoBooking } from "@/modules/demo-bookings/types";
+import {
+  DEMO_STAGES,
+  type Assignees,
+  type DemoBooking,
+} from "@/modules/demo-bookings/types";
 import { BookingTypeBadge } from "@/modules/demo-bookings/components/BookingTypeBadge";
 import { DemoStageBadge } from "@/modules/demo-bookings/components/DemoStageBadge";
 import { DemoAssignment } from "@/modules/demo-bookings/components/DemoAssignment";
 import { formatDate, formatDateTimeIST } from "@/modules/dashboard/format";
-import { thClass, tdClass, rowClass } from "@/modules/dashboard/table";
-import { StatIcon } from "@/modules/dashboard/icons";
+import { STATUS_LABEL } from "@/modules/dashboard/status";
+import {
+  bulkResultMessage,
+  deleteEach,
+  patchEach,
+} from "@/modules/dashboard/bulk";
 import { useToasts } from "@/modules/dashboard/hooks/useToasts";
 import { useAdminRecords } from "@/modules/dashboard/hooks/useAdminRecords";
-import { useTableControls } from "@/modules/dashboard/hooks/useTableControls";
-import { PanelToolbar } from "@/modules/dashboard/components/PanelToolbar";
-import { StatsCards } from "@/modules/dashboard/components/StatsCards";
-import { SearchAndFilterBar } from "@/modules/dashboard/components/SearchAndFilterBar";
-import { SortableTh } from "@/modules/dashboard/components/SortableTh";
-import { SkeletonRows } from "@/modules/dashboard/components/SkeletonRows";
+import { PageHeader } from "@/modules/dashboard/components/PageHeader";
 import { StatusBadge } from "@/modules/dashboard/components/StatusBadge";
-import { ActionDropdown } from "@/modules/dashboard/components/ActionDropdown";
 import { SlideOver } from "@/modules/dashboard/components/SlideOver";
-import { ConfirmModal } from "@/modules/dashboard/components/ConfirmModal";
 import { ToastContainer } from "@/modules/dashboard/components/ToastContainer";
-import { EmptyState } from "@/modules/dashboard/components/EmptyState";
+import { ListView } from "@/modules/dashboard/list/ListView";
+import { useListView } from "@/modules/dashboard/list/useListView";
+import type {
+  ListBulkAction,
+  ListColumn,
+  ListFilter,
+} from "@/modules/dashboard/list/types";
 
 const ENDPOINT = "/api/admin/demo-bookings";
-// Demo bookings share the contact statuses (not read / read / replied)
-const FILTER_OPTIONS = [{ value: "all", label: "All" }, ...CONTACT_STATUSES];
-const searchText = (d: DemoBooking) => [
-  d.name,
-  d.email,
-  d.phone,
-  d.companyName,
-  d.bookingType,
-  d.teacher?.fullName,
-  d.student?.fullName,
+
+const COLUMNS: ListColumn<DemoBooking>[] = [
+  {
+    id: "name",
+    header: "Name",
+    hideable: false,
+    sortValue: (d) => d.name.toLowerCase(),
+    cell: (d) => (
+      <span className="flex items-center gap-2 font-medium text-gray-900">
+        {d.status === "not_read" && (
+          <span
+            className="size-1.5 shrink-0 rounded-full bg-blue-500"
+            aria-label="Unread"
+          />
+        )}
+        {d.name}
+      </span>
+    ),
+  },
+  {
+    id: "status",
+    header: "Status",
+    sortValue: (d) => d.status,
+    cell: (d) => <StatusBadge status={d.status} />,
+  },
+  {
+    id: "course",
+    header: "Course",
+    sortValue: (d) => d.course.toLowerCase(),
+    cell: (d) => <span className="text-gray-700">{d.course}</span>,
+  },
+  {
+    id: "stage",
+    header: "Demo",
+    sortValue: (d) => DEMO_STAGES.findIndex((s) => s.value === d.demoStatus),
+    cell: (d) => <DemoStageBadge stage={d.demoStatus} />,
+  },
+  {
+    id: "scheduled",
+    header: "Scheduled (IST)",
+    sortValue: (d) => d.scheduledAt,
+    cell: (d) => (
+      <span className="text-gray-600">
+        {d.scheduledAt ? formatDateTimeIST(d.scheduledAt) : "—"}
+      </span>
+    ),
+  },
+  {
+    id: "teacher",
+    header: "Teacher",
+    sortValue: (d) => d.teacher?.fullName?.toLowerCase(),
+    cell: (d) => (
+      <span className="text-gray-600">
+        {d.teacher?.fullName ?? d.teacher?.email ?? "—"}
+      </span>
+    ),
+  },
+  {
+    id: "type",
+    header: "Type",
+    sortValue: (d) => d.bookingType,
+    cell: (d) => <BookingTypeBadge type={d.bookingType} />,
+  },
+  {
+    id: "company",
+    header: "Company",
+    sortValue: (d) => d.companyName?.toLowerCase(),
+    cell: (d) => <span className="text-gray-600">{d.companyName || "—"}</span>,
+  },
+  {
+    id: "phone",
+    header: "Phone",
+    cell: (d) => <span className="text-gray-600">{d.phone}</span>,
+  },
+  {
+    id: "email",
+    header: "Email",
+    defaultHidden: true,
+    cell: (d) => <span className="text-gray-600">{d.email || "—"}</span>,
+  },
+  {
+    id: "student",
+    header: "Student account",
+    defaultHidden: true,
+    cell: (d) => (
+      <span className="text-gray-600">
+        {d.student?.fullName ?? d.student?.email ?? "Not linked"}
+      </span>
+    ),
+  },
+  {
+    id: "message",
+    header: "Message",
+    defaultHidden: true,
+    className: "max-w-[280px]",
+    cell: (d) => (
+      <span className="block truncate text-gray-500">{d.message || "—"}</span>
+    ),
+  },
+  {
+    id: "booked",
+    header: "Booked",
+    sortValue: (d) => d.createdAt,
+    cell: (d) => (
+      <span className="text-gray-600">{formatDate(d.createdAt)}</span>
+    ),
+  },
 ];
+
+const FILTERS: ListFilter<DemoBooking>[] = [
+  {
+    id: "name",
+    type: "text",
+    label: "Name / company",
+    value: (d) => [d.name, d.companyName],
+  },
+  {
+    id: "contact",
+    type: "text",
+    label: "Phone / email",
+    value: (d) => [d.phone, d.email],
+  },
+  { id: "course", type: "text", label: "Course", value: (d) => d.course },
+  {
+    id: "teacher",
+    type: "text",
+    label: "Teacher",
+    value: (d) => [d.teacher?.fullName, d.teacher?.email],
+  },
+  {
+    id: "status",
+    type: "select",
+    label: "Status",
+    options: CONTACT_STATUSES.map((s) => ({ value: s.value, label: s.label })),
+    value: (d) => d.status,
+  },
+  {
+    id: "stage",
+    type: "select",
+    label: "Demo stage",
+    options: DEMO_STAGES.map((s) => ({ value: s.value, label: s.label })),
+    value: (d) => d.demoStatus,
+  },
+  {
+    id: "type",
+    type: "select",
+    label: "Type",
+    options: [
+      { value: "individual", label: "Individual" },
+      { value: "corporate", label: "Corporate" },
+    ],
+    value: (d) => d.bookingType,
+  },
+];
+
+const getId = (d: DemoBooking) => d._id;
 
 export function DemoBookingsPanel({
   canManage,
@@ -51,7 +203,15 @@ export function DemoBookingsPanel({
   );
   const { rows, setRows, loading, refreshing, refresh, patchLocal, remove } =
     useAdminRecords<DemoBooking>(ENDPOINT, handleError);
-  const table = useTableControls(rows, searchText);
+
+  const list = useListView({
+    listId: "demo-bookings",
+    rows,
+    columns: COLUMNS,
+    filters: FILTERS,
+    defaultSort: { id: "booked", direction: "desc" },
+    getRowId: getId,
+  });
 
   const [detailItem, setDetailItem] = useState<DemoBooking | null>(null);
 
@@ -78,10 +238,6 @@ export function DemoBookingsPanel({
     setDetailItem(saved);
     showToast("Assignment saved");
   };
-  const [deleteTarget, setDeleteTarget] = useState<{
-    id: string;
-    name: string;
-  } | null>(null);
 
   const handleStatusChange = (id: string, status: string) => {
     patchLocal(id, { status: status as ContactStatus });
@@ -93,32 +249,57 @@ export function DemoBookingsPanel({
     showToast("Status updated");
   };
 
-  const confirmDelete = async () => {
-    if (!deleteTarget) return;
-    const { id } = deleteTarget;
-    if (await remove(id)) {
-      if (detailItem?._id === id) setDetailItem(null);
-      showToast("Record deleted");
-    } else {
-      showToast("Failed to delete record", "error");
-    }
-    setDeleteTarget(null);
-  };
+  const report = (r: { text: string; ok: boolean }) =>
+    showToast(r.text, r.ok ? "success" : "error");
 
-  const unread = rows.filter((d) => d.status === "not_read").length;
-  const cols = canManage ? 11 : 10;
+  const bulkActions: ListBulkAction<DemoBooking>[] = canManage
+    ? [
+        ...CONTACT_STATUSES.map((s) => ({
+          id: `status-${s.value}`,
+          label: `Mark as ${s.label}`,
+          run: async (selected: DemoBooking[]) => {
+            const failed = await patchEach(
+              ENDPOINT,
+              selected,
+              { status: s.value },
+              (d) => patchLocal(d._id, { status: s.value }),
+            );
+            report(
+              bulkResultMessage(
+                `Marked as ${STATUS_LABEL[s.value]}:`,
+                "booking",
+                selected.length,
+                failed,
+              ),
+            );
+          },
+        })),
+        {
+          id: "delete",
+          label: "Delete",
+          destructive: true,
+          confirm: {
+            title: "Delete demo bookings?",
+            description: (n: number) =>
+              `This permanently deletes ${n} demo booking${n > 1 ? "s" : ""}, including any teacher assignment. This can't be undone.`,
+            actionLabel: "Delete",
+          },
+          run: async (selected: DemoBooking[]) => {
+            const failed = await deleteEach(selected, remove);
+            if (detailItem && selected.some((d) => d._id === detailItem._id)) {
+              setDetailItem(null);
+            }
+            report(
+              bulkResultMessage("Deleted", "booking", selected.length, failed),
+            );
+          },
+        },
+      ]
+    : [];
 
   return (
     <>
       <ToastContainer toasts={toasts} />
-
-      {deleteTarget && (
-        <ConfirmModal
-          name={deleteTarget.name}
-          onConfirm={confirmDelete}
-          onCancel={() => setDeleteTarget(null)}
-        />
-      )}
 
       <SlideOver
         item={detailItem}
@@ -140,232 +321,23 @@ export function DemoBookingsPanel({
         }
       />
 
-      <PanelToolbar
-        summary={`${rows.length} total${unread > 0 ? ` · ${unread} unread` : ""}`}
-        refreshing={refreshing}
+      <PageHeader
+        title="Demo Bookings"
         onRefresh={refresh}
+        refreshing={refreshing}
       />
 
-      <StatsCards
+      <ListView
+        list={list}
+        columns={COLUMNS}
+        filters={FILTERS}
+        getRowId={getId}
+        onRowClick={openDetail}
+        timestamp={(d) => d.createdAt}
+        bulkActions={bulkActions}
         loading={loading}
-        cards={[
-          {
-            label: "Total Bookings",
-            value: rows.length,
-            bgColor: "bg-gray-100",
-            textColor: "text-gray-600",
-            icon: <StatIcon name="calendar" />,
-          },
-          {
-            label: "Unread",
-            value: unread,
-            bgColor: "bg-blue-50",
-            textColor: "text-blue-600",
-            icon: <StatIcon name="bell" />,
-          },
-          {
-            label: "Replied",
-            value: rows.filter((d) => d.status === "replied").length,
-            bgColor: "bg-green-50",
-            textColor: "text-green-600",
-            icon: <StatIcon name="checkCircle" />,
-          },
-          {
-            label: "Corporate",
-            value: rows.filter((d) => d.bookingType === "corporate").length,
-            bgColor: "bg-[#c0a84f]/10",
-            textColor: "text-[#8a742f]",
-            icon: <StatIcon name="building" />,
-          },
-        ]}
+        emptyMessage="No demo bookings yet"
       />
-
-      {!loading && (
-        <SearchAndFilterBar
-          query={table.query}
-          onQueryChange={table.setQuery}
-          activeFilter={table.statusFilter}
-          onFilterChange={table.setStatusFilter}
-          filterOptions={FILTER_OPTIONS}
-          resultCount={table.filtered.length}
-          placeholder="Search by name, email, phone or company…"
-        />
-      )}
-
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden min-h-[240px]">
-        {!loading && table.filtered.length === 0 ? (
-          <EmptyState
-            label={
-              table.isFiltering
-                ? "No results match your filters"
-                : "No demo bookings yet"
-            }
-            icon={
-              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
-              </svg>
-            }
-          />
-        ) : (
-          <div className="overflow-x-auto max-h-[calc(100vh-380px)] overflow-y-auto">
-            <table className="w-full text-sm">
-              <thead className="sticky top-0 z-10 bg-gray-50 border-b border-gray-100">
-                <tr>
-                  <SortableTh
-                    label="Type"
-                    sortKey="bookingType"
-                    currentSortKey={table.sortKey}
-                    currentSortDir={table.sortDir}
-                    onSort={table.handleSort}
-                  />
-                  <SortableTh
-                    label="Name"
-                    sortKey="name"
-                    currentSortKey={table.sortKey}
-                    currentSortDir={table.sortDir}
-                    onSort={table.handleSort}
-                  />
-                  <th className={thClass}>Company</th>
-                  <th className={thClass}>Phone</th>
-                  <th className={thClass}>Email</th>
-                  <SortableTh
-                    label="Course"
-                    sortKey="course"
-                    currentSortKey={table.sortKey}
-                    currentSortDir={table.sortDir}
-                    onSort={table.handleSort}
-                  />
-                  <SortableTh
-                    label="Demo"
-                    sortKey="scheduledAt"
-                    currentSortKey={table.sortKey}
-                    currentSortDir={table.sortDir}
-                    onSort={table.handleSort}
-                  />
-                  <th className={thClass}>Message</th>
-                  <SortableTh
-                    label="Status"
-                    sortKey="status"
-                    currentSortKey={table.sortKey}
-                    currentSortDir={table.sortDir}
-                    onSort={table.handleSort}
-                  />
-                  <SortableTh
-                    label="Date"
-                    sortKey="createdAt"
-                    currentSortKey={table.sortKey}
-                    currentSortDir={table.sortDir}
-                    onSort={table.handleSort}
-                  />
-                  {canManage && <th className={thClass}>Actions</th>}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {loading ? (
-                  <SkeletonRows cols={cols} />
-                ) : (
-                  table.filtered.map((d) => (
-                    <tr
-                      key={d._id}
-                      className={rowClass(d.status)}
-                      onClick={() => openDetail(d)}
-                    >
-                      <td className={tdClass}>
-                        <BookingTypeBadge type={d.bookingType} />
-                      </td>
-                      <td
-                        className={`${tdClass} font-medium text-gray-900 whitespace-nowrap`}
-                      >
-                        {d.name}
-                      </td>
-                      <td
-                        className={`${tdClass} text-gray-600 whitespace-nowrap`}
-                      >
-                        {d.companyName || "—"}
-                      </td>
-                      <td className={`${tdClass} whitespace-nowrap`}>
-                        <a
-                          href={`tel:${d.phone}`}
-                          onClick={(e) => e.stopPropagation()}
-                          className="text-gray-600 hover:text-accent transition"
-                        >
-                          {d.phone}
-                        </a>
-                      </td>
-                      <td className={tdClass}>
-                        {d.email ? (
-                          <a
-                            href={`mailto:${d.email}`}
-                            onClick={(e) => e.stopPropagation()}
-                            className="text-accent hover:underline"
-                          >
-                            {d.email}
-                          </a>
-                        ) : (
-                          <span className="text-gray-400">—</span>
-                        )}
-                      </td>
-                      <td className={tdClass}>
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary whitespace-nowrap">
-                          {d.course}
-                        </span>
-                      </td>
-                      <td className={tdClass}>
-                        <div className="flex flex-col items-start gap-1">
-                          <DemoStageBadge stage={d.demoStatus} />
-                          {d.scheduledAt && (
-                            <span className="text-xs text-gray-600 whitespace-nowrap">
-                              {formatDateTimeIST(d.scheduledAt)}
-                            </span>
-                          )}
-                          {d.teacher && (
-                            <span className="text-xs text-gray-400 whitespace-nowrap">
-                              with {d.teacher.fullName ?? d.teacher.email}
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                      <td
-                        className={`${tdClass} text-gray-600 max-w-xs truncate`}
-                      >
-                        {d.message || "—"}
-                      </td>
-                      <td className={tdClass}>
-                        <StatusBadge status={d.status} />
-                      </td>
-                      <td
-                        className={`${tdClass} text-gray-500 whitespace-nowrap`}
-                      >
-                        {formatDate(d.createdAt)}
-                      </td>
-                      {canManage && (
-                        <td className={tdClass}>
-                          <ActionDropdown
-                            id={d._id}
-                            name={d.name}
-                            currentStatus={d.status}
-                            statuses={CONTACT_STATUSES}
-                            endpoint={ENDPOINT}
-                            onStatusChange={handleStatusChange}
-                            onDelete={(id, name) =>
-                              setDeleteTarget({ id, name })
-                            }
-                          />
-                        </td>
-                      )}
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
     </>
   );
 }

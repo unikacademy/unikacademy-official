@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PageHeader } from "@/modules/dashboard/components/PageHeader";
 import { ROLE_LABELS, can } from "@/modules/auth/permissions";
 import { requirePageUser } from "@/modules/auth/server/session";
 import { listAssignedDemos } from "@/modules/demo-bookings/server/teacher";
@@ -79,6 +80,8 @@ export default async function DashboardOverviewPage() {
 
   return (
     <div className="space-y-6">
+      <PageHeader title="Overview" />
+
       {/* Welcome */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex items-center gap-4">
         {user.avatarUrl ? (

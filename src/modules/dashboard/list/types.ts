@@ -43,7 +43,8 @@ export type ListFilter<T> =
       type: "select";
       label: string;
       options: { value: string; label: string }[];
-      value: (row: T) => string | null | undefined;
+      /** Row matches if this equals — or, for arrays, contains — the choice */
+      value: (row: T) => string | null | undefined | string[];
     };
 
 export interface ListBulkAction<T> {

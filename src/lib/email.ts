@@ -17,6 +17,7 @@ function getClient(): Resend {
  */
 export async function sendEmail(params: {
   to: string | string[];
+  bcc?: string | string[];
   subject: string;
   html: string;
 }): Promise<void> {

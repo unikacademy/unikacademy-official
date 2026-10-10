@@ -1,5 +1,6 @@
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { ok, err } from "@/lib/api";
+import { validateEmail } from "@/shared/validation";
 import { notifyDemoBookingSubmission } from "./notify";
 
 type BookingType = "individual" | "corporate";
@@ -34,18 +35,16 @@ export async function submitDemoBooking(body: {
     return err("Name, phone, and course are required", 400);
   }
 
-  if (bookingType === "corporate") {
-    if (!companyName) {
-      return err("Company name is required for corporate bookings", 400);
-    }
-    if (!email) {
-      return err("Business email is required for corporate bookings", 400);
-    }
+  const emailError = validateEmail(email ?? "");
+  if (emailError) return err(emailError, 400);
+
+  if (bookingType === "corporate" && !companyName) {
+    return err("Company name is required for corporate bookings", 400);
   }
 
   const { error } = await supabaseAdmin.from("demo_bookings").insert({
     name,
-    email,
+    email: email?.trim(),
     phone,
     course,
     message,

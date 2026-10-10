@@ -26,6 +26,7 @@ export async function notifyContactSubmission(contact: ContactNotification) {
       }),
     sendEmail({
       to: contact.email,
+      bcc: adminEmail || undefined,
       subject: "We received your message — UnikAcademy",
       html: `
         <p>Hi ${contact.name},</p>

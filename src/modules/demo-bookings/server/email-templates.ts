@@ -29,13 +29,13 @@ export function demoConfirmationEmail(
   booking: Pick<DemoBookingEmailData, "name" | "course">,
 ) {
   return {
-    subject: "We received your demo request — UnikAcademy",
+    subject: "Your demo request has been received — UnikAcademy",
     html: `
-      <p>Hello ${escapeHtml(booking.name)},</p>
-      <p>We have received your demo request for <strong>${escapeHtml(booking.course)}</strong>. Thank you for choosing us!</p>
-      <p>Our coordinator or counsellor will contact you as soon as possible.</p>
-      <p>Until then, you can visit our page: <a href="${SITE_URL}">${SITE_URL}</a></p>
-      <p>Thanks,<br/>Team UnikAcademy</p>
+      <p>Dear ${escapeHtml(booking.name)},</p>
+      <p>Thank you for choosing UnikAcademy. We have received your demo request for <strong>${escapeHtml(booking.course)}</strong>.</p>
+      <p>One of our coordinators or counsellors will contact you shortly to confirm the details and schedule your session.</p>
+      <p>In the meantime, you are welcome to explore our courses at <a href="${SITE_URL}">${SITE_URL}</a>.</p>
+      <p>Warm regards,<br/>Team UnikAcademy</p>
     `,
   };
 }

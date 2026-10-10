@@ -29,6 +29,7 @@ export async function notifyApplicationSubmission(
       }),
     sendEmail({
       to: application.email,
+      bcc: adminEmail || undefined,
       subject: "We received your application — UnikAcademy",
       html: `
         <p>Hi ${application.name},</p>

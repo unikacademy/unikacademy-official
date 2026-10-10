@@ -56,8 +56,7 @@ const VARIANT_STYLES = {
     emptyDescription: "text-[#64748B] text-sm",
   },
   dark: {
-    label:
-      "text-[11px] font-semibold text-white/50 uppercase tracking-widest",
+    label: "text-[11px] font-semibold text-white/50 uppercase tracking-widest",
     input:
       "h-auto rounded-xl border-white/10 bg-white/[0.06] px-4 py-3.5 text-sm text-white placeholder-white/25 focus-visible:border-[#c0a84f]/50 focus-visible:ring-[#c0a84f]/20",
     select:
@@ -105,8 +104,8 @@ export default function DemoBookingForm({
    * Supplying this switches on the full field set (course/training-
    * requirement select, message, and the extended corporate fields —
    * company size, participants, preferred date). Omit it for the compact
-   * quick-book form (popup / hero) that only asks for name + phone
-   * (+ company/email for corporate).
+   * quick-book form (popup / hero) that only asks for name + phone + email
+   * (+ company for corporate).
    */
   courseOptions?: { individual: string[]; corporate: string[] };
   /** Fired when the user switches the Individual/Corporate toggle, so a
@@ -139,7 +138,6 @@ export default function DemoBookingForm({
     onBookingTypeChange?.(type);
     setFormData((prev) => ({
       ...prev,
-      email: "",
       companyName: "",
       companySize: "",
       participants: "",
@@ -150,7 +148,6 @@ export default function DemoBookingForm({
     }));
     setFieldErrors((prev) => ({
       ...prev,
-      email: undefined,
       companyName: undefined,
       course: undefined,
     }));
@@ -172,8 +169,7 @@ export default function DemoBookingForm({
       bookingType === "corporate"
         ? validateCompanyName(formData.companyName)
         : null;
-    const emailErr =
-      bookingType === "corporate" ? validateEmail(formData.email) : null;
+    const emailErr = validateEmail(formData.email);
     const courseErr =
       extended && !formData.course
         ? bookingType === "corporate"
@@ -229,9 +225,7 @@ export default function DemoBookingForm({
             className={styles.emptyTitle}
             style={{ fontFamily: "Poppins, sans-serif" }}
           >
-            {bookingType === "corporate"
-              ? "Request Received!"
-              : "Demo Booked!"}
+            {bookingType === "corporate" ? "Request Received!" : "Demo Booked!"}
           </EmptyTitle>
           <EmptyDescription className={styles.emptyDescription}>
             {bookingType === "corporate"
@@ -263,10 +257,7 @@ export default function DemoBookingForm({
 
       {bookingType === "corporate" && (
         <Field data-invalid={!!fieldErrors.companyName}>
-          <FieldLabel
-            htmlFor={`${idPrefix}-company`}
-            className={styles.label}
-          >
+          <FieldLabel htmlFor={`${idPrefix}-company`} className={styles.label}>
             Company Name *
           </FieldLabel>
           <Input
@@ -279,9 +270,7 @@ export default function DemoBookingForm({
             placeholder="Your company's name"
             className={styles.input}
           />
-          <FieldError className="text-xs">
-            {fieldErrors.companyName}
-          </FieldError>
+          <FieldError className="text-xs">{fieldErrors.companyName}</FieldError>
         </Field>
       )}
 
@@ -321,24 +310,24 @@ export default function DemoBookingForm({
         <FieldError className="text-xs">{fieldErrors.phone}</FieldError>
       </Field>
 
-      {bookingType === "corporate" && (
-        <Field data-invalid={!!fieldErrors.email}>
-          <FieldLabel htmlFor={`${idPrefix}-email`} className={styles.label}>
-            Business Email *
-          </FieldLabel>
-          <Input
-            type="email"
-            id={`${idPrefix}-email`}
-            name="email"
-            autoComplete="email"
-            value={formData.email}
-            onChange={handleChange}
-            placeholder="you@company.com"
-            className={styles.input}
-          />
-          <FieldError className="text-xs">{fieldErrors.email}</FieldError>
-        </Field>
-      )}
+      <Field data-invalid={!!fieldErrors.email}>
+        <FieldLabel htmlFor={`${idPrefix}-email`} className={styles.label}>
+          {bookingType === "corporate" ? "Business Email *" : "Email *"}
+        </FieldLabel>
+        <Input
+          type="email"
+          id={`${idPrefix}-email`}
+          name="email"
+          autoComplete="email"
+          value={formData.email}
+          onChange={handleChange}
+          placeholder={
+            bookingType === "corporate" ? "you@company.com" : "you@example.com"
+          }
+          className={styles.input}
+        />
+        <FieldError className="text-xs">{fieldErrors.email}</FieldError>
+      </Field>
 
       {extended && bookingType === "corporate" && (
         <div className="grid grid-cols-2 gap-4">
@@ -404,7 +393,10 @@ export default function DemoBookingForm({
           <Select
             value={formData.course || null}
             onValueChange={(value) =>
-              setFormData((prev) => ({ ...prev, course: (value as string) ?? "" }))
+              setFormData((prev) => ({
+                ...prev,
+                course: (value as string) ?? "",
+              }))
             }
           >
             <SelectTrigger id={`${idPrefix}-course`} className={styles.select}>

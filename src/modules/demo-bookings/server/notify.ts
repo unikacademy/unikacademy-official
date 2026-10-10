@@ -15,6 +15,14 @@ type DemoBookingNotification = {
   preferredDate?: string | null;
 };
 
+function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
 export async function notifyDemoBookingSubmission(
   booking: DemoBookingNotification,
 ) {
@@ -42,11 +50,14 @@ export async function notifyDemoBookingSubmission(
     booking.email &&
       sendEmail({
         to: booking.email,
-        subject: "We received your demo booking request — UnikAcademy",
+        bcc: adminEmail || undefined,
+        subject: "We received your demo request — UnikAcademy",
         html: `
-          <p>Hi ${booking.name},</p>
-          <p>Thanks for requesting a demo for <strong>${booking.course}</strong>. We've received your request and our team will reach out shortly to schedule it.</p>
-          <p>— Team UnikAcademy</p>
+          <p>Hello ${escapeHtml(booking.name)},</p>
+          <p>We have received your demo request for <strong>${escapeHtml(booking.course)}</strong>. Thank you for choosing us!</p>
+          <p>Our coordinator or counsellor will contact you as soon as possible.</p>
+          <p>Until then, you can visit our page: <a href="https://unikacademy.in/">https://unikacademy.in/</a></p>
+          <p>Thanks,<br/>Team UnikAcademy</p>
         `,
       }),
   ]);

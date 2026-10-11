@@ -4,7 +4,7 @@ import { useSyncExternalStore } from "react";
 import Link from "next/link";
 
 // Change these to run a different offer — the banner text updates everywhere.
-const OFFER_LABEL = "Special Offer";
+const OFFER_LABEL = "Navratri Special";
 const OFFER_PERCENT = 10;
 
 const BANNER_KEY = "sale_banner_dismissed";

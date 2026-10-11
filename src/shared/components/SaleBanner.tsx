@@ -1,26 +1,49 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useSyncExternalStore } from "react";
 import Link from "next/link";
-import { MRP_UPLIFT } from "@/modules/courses/constants";
+
+// Change these to run a different offer — the banner text updates everywhere.
+const OFFER_LABEL = "Special Offer";
+const OFFER_PERCENT = 10;
 
 const BANNER_KEY = "sale_banner_dismissed";
 
-export default function SaleBanner() {
-  const [visible, setVisible] = useState(false);
+const listeners = new Set<() => void>();
+let dismissedInMemory = false;
 
-  useEffect(() => {
-    if (!sessionStorage.getItem(BANNER_KEY)) setVisible(true);
-  }, []);
+function subscribe(callback: () => void) {
+  listeners.add(callback);
+  return () => {
+    listeners.delete(callback);
+  };
+}
+
+function isDismissed() {
+  if (dismissedInMemory) return true;
+  try {
+    return sessionStorage.getItem(BANNER_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+export default function SaleBanner() {
+  // Server snapshot is "dismissed" so the banner never flashes before hydration.
+  const dismissed = useSyncExternalStore(subscribe, isDismissed, () => true);
+  const visible = !dismissed;
 
   function dismiss() {
-    sessionStorage.setItem(BANNER_KEY, "1");
-    setVisible(false);
+    dismissedInMemory = true;
+    try {
+      sessionStorage.setItem(BANNER_KEY, "1");
+    } catch {
+      // storage blocked — stays dismissed for this page load only
+    }
+    listeners.forEach((l) => l());
   }
 
   if (!visible) return null;
-
-  const saving = `₹${MRP_UPLIFT.toLocaleString("en-IN")}`;
 
   return (
     <div
@@ -49,12 +72,12 @@ export default function SaleBanner() {
 
       {/* Message */}
       <p className="text-white/90 text-sm sm:text-base text-center leading-snug">
-        <span className="text-[#c0a84f] font-bold tracking-wide">🎉 Summer Sale</span>
+        <span className="text-[#c0a84f] font-bold tracking-wide">🎉 {OFFER_LABEL}</span>
         <span className="text-white/50 mx-2">—</span>
-        {"Limited Time Offer: Save "}
-        <span className="text-[#d4bc72] font-extrabold text-base sm:text-lg">{saving}</span>
+        {"Limited Time Offer: Get "}
+        <span className="text-[#d4bc72] font-extrabold text-base sm:text-lg">{OFFER_PERCENT}% OFF</span>
         {" on all courses."}
-        <span className="hidden sm:inline text-white/70"> Enroll today at the lowest price!</span>
+        <span className="hidden sm:inline text-white/70"> Enroll today and save more!</span>
       </p>
 
       {/* CTA */}

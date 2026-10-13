@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import EnrollClient from "./EnrollClient";
 import { getCoursePrices } from "@/modules/courses/server/pricing";
+import { isOfferActive } from "@/modules/courses/offer";
 
 export const metadata: Metadata = {
   title: "Enroll in a Course – UNIK Academy | Live Communication Training",
@@ -36,5 +37,11 @@ interface Props {
 export default async function EnrollPage({ searchParams }: Props) {
   const { course } = await searchParams;
   const coursePrices = await getCoursePrices();
-  return <EnrollClient preSelectedCourse={course} coursePrices={coursePrices} />;
+  return (
+    <EnrollClient
+      preSelectedCourse={course}
+      coursePrices={coursePrices}
+      offerActive={isOfferActive()}
+    />
+  );
 }

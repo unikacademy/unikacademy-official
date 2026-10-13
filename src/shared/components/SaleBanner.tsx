@@ -3,12 +3,8 @@
 import { useSyncExternalStore } from "react";
 import Link from "next/link";
 import GarbaDancer from "./GarbaDancer";
-
-// Change these to run a different offer — the banner text updates everywhere.
-const OFFER_LABEL = "Navratri Special";
-const OFFER_PERCENT = 10;
-// Offer is valid through the end of 20 Oct (IST). The banner hides itself after.
-const OFFER_ENDS_AT = new Date("2026-10-20T23:59:59+05:30").getTime();
+// Offer label / percent / end date live in one place: modules/courses/offer.ts
+import { OFFER, OFFER_ENDS_AT_MS, isOfferActive } from "@/modules/courses/offer";
 
 const BANNER_KEY = "sale_banner_dismissed";
 
@@ -85,8 +81,8 @@ export default function SaleBanner() {
   // Server snapshot is "dismissed" so the banner never flashes before hydration.
   const dismissed = useSyncExternalStore(subscribe, isDismissed, () => true);
   const now = useSyncExternalStore(subscribeToClock, getNowSecond, () => 0);
-  const msLeft = OFFER_ENDS_AT - now;
-  const visible = !dismissed && msLeft > 0;
+  const msLeft = OFFER_ENDS_AT_MS - now;
+  const visible = !dismissed && isOfferActive(now);
 
   function dismiss() {
     dismissedInMemory = true;
@@ -129,12 +125,12 @@ export default function SaleBanner() {
         <div className="flex flex-col items-center gap-1.5 md:flex-row md:gap-5">
           <p className="text-center text-sm leading-snug text-white sm:text-base">
             <span className="font-bold tracking-wide text-[#fde68a]">
-              🌺 {OFFER_LABEL}
+              🌺 {OFFER.label}
             </span>
             <span className="mx-2 text-white/50">—</span>
             {"Celebrate with "}
             <span className="mx-0.5 inline-block rounded-full bg-gradient-to-r from-[#fbbf24] to-[#fde68a] px-2.5 py-0.5 text-sm font-extrabold text-[#7f1d1d] shadow-[0_0_14px_rgba(253,224,71,0.6)] sm:text-base">
-              {OFFER_PERCENT}% OFF
+              {OFFER.percent}% OFF
             </span>
             {" on all courses."}
           </p>

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { DEMO_ORIGINAL_PRICE } from "@/modules/courses/constants";
 import { findCourseDetail } from "@/modules/courses/data/courseDetails";
 import HeroCarouselSection from "@/modules/marketing/components/HeroCarouselSection";
+import { isOfferActive } from "@/modules/courses/offer";
 import JourneySection from "@/modules/marketing/components/JourneySection";
 import TestimonialsMarquee from "@/modules/marketing/components/TestimonialsMarquee";
 import HorizontalCoursesWrapper from "@/modules/courses/components/HorizontalCoursesWrapper";
@@ -94,7 +95,7 @@ export default async function Home() {
       </h1>
 
       {/* ─── Hero ─── */}
-      <HeroCarouselSection courses={priced} />
+      <HeroCarouselSection courses={priced} offerActive={isOfferActive()} />
 
       {/* ─── Journey (Apple-like pinned horizontal panels) ─── */}
       <JourneySection />

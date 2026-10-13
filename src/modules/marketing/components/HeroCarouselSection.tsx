@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect, useRef, Suspense } from "react";
+import { useState, useEffect, useRef, useSyncExternalStore, Suspense } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { CourseIcon } from "@/modules/courses/icons";
 import DemoBookingForm from "@/modules/demo-bookings/components/DemoBookingForm";
 import { COURSE_PRICES, computeMRP, charmPrice } from "@/modules/courses/constants";
+import { discountedPrice, OFFER } from "@/modules/courses/offer";
 
 const HeroScene = dynamic(() => import("./hero/HeroScene"), {
   ssr: false,
@@ -23,6 +24,8 @@ interface Course {
 
 interface Props {
   courses: Course[];
+  /** Festive offer on? Decided on the server (see modules/courses/offer.ts). */
+  offerActive?: boolean;
 }
 
 const FALLBACK: Course[] = [
@@ -62,27 +65,35 @@ const FALLBACK: Course[] = [
 
 const INTERVAL = 4000;
 
-export default function HeroCarouselSection({ courses }: Props) {
+const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
+
+function subscribeReducedMotion(callback: () => void) {
+  const mq = window.matchMedia(REDUCED_MOTION_QUERY);
+  mq.addEventListener("change", callback);
+  return () => mq.removeEventListener("change", callback);
+}
+
+function getReducedMotion() {
+  return window.matchMedia(REDUCED_MOTION_QUERY).matches;
+}
+
+export default function HeroCarouselSection({ courses, offerActive = false }: Props) {
   const slides = courses.length > 0 ? courses : FALLBACK;
   const displaySlides = [...slides, slides[0]];
 
   const [current, setCurrent] = useState(0);
   const [isJumping, setIsJumping] = useState(false);
   const [paused, setPaused] = useState(false);
-  const [reducedMotion, setReducedMotion] = useState(false);
+  const reducedMotion = useSyncExternalStore(
+    subscribeReducedMotion,
+    getReducedMotion,
+    () => false,
+  );
   const [progress, setProgress] = useState(0);
   const progressRef = useRef<number>(0);
   const rafRef = useRef<number>(0);
   const startRef = useRef<number | null>(null);
   const pausedRef = useRef(false);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      setReducedMotion(
-        window.matchMedia("(prefers-reduced-motion: reduce)").matches,
-      );
-    }
-  }, []);
 
   useEffect(() => {
     if (reducedMotion) return;
@@ -108,7 +119,6 @@ export default function HeroCarouselSection({ courses }: Props) {
 
     rafRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafRef.current);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [paused, reducedMotion]);
 
   function handleTransitionEnd() {
@@ -260,11 +270,16 @@ export default function HeroCarouselSection({ courses }: Props) {
                             Starting at
                           </div>
                           <div className="text-white/40 text-xs line-through tabular-nums">
-                            ₹{computeMRP(slide.price)}
+                            ₹{offerActive ? charmPrice(slide.price) : computeMRP(slide.price)}
                           </div>
                           <div className="font-bold text-xl sm:text-2xl text-white" style={{ fontFamily: "Poppins, sans-serif" }}>
-                            ₹{charmPrice(slide.price)}
+                            ₹{offerActive ? discountedPrice(charmPrice(slide.price)) : charmPrice(slide.price)}
                           </div>
+                          {offerActive && (
+                            <span className="mt-1 inline-block rounded-full bg-gradient-to-r from-[#fbbf24] to-[#fde68a] px-2 py-0.5 text-[10px] font-extrabold text-[#7f1d1d]">
+                              {OFFER.percent}% OFF
+                            </span>
+                          )}
                           <div className="text-white/30 text-[10px]">/ full course</div>
                         </div>
                       )}

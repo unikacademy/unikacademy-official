@@ -2,7 +2,8 @@
 
 import { useState, SubmitEvent } from "react";
 import Link from "next/link";
-import { computeMRP, SESSION_FORMATS } from "@/modules/courses/constants";
+import { SESSION_FORMATS } from "@/modules/courses/constants";
+import { OFFER, priceDisplay } from "@/modules/courses/offer";
 import type { SessionFormatItem } from "@/modules/courses/server/pricing";
 
 // Titles match the course detail pages (which link here with ?course=<title>).
@@ -140,11 +141,14 @@ const FAQS = [
 interface Props {
   preSelectedCourse?: string;
   coursePrices: Record<string, string>;
+  /** Festive offer on? Decided on the server (see modules/courses/offer.ts). */
+  offerActive?: boolean;
 }
 
 export default function EnrollClient({
   preSelectedCourse,
   coursePrices,
+  offerActive = false,
 }: Props) {
   const [selectedFormat, setSelectedFormat] =
     useState<SessionFormatItem["id"]>("1-on-1");
@@ -170,6 +174,8 @@ export default function EnrollClient({
     price,
   }));
 
+  const show = (p: string) => priceDisplay(p, offerActive);
+
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -181,6 +187,12 @@ export default function EnrollClient({
     setStatus("submitting");
     try {
       const format = sessionFormats.find((f) => f.id === selectedFormat);
+      // With the festive offer on, tell the admin the discounted price + offer
+      // so checkout (handled manually) honours it.
+      const defaultMessage =
+        format && offerActive
+          ? `Enrollment request for ${format.label} at ${show(format.price).now} (regular ${format.price}, ${OFFER.label} ${OFFER.percent}% off)`
+          : `Enrollment request for ${format?.label} at ${format?.price}`;
       const res = await fetch("/api/demo-booking", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -189,9 +201,7 @@ export default function EnrollClient({
           phone: formData.phone,
           email: formData.email,
           course: `${formData.course} (${format?.label ?? selectedFormat})`,
-          message:
-            formData.message ||
-            `Enrollment request for ${format?.label} at ${format?.price}`,
+          message: formData.message || defaultMessage,
         }),
       });
       setStatus(res.ok ? "success" : "error");
@@ -332,13 +342,18 @@ export default function EnrollClient({
                 </h3>
                 <div className="mb-5">
                   <span className={`text-sm line-through tabular-nums ${sf.highlight ? "text-white/40" : "text-[#0e2b49]/40"}`}>
-                    {computeMRP(sf.price)}
+                    {show(sf.price).was}
                   </span>
                   <div
                     className={`text-3xl font-bold ${sf.highlight ? "text-[#c0a84f]" : "text-[#0e2b49]"}`}
                     style={{ fontFamily: "Poppins, sans-serif" }}
                   >
-                    {sf.price}
+                    {show(sf.price).now}
+                    {offerActive && (
+                      <span className="ml-2 align-middle rounded-full bg-gradient-to-r from-[#fbbf24] to-[#fde68a] px-2 py-0.5 text-[10px] font-extrabold text-[#7f1d1d]">
+                        {OFFER.percent}% OFF
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -547,11 +562,10 @@ export default function EnrollClient({
                           </span>
                           <span className="text-[#CBD5E1]">·</span>
                           <span className="font-bold text-[#0e2b49]">
-                            {
-                              sessionFormats.find(
-                                (f) => f.id === selectedFormat,
-                              )?.price
-                            }
+                            {(() => {
+                              const f = sessionFormats.find((x) => x.id === selectedFormat);
+                              return f ? show(f.price).now : null;
+                            })()}
                           </span>
                         </>
                       )}
@@ -677,10 +691,10 @@ export default function EnrollClient({
                           </div>
                           <div className="flex flex-col items-end">
                             <span className="text-[10px] text-[#0e2b49]/40 line-through tabular-nums">
-                              {computeMRP(sf.price)}
+                              {show(sf.price).was}
                             </span>
                             <span className="text-sm font-bold text-[#0e2b49] tabular-nums">
-                              {sf.price}
+                              {show(sf.price).now}
                             </span>
                           </div>
                         </label>

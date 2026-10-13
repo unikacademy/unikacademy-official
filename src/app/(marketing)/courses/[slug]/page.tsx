@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { courseDetailsData } from "@/modules/courses/data/courseDetails";
-import { computeMRP } from "@/modules/courses/constants";
+import { isOfferActive, priceDisplay } from "@/modules/courses/offer";
 import { getCoursePrices, formatsForCourse } from "@/modules/courses/server/pricing";
 import CourseCurriculum from "@/modules/courses/components/CourseCurriculum";
 
@@ -100,7 +100,8 @@ export default async function CourseDetailPage({ params }: PageProps) {
   if (!course) notFound();
 
   const activeFormats = formatsForCourse(await getCoursePrices(), course.id);
-  const startingFrom = activeFormats[0].price;
+  const offerActive = isOfferActive();
+  const startingFrom = priceDisplay(activeFormats[0].price, offerActive);
 
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
@@ -513,14 +514,19 @@ export default async function CourseDetailPage({ params }: PageProps) {
                   </p>
                   <div className="flex items-baseline gap-2 mb-1">
                     <span className="text-white/40 text-sm line-through tabular-nums">
-                      {computeMRP(startingFrom)}
+                      {startingFrom.was}
                     </span>
                     <span
                       className="text-4xl font-bold text-white"
                       style={{ fontFamily: "Poppins, sans-serif" }}
                     >
-                      {startingFrom}
+                      {startingFrom.now}
                     </span>
+                    {startingFrom.offPercent > 0 && (
+                      <span className="self-center rounded-full bg-gradient-to-r from-[#fbbf24] to-[#fde68a] px-2 py-0.5 text-[10px] font-extrabold text-[#7f1d1d]">
+                        {startingFrom.offPercent}% OFF
+                      </span>
+                    )}
                   </div>
                   <p className="text-[#c0a84f] text-xs font-medium">
                     Live 1-on-1 sessions
@@ -529,7 +535,9 @@ export default async function CourseDetailPage({ params }: PageProps) {
 
                 {/* Session formats */}
                 <div className="px-5 py-4 border-b border-[#E2E8F0] space-y-2">
-                  {activeFormats.map((sf) => (
+                  {activeFormats.map((sf) => {
+                    const shown = priceDisplay(sf.price, offerActive);
+                    return (
                     <div
                       key={sf.label}
                       className="flex items-center justify-between py-1"
@@ -544,14 +552,15 @@ export default async function CourseDetailPage({ params }: PageProps) {
                       </div>
                       <div className="flex flex-col items-end">
                         <span className="text-[#0e2b49]/40 text-xs line-through tabular-nums">
-                          {computeMRP(sf.price)}
+                          {shown.was}
                         </span>
                         <span className="text-[#0e2b49] font-bold text-sm tabular-nums">
-                          {sf.price}
+                          {shown.now}
                         </span>
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 {/* CTAs */}

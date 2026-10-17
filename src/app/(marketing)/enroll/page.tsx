@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import EnrollClient from "./EnrollClient";
-import { getCoursePrices } from "@/modules/courses/server/pricing";
+import { getCoursePlanPrices } from "@/modules/courses/server/pricing";
+import { isPlanId } from "@/modules/courses/constants";
 import { isOfferActive } from "@/modules/courses/offer";
 
 export const metadata: Metadata = {
@@ -31,16 +32,17 @@ export const metadata: Metadata = {
 };
 
 interface Props {
-  searchParams: Promise<{ course?: string }>;
+  searchParams: Promise<{ course?: string; plan?: string }>;
 }
 
 export default async function EnrollPage({ searchParams }: Props) {
-  const { course } = await searchParams;
-  const coursePrices = await getCoursePrices();
+  const { course, plan } = await searchParams;
+  const planPrices = await getCoursePlanPrices();
   return (
     <EnrollClient
       preSelectedCourse={course}
-      coursePrices={coursePrices}
+      preSelectedPlan={isPlanId(plan) ? plan : undefined}
+      planPrices={planPrices}
       offerActive={isOfferActive()}
     />
   );

@@ -19,6 +19,7 @@ export async function createCourse(body: {
   category?: string;
   iconKey?: string;
   price?: string;
+  price30?: string;
   features?: string[];
   featured?: boolean;
   order?: number;
@@ -30,6 +31,7 @@ export async function createCourse(body: {
     category,
     iconKey,
     price,
+    price30,
     features,
     featured,
     order,
@@ -48,6 +50,7 @@ export async function createCourse(body: {
       category,
       icon_key: iconKey ?? "default",
       price: price?.trim() ?? "",
+      price_30: price30?.trim() ?? "",
       features: (features ?? []).filter((f: string) => f.trim()),
       featured: featured ?? false,
       order: order ?? 0,
@@ -71,6 +74,8 @@ export async function updateCourse(
   if (body.category !== undefined) update.category = body.category;
   if (body.iconKey !== undefined) update.icon_key = body.iconKey;
   if (body.price !== undefined) update.price = (body.price as string).trim();
+  if (body.price30 !== undefined)
+    update.price_30 = (body.price30 as string).trim();
   if (body.features !== undefined)
     update.features = (body.features as string[]).filter((f: string) =>
       f.trim(),

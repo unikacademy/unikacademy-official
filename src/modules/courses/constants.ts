@@ -37,6 +37,58 @@ export const COURSE_PRICES = {
   "personality-development": "19999",
 } as const;
 
+// ─── 30-Day Plan Prices ───────────────────────────────────────────────────────
+// Fallback prices for the 30-day plan (half the 12-week price, pre-charmed so
+// they display as-is). Overridden by the `price_30` column of the admin
+// `courses` table, same as COURSE_PRICES.
+
+export const COURSE_PRICES_30_DAY = {
+  "communication-skills": "7499",
+  "public-speaking": "7499",
+  "spoken-english-grammar": "7499",
+  "personality-development": "9999",
+} as const;
+
+// ─── Plans ────────────────────────────────────────────────────────────────────
+// Every course is sold in two lengths. Both are live 1-on-1 sessions.
+
+export type PlanId = "12-week" | "30-day";
+
+export const PLANS: readonly {
+  id: PlanId;
+  label: string;
+  badge: string;
+  duration: string;
+  totalSessions: number;
+  sessionDuration: string;
+  summary: string;
+}[] = [
+  {
+    id: "30-day",
+    label: "30-Day Plan",
+    badge: "Quick Start",
+    duration: "30 Days",
+    totalSessions: 20,
+    sessionDuration: "1 Hour",
+    summary: "A focused 4-week track: 20 live 1-on-1 sessions on the essentials.",
+  },
+  {
+    id: "12-week",
+    label: "12-Week Plan",
+    badge: "Best Value",
+    duration: "12 Weeks",
+    totalSessions: 60,
+    sessionDuration: "1 Hour",
+    summary: "The full program: 60 live 1-on-1 sessions for complete mastery.",
+  },
+];
+
+export const DEFAULT_PLAN: PlanId = "12-week";
+
+export function isPlanId(value: unknown): value is PlanId {
+  return value === "12-week" || value === "30-day";
+}
+
 // ─── 1-on-1 Session Format ────────────────────────────────────────────────────
 // Display data (label, badge, perks) for the single session format. The price
 // is filled in per course by lib/pricing.ts — this value is only a placeholder.

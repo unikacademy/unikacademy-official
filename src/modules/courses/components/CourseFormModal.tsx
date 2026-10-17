@@ -14,6 +14,7 @@ const EMPTY_COURSE_FORM = {
   category: "core" as Course["category"],
   iconKey: "default",
   price: "",
+  price30: "",
   features: [""],
   featured: false,
   order: 0,
@@ -29,6 +30,7 @@ function formFromCourse(course: Course): CourseForm {
     category: course.category,
     iconKey: course.iconKey,
     price: course.price,
+    price30: course.price30 ?? "",
     features: course.features.length ? course.features : [""],
     featured: course.featured,
     order: course.order,
@@ -249,9 +251,9 @@ export function CourseFormModal({
 
           {/* Price + order (pricing / premium) */}
           {showPricing && (
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div>
-                <label className={labelClass}>Price (₹)</label>
+                <label className={labelClass}>12-Week Price (₹)</label>
                 <input
                   type="text"
                   value={form.price}
@@ -259,6 +261,18 @@ export function CourseFormModal({
                     setForm((f) => ({ ...f, price: e.target.value }))
                   }
                   placeholder="e.g. 1,000"
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label className={labelClass}>30-Day Price (₹)</label>
+                <input
+                  type="text"
+                  value={form.price30}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, price30: e.target.value }))
+                  }
+                  placeholder="e.g. 7,499"
                   className={inputClass}
                 />
               </div>

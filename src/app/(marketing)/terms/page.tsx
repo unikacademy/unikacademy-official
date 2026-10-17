@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getCoursePrices } from "@/modules/courses/server/pricing";
+import { getCoursePlanPrices } from "@/modules/courses/server/pricing";
 import { courseDetailsData } from "@/modules/courses/data/courseDetails";
 
 export const metadata: Metadata = {
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
 export const revalidate = 60;
 
 export default async function Terms() {
-  const coursePrices = await getCoursePrices();
+  const coursePrices = await getCoursePlanPrices();
   return (
     <div className="min-h-screen py-16">
       <div className="container mx-auto px-4 max-w-4xl">
@@ -93,7 +93,7 @@ export default async function Terms() {
             <ul className="list-disc pl-6 text-gray-700 space-y-2">
               {courseDetailsData.map((c) => (
                 <li key={c.id}>
-                  {c.title}: {coursePrices[c.id]}
+                  {c.title}: {coursePrices[c.id]["30-day"]} (30-Day Plan) · {coursePrices[c.id]["12-week"]} (12-Week Plan)
                 </li>
               ))}
             </ul>

@@ -2,34 +2,35 @@
 
 import { useState, SubmitEvent } from "react";
 import Link from "next/link";
-import { SESSION_FORMATS } from "@/modules/courses/constants";
+import {
+  SESSION_FORMATS,
+  PLANS,
+  DEFAULT_PLAN,
+  type PlanId,
+} from "@/modules/courses/constants";
 import { OFFER, priceDisplay } from "@/modules/courses/offer";
-import type { SessionFormatItem } from "@/modules/courses/server/pricing";
+import type { SessionFormatItem, CoursePlanPrices } from "@/modules/courses/server/pricing";
 
 // Titles match the course detail pages (which link here with ?course=<title>).
 const ALL_COURSES = [
   {
     slug: "communication-skills",
     title: "Communication Skills",
-    duration: "12 Weeks",
     level: "Beginner–Advanced",
   },
   {
     slug: "personality-development",
     title: "Personality Development",
-    duration: "12 Weeks",
     level: "All Levels",
   },
   {
     slug: "public-speaking",
     title: "Public Speaking",
-    duration: "12 Weeks",
     level: "All Levels",
   },
   {
     slug: "spoken-english-grammar",
     title: "Spoken English & Grammar",
-    duration: "12 Weeks",
     level: "Beginner",
   },
 ];
@@ -140,18 +141,22 @@ const FAQS = [
 
 interface Props {
   preSelectedCourse?: string;
-  coursePrices: Record<string, string>;
+  preSelectedPlan?: PlanId;
+  planPrices: CoursePlanPrices;
   /** Festive offer on? Decided on the server (see modules/courses/offer.ts). */
   offerActive?: boolean;
 }
 
 export default function EnrollClient({
   preSelectedCourse,
-  coursePrices,
+  preSelectedPlan,
+  planPrices,
   offerActive = false,
 }: Props) {
   const [selectedFormat, setSelectedFormat] =
     useState<SessionFormatItem["id"]>("1-on-1");
+  const [planId, setPlanId] = useState<PlanId>(preSelectedPlan ?? DEFAULT_PLAN);
+  const plan = PLANS.find((p) => p.id === planId)!;
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -163,8 +168,11 @@ export default function EnrollClient({
     "idle" | "submitting" | "success" | "error"
   >("idle");
 
-  // One 1-on-1 format, priced for the chosen course (cheapest until one is picked).
+  // One 1-on-1 format, priced for the chosen course and plan (cheapest until a course is picked).
   const chosenSlug = ALL_COURSES.find((c) => c.title === formData.course)?.slug;
+  const coursePrices = Object.fromEntries(
+    Object.entries(planPrices).map(([slug, p]) => [slug, p[planId]]),
+  );
   const cheapestPrice = Object.values(coursePrices).sort(
     (a, b) => parseInt(a.replace(/\D/g, ""), 10) - parseInt(b.replace(/\D/g, ""), 10),
   )[0];
@@ -191,8 +199,8 @@ export default function EnrollClient({
       // so checkout (handled manually) honours it.
       const defaultMessage =
         format && offerActive
-          ? `Enrollment request for ${format.label} at ${show(format.price).now} (regular ${format.price}, ${OFFER.label} ${OFFER.percent}% off)`
-          : `Enrollment request for ${format?.label} at ${format?.price}`;
+          ? `Enrollment request for ${plan.label} · ${format.label} at ${show(format.price).now} (regular ${format.price}, ${OFFER.label} ${OFFER.percent}% off)`
+          : `Enrollment request for ${plan.label} · ${format?.label} at ${format?.price}`;
       const res = await fetch("/api/demo-booking", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -200,7 +208,7 @@ export default function EnrollClient({
           name: formData.name,
           phone: formData.phone,
           email: formData.email,
-          course: `${formData.course} (${format?.label ?? selectedFormat})`,
+          course: `${formData.course} (${plan.label} · ${format?.label ?? selectedFormat})`,
           message: formData.message || defaultMessage,
         }),
       });
@@ -303,6 +311,32 @@ export default function EnrollClient({
             <div className="w-12 h-1 bg-gradient-to-r from-[#c0a84f] to-[#d4bc72] rounded-full mx-auto mt-4" />
           </div>
 
+          <div
+            role="tablist"
+            aria-label="Choose your plan length"
+            className="grid grid-cols-2 gap-1 p-1 max-w-sm mx-auto mb-8 rounded-xl bg-[#0e2b49]/5 border border-[#E2E8F0]"
+          >
+            {PLANS.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                role="tab"
+                aria-selected={planId === p.id}
+                onClick={() => setPlanId(p.id)}
+                className={`py-2.5 rounded-lg text-sm font-bold transition-colors cursor-pointer ${
+                  planId === p.id
+                    ? "bg-[#0e2b49] text-white shadow-md"
+                    : "text-[#0e2b49]/60 hover:text-[#0e2b49]"
+                }`}
+              >
+                {p.duration}
+              </button>
+            ))}
+          </div>
+          <p className="text-center text-sm text-[#64748B] -mt-4 mb-8">
+            {plan.summary}
+          </p>
+
           <div className="grid grid-cols-1 gap-6 max-w-sm mx-auto">
             {sessionFormats.map((sf) => (
               <div
@@ -338,8 +372,11 @@ export default function EnrollClient({
                   className={`text-xl font-bold mb-1 ${sf.highlight ? "text-white" : "text-[#0e2b49]"}`}
                   style={{ fontFamily: "Poppins, sans-serif" }}
                 >
-                  {sf.label}
+                  {sf.label} · {plan.duration}
                 </h3>
+                <p className={`text-xs mb-3 ${sf.highlight ? "text-white/60" : "text-[#64748B]"}`}>
+                  {plan.totalSessions} live sessions × {plan.sessionDuration}
+                </p>
                 <div className="mb-5">
                   <span className={`text-sm line-through tabular-nums ${sf.highlight ? "text-white/40" : "text-[#0e2b49]/40"}`}>
                     {show(sf.price).was}
@@ -440,7 +477,7 @@ export default function EnrollClient({
                         <span
                           className={`text-xs ${formData.course === c.title ? "text-[#c0a84f]" : "text-[#94A3B8]"}`}
                         >
-                          {c.duration}
+                          {plan.duration}
                         </span>
                         <span
                           className={`text-xs ${formData.course === c.title ? "text-white/50" : "text-[#CBD5E1]"}`}
@@ -554,11 +591,7 @@ export default function EnrollClient({
                         <>
                           <span className="text-[#CBD5E1]">·</span>
                           <span className="font-semibold text-[#c0a84f]">
-                            {
-                              sessionFormats.find(
-                                (f) => f.id === selectedFormat,
-                              )?.label
-                            }
+                            {plan.label}
                           </span>
                           <span className="text-[#CBD5E1]">·</span>
                           <span className="font-bold text-[#0e2b49]">

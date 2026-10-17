@@ -5,6 +5,8 @@ export interface Course {
   category: "core" | "pricing" | "premium";
   iconKey: string;
   price: string;
+  /** 30-day plan price; `price` is the 12-week plan. */
+  price30?: string;
   features: string[];
   featured: boolean;
   order: number;

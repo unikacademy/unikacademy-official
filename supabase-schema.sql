@@ -71,6 +71,9 @@ create table if not exists courses (
   created_at  timestamptz default now()
 );
 
+-- 30-day plan price (the 12-week plan price stays in `price`)
+alter table courses add column if not exists price_30 text default '';
+
 -- jobs
 create table if not exists jobs (
   id               uuid primary key default gen_random_uuid(),

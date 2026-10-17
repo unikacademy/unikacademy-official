@@ -2,8 +2,9 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { courseDetailsData } from "@/modules/courses/data/courseDetails";
-import { isOfferActive, priceDisplay } from "@/modules/courses/offer";
-import { getCoursePrices, formatsForCourse } from "@/modules/courses/server/pricing";
+import { isOfferActive } from "@/modules/courses/offer";
+import { getCoursePlanPrices } from "@/modules/courses/server/pricing";
+import PlanPriceCard from "@/modules/courses/components/PlanPriceCard";
 import CourseCurriculum from "@/modules/courses/components/CourseCurriculum";
 
 // Prices come from Supabase; re-generate at most once a minute so admin price
@@ -99,9 +100,8 @@ export default async function CourseDetailPage({ params }: PageProps) {
   const course = courseDetailsData.find((c) => c.id === slug);
   if (!course) notFound();
 
-  const activeFormats = formatsForCourse(await getCoursePrices(), course.id);
+  const planPrices = await getCoursePlanPrices();
   const offerActive = isOfferActive();
-  const startingFrom = priceDisplay(activeFormats[0].price, offerActive);
 
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
@@ -508,91 +508,11 @@ export default async function CourseDetailPage({ params }: PageProps) {
             <div className="sticky top-24 space-y-4">
               {/* Price card */}
               <div className="bg-white rounded-2xl border border-[#E2E8F0] shadow-[0_4px_24px_rgba(14,43,73,0.08)] overflow-hidden">
-                <div className="bg-gradient-to-br from-[#0e2b49] to-[#133a67] px-5 pt-5 pb-6">
-                  <p className="text-white/50 text-[11px] uppercase tracking-widest mb-1.5">
-                    Starting From
-                  </p>
-                  <div className="flex items-baseline gap-2 mb-1">
-                    <span className="text-white/40 text-sm line-through tabular-nums">
-                      {startingFrom.was}
-                    </span>
-                    <span
-                      className="text-4xl font-bold text-white"
-                      style={{ fontFamily: "Poppins, sans-serif" }}
-                    >
-                      {startingFrom.now}
-                    </span>
-                    {startingFrom.offPercent > 0 && (
-                      <span className="self-center rounded-full bg-gradient-to-r from-[#fbbf24] to-[#fde68a] px-2 py-0.5 text-[10px] font-extrabold text-[#7f1d1d]">
-                        {startingFrom.offPercent}% OFF
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-[#c0a84f] text-xs font-medium">
-                    Live 1-on-1 sessions
-                  </p>
-                </div>
-
-                {/* Session formats */}
-                <div className="px-5 py-4 border-b border-[#E2E8F0] space-y-2">
-                  {activeFormats.map((sf) => {
-                    const shown = priceDisplay(sf.price, offerActive);
-                    return (
-                    <div
-                      key={sf.label}
-                      className="flex items-center justify-between py-1"
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="text-[#0e2b49] font-semibold text-sm">
-                          {sf.label}
-                        </span>
-                        <span className="text-[10px] text-[#c0a84f] font-semibold bg-[#c0a84f]/10 px-2 py-0.5 rounded-full">
-                          {sf.badge}
-                        </span>
-                      </div>
-                      <div className="flex flex-col items-end">
-                        <span className="text-[#0e2b49]/40 text-xs line-through tabular-nums">
-                          {shown.was}
-                        </span>
-                        <span className="text-[#0e2b49] font-bold text-sm tabular-nums">
-                          {shown.now}
-                        </span>
-                      </div>
-                    </div>
-                    );
-                  })}
-                </div>
-
-                {/* CTAs */}
-                <div className="p-5 space-y-3">
-                  <Link
-                    href={`/enroll?course=${encodeURIComponent(course.title)}`}
-                    className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl font-bold text-[#0e2b49] bg-gradient-to-r from-[#c0a84f] to-[#d4bc72] hover:from-[#d4bc72] hover:to-[#c0a84f] transition-all duration-200 shadow-md hover:shadow-[0_4px_20px_rgba(192,168,79,0.4)] hover:-translate-y-0.5 cursor-pointer text-sm"
-                    style={{ fontFamily: "Poppins, sans-serif" }}
-                  >
-                    Enroll Now
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={2.5}
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
-                      />
-                    </svg>
-                  </Link>
-                  <Link
-                    href="/demo"
-                    className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl font-semibold text-[#0e2b49] border-2 border-[#0e2b49] hover:bg-[#0e2b49] hover:text-white transition-all duration-200 cursor-pointer text-sm"
-                    style={{ fontFamily: "Poppins, sans-serif" }}
-                  >
-                    Book Free Demo First
-                  </Link>
-                </div>
+                <PlanPriceCard
+                  courseTitle={course.title}
+                  prices={planPrices[course.id]}
+                  offerActive={offerActive}
+                />
 
                 {/* What's included */}
                 <div className="px-5 pb-5">
@@ -638,24 +558,6 @@ export default async function CourseDetailPage({ params }: PageProps) {
                     </p>
                   </div>
                 ))}
-              </div>
-
-              {/* Mobile CTA — shown below sidebar on mobile */}
-              <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-[#E2E8F0] px-4 py-3 flex gap-3">
-                <Link
-                  href="/demo"
-                  className="flex-1 py-3 rounded-xl font-semibold text-[#0e2b49] border-2 border-[#0e2b49] text-sm text-center hover:bg-[#0e2b49] hover:text-white transition-all duration-200 cursor-pointer"
-                  style={{ fontFamily: "Poppins, sans-serif" }}
-                >
-                  Free Demo
-                </Link>
-                <Link
-                  href={`/enroll?course=${encodeURIComponent(course.title)}`}
-                  className="flex-1 py-3 rounded-xl font-bold text-[#0e2b49] bg-gradient-to-r from-[#c0a84f] to-[#d4bc72] text-sm text-center shadow-md cursor-pointer"
-                  style={{ fontFamily: "Poppins, sans-serif" }}
-                >
-                  Enroll Now
-                </Link>
               </div>
             </div>
           </div>

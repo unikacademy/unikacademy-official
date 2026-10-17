@@ -1,5 +1,6 @@
 import type { ContactStatus } from "@/modules/contacts/types";
 import type { PillTone } from "@/modules/dashboard/components/StatusPill";
+import type { DemoFollowup } from "@/modules/demo-bookings/followup";
 
 export type BookingType = "individual" | "corporate";
 
@@ -42,7 +43,7 @@ export interface PersonRef {
   email: string | null;
 }
 
-export interface DemoBooking {
+export interface DemoBooking extends DemoFollowup {
   _id: string;
   name: string;
   email?: string;

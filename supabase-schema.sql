@@ -284,6 +284,29 @@ create trigger demo_bookings_set_updated_at
   before update on demo_bookings
   for each row execute function public.set_updated_at();
 
+-- demo_bookings: sales follow-up funnel, edited by staff with demos:manage.
+-- call -> booking -> conducted -> enrollment. NULL = not recorded yet. Each
+-- step needs the one before it to be positive (enforced below), so the data
+-- can't contradict itself. Independent of demo_status (the teacher/schedule
+-- lifecycle).
+alter table demo_bookings add column if not exists call_status text
+  check (call_status in ('not_connected', 'not_picked', 'picked'));
+alter table demo_bookings add column if not exists booking_status text
+  check (booking_status in ('booked', 'not_booked'));
+alter table demo_bookings add column if not exists conduct_status text
+  check (conduct_status in ('conducted', 'not_conducted'));
+alter table demo_bookings add column if not exists enrollment_status text
+  check (enrollment_status in ('enrolled', 'not_enrolled'));
+alter table demo_bookings add column if not exists followup_note text
+  check (followup_note is null or char_length(followup_note) <= 500);
+
+alter table demo_bookings drop constraint if exists demo_bookings_followup_chain;
+alter table demo_bookings add constraint demo_bookings_followup_chain check (
+  (booking_status    is null or call_status    = 'picked')
+  and (conduct_status    is null or booking_status = 'booked')
+  and (enrollment_status is null or conduct_status = 'conducted')
+);
+
 -- Profile photos: public bucket (photos are shown to teachers/students),
 -- 2 MB max, images only. Each user may only write inside their own folder:
 -- avatars/<user_id>/<file>

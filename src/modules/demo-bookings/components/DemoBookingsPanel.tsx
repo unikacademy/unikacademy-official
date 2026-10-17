@@ -10,6 +10,12 @@ import {
 import { BookingTypeBadge } from "@/modules/demo-bookings/components/BookingTypeBadge";
 import { DemoStageBadge } from "@/modules/demo-bookings/components/DemoStageBadge";
 import { DemoAssignment } from "@/modules/demo-bookings/components/DemoAssignment";
+import { DemoFollowupTracker } from "@/modules/demo-bookings/components/DemoFollowupTracker";
+import { FollowupStageBadge } from "@/modules/demo-bookings/components/FollowupStageBadge";
+import {
+  FOLLOWUP_STAGES,
+  followupStageOf,
+} from "@/modules/demo-bookings/followup";
 import { formatDate, formatDateTimeIST } from "@/modules/dashboard/format";
 import { STATUS_LABEL } from "@/modules/dashboard/status";
 import {
@@ -62,6 +68,13 @@ const COLUMNS: ListColumn<DemoBooking>[] = [
     header: "Course",
     sortValue: (d) => d.course.toLowerCase(),
     cell: (d) => <span className="text-gray-700">{d.course}</span>,
+  },
+  {
+    id: "followup",
+    header: "Follow-up",
+    sortValue: (d) =>
+      FOLLOWUP_STAGES.findIndex((s) => s.value === followupStageOf(d).value),
+    cell: (d) => <FollowupStageBadge followup={d} />,
   },
   {
     id: "stage",
@@ -169,6 +182,13 @@ const FILTERS: ListFilter<DemoBooking>[] = [
     value: (d) => d.status,
   },
   {
+    id: "followup",
+    type: "select",
+    label: "Follow-up",
+    options: FOLLOWUP_STAGES.map((s) => ({ value: s.value, label: s.label })),
+    value: (d) => followupStageOf(d).value,
+  },
+  {
     id: "stage",
     type: "select",
     label: "Demo stage",
@@ -237,6 +257,12 @@ export function DemoBookingsPanel({
     setRows((prev) => prev.map((d) => (d._id === saved._id ? saved : d)));
     setDetailItem(saved);
     showToast("Assignment saved");
+  };
+
+  const handleFollowupSaved = (saved: DemoBooking) => {
+    setRows((prev) => prev.map((d) => (d._id === saved._id ? saved : d)));
+    setDetailItem(saved);
+    showToast("Follow-up saved");
   };
 
   const handleStatusChange = (id: string, status: string) => {
@@ -310,13 +336,21 @@ export function DemoBookingsPanel({
         readOnly={!canManage}
         extra={
           detailItem && (
-            <DemoAssignment
-              key={detailItem._id}
-              booking={detailItem}
-              canAssign={canAssign}
-              assignees={assignees}
-              onSaved={handleAssigned}
-            />
+            <div className="space-y-4">
+              <DemoFollowupTracker
+                key={`followup-${detailItem._id}`}
+                booking={detailItem}
+                canManage={canManage}
+                onSaved={handleFollowupSaved}
+              />
+              <DemoAssignment
+                key={detailItem._id}
+                booking={detailItem}
+                canAssign={canAssign}
+                assignees={assignees}
+                onSaved={handleAssigned}
+              />
+            </div>
           )
         }
       />

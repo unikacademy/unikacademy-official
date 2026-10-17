@@ -1,5 +1,6 @@
 import { supabaseAdmin, toRecord } from "@/lib/supabase-admin";
 import { ok, err } from "@/lib/api";
+import { parseFollowup } from "@/modules/demo-bookings/followup";
 import {
   DEMO_STAGES,
   MEET_LINK_RE,
@@ -60,6 +61,36 @@ export async function deleteDemoBooking(id: string) {
 
   if (error || count === 0) return err("Demo booking not found", 404);
   return ok({ message: "Demo booking deleted" });
+}
+
+// ── Follow-up funnel ────────────────────────────────────────────────────────
+
+/**
+ * Replace a booking's follow-up (call → booking → conducted → enrollment).
+ * Steps must be set in order; the DB check constraint is the backstop.
+ */
+export async function updateFollowup(id: string, body: unknown) {
+  if (!UUID_RE.test(id)) return err("Demo booking not found", 404);
+
+  const parsed = parseFollowup(body);
+  if ("error" in parsed) return err(parsed.error, 400);
+  const f = parsed.value;
+
+  const { data, error } = await supabaseAdmin
+    .from("demo_bookings")
+    .update({
+      call_status: f.callStatus,
+      booking_status: f.bookingStatus,
+      conduct_status: f.conductStatus,
+      enrollment_status: f.enrollmentStatus,
+      followup_note: f.followupNote,
+    })
+    .eq("id", id)
+    .select(BOOKING_SELECT)
+    .single();
+
+  if (error || !data) return err("Demo booking not found", 404);
+  return ok(toBooking(data));
 }
 
 // ── Assignment ──────────────────────────────────────────────────────────────

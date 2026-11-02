@@ -5,7 +5,7 @@ import { findCourseDetail } from "@/modules/courses/data/courseDetails";
 import HeroCarouselSection from "@/modules/marketing/components/HeroCarouselSection";
 import { isOfferActive } from "@/modules/courses/offer";
 import JourneySection from "@/modules/marketing/components/JourneySection";
-import TestimonialsMarquee from "@/modules/marketing/components/TestimonialsMarquee";
+import ReviewsSection from "@/modules/marketing/components/ReviewsSection";
 import HorizontalCoursesWrapper from "@/modules/courses/components/HorizontalCoursesWrapper";
 import ScrollReveal from "@/shared/components/animations/ScrollReveal";
 import StaggerReveal from "@/shared/components/animations/StaggerReveal";
@@ -428,8 +428,8 @@ export default async function Home() {
         </Link>
       </div>
 
-      {/* ─── Testimonials Marquee (infinite auto-scroll) ─── */}
-      <TestimonialsMarquee />
+      {/* ─── Student reviews (text + video) ─── */}
+      <ReviewsSection />
 
       {/* ─── CTA Section ─── */}
       <section className="relative overflow-hidden py-16 md:py-28 bg-[#0e2b49]">

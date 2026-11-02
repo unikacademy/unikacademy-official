@@ -2,7 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 import Link from "next/link";
-import GarbaDancer from "./GarbaDancer";
+import Diya from "./Diya";
 // Offer label / percent / end date live in one place: modules/courses/offer.ts
 import { OFFER, OFFER_ENDS_AT_MS, isOfferActive } from "@/modules/courses/offer";
 
@@ -38,6 +38,18 @@ function getNowSecond() {
   return Math.floor(Date.now() / 1000) * 1000;
 }
 
+// Fixed positions so server and client markup match.
+const SPARKLES = [
+  { left: "4%", top: "18%", size: "9px", delay: "0s" },
+  { left: "13%", top: "62%", size: "7px", delay: "0.8s" },
+  { left: "24%", top: "22%", size: "6px", delay: "1.6s" },
+  { left: "38%", top: "70%", size: "7px", delay: "0.4s" },
+  { left: "61%", top: "16%", size: "6px", delay: "1.2s" },
+  { left: "74%", top: "66%", size: "8px", delay: "2s" },
+  { left: "86%", top: "24%", size: "7px", delay: "0.6s" },
+  { left: "95%", top: "60%", size: "6px", delay: "1.4s" },
+];
+
 function pad(n: number) {
   return String(n).padStart(2, "0");
 }
@@ -63,7 +75,7 @@ function Countdown({ msLeft }: { msLeft: number }) {
       {parts.map((p) => (
         <span
           key={p.label}
-          className="flex min-w-9 flex-col items-center rounded-md bg-black/30 px-1.5 py-0.5 ring-1 ring-[#fbbf24]/40"
+          className="flex min-w-9 flex-col items-center rounded-md bg-black/35 px-1.5 py-0.5 ring-1 ring-[#fbbf24]/40"
         >
           <span className="text-sm font-extrabold leading-tight tabular-nums text-[#fde68a]">
             {pad(p.value)}
@@ -98,38 +110,51 @@ export default function SaleBanner() {
 
   return (
     <div
-      className="navratri-banner relative z-50 w-full overflow-hidden"
+      className="diwali-banner relative z-50 w-full overflow-hidden"
       style={{
         background:
-          "linear-gradient(90deg, #7f1d1d 0%, #9a3412 30%, #b45309 50%, #9a3412 70%, #7f1d1d 100%)",
+          "linear-gradient(90deg, #1e1b4b 0%, #4c1d95 30%, #6b21a8 50%, #4c1d95 70%, #1e1b4b 100%)",
         borderBottom: "1px solid rgba(251,191,36,0.5)",
       }}
     >
       {/* Slow golden shimmer sweep */}
       <div
         aria-hidden
-        className="navratri-shimmer pointer-events-none absolute inset-0"
+        className="diwali-shimmer pointer-events-none absolute inset-0"
         style={{
           background:
-            "linear-gradient(90deg, transparent 0%, rgba(253,224,71,0.18) 50%, transparent 100%)",
+            "linear-gradient(90deg, transparent 0%, rgba(253,224,71,0.16) 50%, transparent 100%)",
           backgroundSize: "200% 100%",
         }}
       />
 
+      {/* Twinkling sparkles in the night sky */}
+      <div aria-hidden className="pointer-events-none absolute inset-0">
+        {SPARKLES.map((s, i) => (
+          <span
+            key={i}
+            className="diwali-sparkle absolute text-[#fde68a]"
+            style={{ left: s.left, top: s.top, fontSize: s.size, animationDelay: s.delay }}
+          >
+            ✦
+          </span>
+        ))}
+      </div>
+
       <div className="relative flex items-center justify-center gap-3 px-10 py-2 sm:gap-5 sm:py-1.5">
         <span className="hidden sm:inline-flex">
-          <GarbaDancer variant="girl" />
+          <Diya />
         </span>
 
         {/* Message + countdown: stacked on small screens, side by side on md+ */}
         <div className="flex flex-col items-center gap-1.5 md:flex-row md:gap-5">
           <p className="text-center text-sm leading-snug text-white sm:text-base">
             <span className="font-bold tracking-wide text-[#fde68a]">
-              🌺 {OFFER.label}
+              🪔 {OFFER.label}
             </span>
             <span className="mx-2 text-white/50">—</span>
-            {"Celebrate with "}
-            <span className="mx-0.5 inline-block rounded-full bg-gradient-to-r from-[#fbbf24] to-[#fde68a] px-2.5 py-0.5 text-sm font-extrabold text-[#7f1d1d] shadow-[0_0_14px_rgba(253,224,71,0.6)] sm:text-base">
+            {"Light up your future with "}
+            <span className="mx-0.5 inline-block rounded-full bg-gradient-to-r from-[#fbbf24] to-[#fde68a] px-2.5 py-0.5 text-sm font-extrabold text-[#3b0764] shadow-[0_0_14px_rgba(253,224,71,0.6)] sm:text-base">
               {OFFER.percent}% OFF
             </span>
             {" on all courses."}
@@ -149,18 +174,18 @@ export default function SaleBanner() {
         </Link>
 
         <span className="hidden sm:inline-flex">
-          <GarbaDancer variant="boy" />
+          <Diya delayed />
         </span>
       </div>
 
-      {/* Marigold garland along the bottom edge */}
+      {/* String of festive lights along the bottom edge */}
       <div
         aria-hidden
-        className="h-2.5 w-full"
+        className="diwali-lights h-2.5 w-full"
         style={{
           backgroundImage:
-            "radial-gradient(circle at 50% 50%, #fde047 0 2.5px, transparent 3px), radial-gradient(circle at 50% 50%, #f97316 0 5px, transparent 5.5px)",
-          backgroundSize: "14px 10px",
+            "radial-gradient(circle at 25% 50%, #fde047 0 2.5px, transparent 3px), radial-gradient(circle at 75% 50%, #f472b6 0 2.5px, transparent 3px), linear-gradient(transparent 4px, rgba(253,230,138,0.35) 4px 5px, transparent 5px)",
+          backgroundSize: "24px 10px",
         }}
       />
 
@@ -177,23 +202,34 @@ export default function SaleBanner() {
 
       <style>{`
         @media (prefers-reduced-motion: no-preference) {
-          .navratri-shimmer { animation: navratri-shimmer 4s infinite linear; }
-          .garba-dancer { transform-origin: 32px 84px; animation: garba-bounce 0.9s infinite ease-in-out; }
-          .garba-dancer-alt { animation-delay: 0.45s; }
-          .garba-arm { transform-origin: 24px 42px; animation: garba-arm 0.45s infinite ease-in-out alternate; }
-          .garba-braid { transform-origin: 44px 22px; animation: garba-arm 0.9s infinite ease-in-out alternate; }
+          .diwali-shimmer { animation: diwali-shimmer 4s infinite linear; }
+          .diwali-sparkle { animation: diwali-twinkle 2.4s infinite ease-in-out; }
+          .diwali-lights { animation: diwali-lights 1.6s infinite steps(2); }
+          .diya-flame { transform-origin: 32px 30px; animation: diya-flicker 0.5s infinite ease-in-out alternate; }
+          .diya-glow { transform-origin: 32px 20px; animation: diya-pulse 1.8s infinite ease-in-out; }
+          .diya-alt .diya-flame { animation-delay: 0.25s; }
+          .diya-alt .diya-glow { animation-delay: 0.9s; }
         }
-        @keyframes navratri-shimmer {
+        .diwali-sparkle { opacity: 0.6; line-height: 1; }
+        @keyframes diwali-shimmer {
           0% { background-position: -200% 0; }
           100% { background-position: 200% 0; }
         }
-        @keyframes garba-bounce {
-          0%, 100% { transform: translateY(0) rotate(-3deg); }
-          50% { transform: translateY(-3px) rotate(3deg); }
+        @keyframes diwali-twinkle {
+          0%, 100% { opacity: 0.15; transform: scale(0.7); }
+          50% { opacity: 0.9; transform: scale(1.1); }
         }
-        @keyframes garba-arm {
-          from { transform: rotate(-12deg); }
-          to { transform: rotate(12deg); }
+        @keyframes diwali-lights {
+          from { background-position: 0 0; }
+          to { background-position: 12px 0; }
+        }
+        @keyframes diya-flicker {
+          from { transform: scale(1, 1) rotate(-3deg); }
+          to { transform: scale(0.92, 1.08) rotate(3deg); }
+        }
+        @keyframes diya-pulse {
+          0%, 100% { opacity: 0.7; transform: scale(1); }
+          50% { opacity: 1; transform: scale(1.12); }
         }
       `}</style>
     </div>

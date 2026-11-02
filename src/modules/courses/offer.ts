@@ -8,9 +8,9 @@ import { computeMRP } from "./constants";
 //   • label:   festival name shown on the banner
 // Once `endsAt` passes, prices and the banner return to normal on their own.
 export const OFFER = {
-  label: "Navratri Special",
+  label: "Diwali Special",
   percent: 10,
-  endsAt: "2026-10-20T23:59:59+05:30",
+  endsAt: "2026-11-13T23:59:59+05:30",
 } as const;
 
 export const OFFER_ENDS_AT_MS = new Date(OFFER.endsAt).getTime();

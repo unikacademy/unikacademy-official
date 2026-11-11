@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, SubmitEvent } from "react";
+import { useSpamGuard } from "@/shared/components/SpamGuard";
 import Link from "next/link";
 import {
   SESSION_FORMATS,
@@ -167,6 +168,9 @@ export default function EnrollClient({
   const [status, setStatus] = useState<
     "idle" | "submitting" | "success" | "error"
   >("idle");
+  const spamGuard = useSpamGuard("demo-booking");
+  // Validation message from the server (400), shown instead of the generic one.
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // One 1-on-1 format, priced for the chosen course and plan (cheapest until a course is picked).
   const chosenSlug = ALL_COURSES.find((c) => c.title === formData.course)?.slug;
@@ -210,10 +214,16 @@ export default function EnrollClient({
           email: formData.email,
           course: `${formData.course} (${plan.label} · ${format?.label ?? selectedFormat})`,
           message: formData.message || defaultMessage,
+          ...spamGuard.values(),
         }),
       });
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        setErrorMessage(res.status === 400 ? (data?.error ?? null) : null);
+      }
       setStatus(res.ok ? "success" : "error");
     } catch {
+      setErrorMessage(null);
       setStatus("error");
     }
   };
@@ -581,6 +591,7 @@ export default function EnrollClient({
                   onSubmit={handleSubmit}
                   className="bg-white rounded-2xl border border-[#E2E8F0] p-6 sm:p-7 space-y-5"
                 >
+                  {spamGuard.field}
                   {/* Selected summary */}
                   {(formData.course || selectedFormat) && (
                     <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-4 py-3 flex flex-wrap items-center gap-2 text-xs text-[#64748B]">
@@ -753,13 +764,15 @@ export default function EnrollClient({
                     />
                   </div>
 
+                  {spamGuard.widget}
+
                   {status === "error" && (
                     <div
                       className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm"
                       role="alert"
                     >
-                      Something went wrong. Please try again or call us
-                      directly.
+                      {errorMessage ??
+                        "Something went wrong. Please try again or call us directly."}
                     </div>
                   )}
 

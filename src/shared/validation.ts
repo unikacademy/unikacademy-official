@@ -35,3 +35,26 @@ export function validateCompanyName(raw: string): string | null {
   if (name.length > 100) return "Company name is too long.";
   return null;
 }
+
+const MESSAGE_MAX = 2000;
+
+// Bot filler text is one long unbroken run of letters with random capitals
+// (e.g. "SmgKUoozJAiYFtQyRlvWIVv"). Real messages have spaces or are short.
+function looksLikeGibberish(text: string): boolean {
+  if (!/^[a-zA-Z]{12,}$/.test(text)) return false;
+  if (text === text.toUpperCase()) return false;
+  return text.slice(1).replace(/[^A-Z]/g, "").length >= 3;
+}
+
+export function validateMessage(raw: string, required = false): string | null {
+  const message = raw.trim();
+  if (!message) return required ? "Message is required." : null;
+  if (message.length > MESSAGE_MAX) return "Message is too long.";
+  if (looksLikeGibberish(message)) return "Please enter a valid message.";
+  return null;
+}
+
+/** Form bodies are untyped JSON — anything that isn't a string counts as empty. */
+export function asText(value: unknown): string {
+  return typeof value === "string" ? value.trim() : "";
+}

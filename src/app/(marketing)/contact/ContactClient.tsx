@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, SubmitEvent } from "react";
+import { useSpamGuard } from "@/shared/components/SpamGuard";
 
 export default function ContactClient() {
   const [formData, setFormData] = useState({
@@ -9,10 +10,13 @@ export default function ContactClient() {
     phone: "",
     message: "",
   });
+  const spamGuard = useSpamGuard("contact");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<
     "idle" | "success" | "error"
   >("idle");
+  // Validation message from the server (400), shown instead of the generic one.
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
@@ -22,15 +26,18 @@ export default function ContactClient() {
       const response = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, ...spamGuard.values() }),
       });
       if (response.ok) {
         setSubmitStatus("success");
         setFormData({ name: "", email: "", phone: "", message: "" });
       } else {
+        const data = await response.json().catch(() => null);
+        setErrorMessage(response.status === 400 ? (data?.error ?? null) : null);
         setSubmitStatus("error");
       }
     } catch {
+      setErrorMessage(null);
       setSubmitStatus("error");
     } finally {
       setIsSubmitting(false);
@@ -224,6 +231,7 @@ export default function ContactClient() {
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-5">
+                  {spamGuard.field}
                   <div>
                     <label
                       htmlFor="name"
@@ -300,10 +308,12 @@ export default function ContactClient() {
                     />
                   </div>
 
+                  {spamGuard.widget}
+
                   {submitStatus === "error" && (
                     <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm">
-                      Something went wrong. Please try again or call us
-                      directly.
+                      {errorMessage ??
+                        "Something went wrong. Please try again or call us directly."}
                     </div>
                   )}
 

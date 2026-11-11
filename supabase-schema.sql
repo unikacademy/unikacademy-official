@@ -103,18 +103,14 @@ drop policy if exists "Public read active jobs" on jobs;
 create policy "Public read active jobs"
   on jobs for select using (is_active = true);
 
--- Public can insert into submission tables (contact form, demo booking, application)
+-- No public insert policies on the submission tables: the forms post to our
+-- API (/api/contact, /api/demo-booking, /api/application), which validates the
+-- input and inserts with the service role key. A public insert policy would let
+-- bots write rows straight through the Supabase REST API with the anon key,
+-- skipping that validation. The drops below remove the old policies.
 drop policy if exists "Public insert contacts" on contacts;
-create policy "Public insert contacts"
-  on contacts for insert with check (true);
-
 drop policy if exists "Public insert demo_bookings" on demo_bookings;
-create policy "Public insert demo_bookings"
-  on demo_bookings for insert with check (true);
-
 drop policy if exists "Public insert applications" on applications;
-create policy "Public insert applications"
-  on applications for insert with check (true);
 
 -- All other access (admin reads, updates, deletes, course/job management)
 -- is handled server-side using the service role key which bypasses RLS entirely.

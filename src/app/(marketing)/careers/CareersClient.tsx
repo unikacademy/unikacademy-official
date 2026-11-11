@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, SubmitEvent } from "react";
+import { useSpamGuard } from "@/shared/components/SpamGuard";
 
 interface Job {
   _id: string;
@@ -22,10 +23,13 @@ function ApplyForm({ jobTitle }: ApplyFormProps) {
     phone: "",
     message: "",
   });
+  const spamGuard = useSpamGuard("application");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<
     "idle" | "success" | "error"
   >("idle");
+  // Validation message from the server (400), shown instead of the generic one.
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
@@ -35,15 +39,22 @@ function ApplyForm({ jobTitle }: ApplyFormProps) {
       const res = await fetch("/api/application", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...formData, position: jobTitle }),
+        body: JSON.stringify({
+          ...formData,
+          position: jobTitle,
+          ...spamGuard.values(),
+        }),
       });
       if (res.ok) {
         setSubmitStatus("success");
         setFormData({ name: "", email: "", phone: "", message: "" });
       } else {
+        const data = await res.json().catch(() => null);
+        setErrorMessage(res.status === 400 ? (data?.error ?? null) : null);
         setSubmitStatus("error");
       }
     } catch {
+      setErrorMessage(null);
       setSubmitStatus("error");
     } finally {
       setIsSubmitting(false);
@@ -93,6 +104,7 @@ function ApplyForm({ jobTitle }: ApplyFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {spamGuard.field}
       {[
         {
           id: "name",
@@ -167,9 +179,11 @@ function ApplyForm({ jobTitle }: ApplyFormProps) {
         />
       </div>
 
+      {spamGuard.widget}
+
       {submitStatus === "error" && (
         <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm">
-          Something went wrong. Please try again.
+          {errorMessage ?? "Something went wrong. Please try again."}
         </div>
       )}
 

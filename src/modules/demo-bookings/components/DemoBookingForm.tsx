@@ -8,6 +8,7 @@ import {
   validateEmail,
   validateCompanyName,
 } from "@/shared/validation";
+import { useSpamGuard } from "@/shared/components/SpamGuard";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -121,7 +122,13 @@ export default function DemoBookingForm({
     ...EMPTY_FORM,
     course: extended ? "" : EMPTY_FORM.course,
   });
+  const spamGuard = useSpamGuard(
+    "demo-booking",
+    variant === "dark" ? "dark" : "light",
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Validation message from the server (400), shown instead of the generic one.
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [submitStatus, setSubmitStatus] = useState<
     "idle" | "success" | "error"
   >("idle");
@@ -199,15 +206,19 @@ export default function DemoBookingForm({
           participants: formData.participants
             ? Number(formData.participants)
             : undefined,
+          ...spamGuard.values(),
         }),
       });
       if (res.ok) {
         setSubmitStatus("success");
         onSuccess?.();
       } else {
+        const data = await res.json().catch(() => null);
+        setErrorMessage(res.status === 400 ? (data?.error ?? null) : null);
         setSubmitStatus("error");
       }
     } catch {
+      setErrorMessage(null);
       setSubmitStatus("error");
     } finally {
       setIsSubmitting(false);
@@ -239,6 +250,7 @@ export default function DemoBookingForm({
 
   return (
     <form onSubmit={handleSubmit} className={cn("space-y-4", className)}>
+      {spamGuard.field}
       <ToggleGroup
         value={[bookingType]}
         onValueChange={(values) => {
@@ -465,10 +477,12 @@ export default function DemoBookingForm({
         </Field>
       )}
 
+      {spamGuard.widget}
+
       {submitStatus === "error" && (
         <Alert variant="destructive" className={styles.alert}>
           <AlertDescription className={styles.alertText}>
-            Something went wrong. Please try again.
+            {errorMessage ?? "Something went wrong. Please try again."}
           </AlertDescription>
         </Alert>
       )}

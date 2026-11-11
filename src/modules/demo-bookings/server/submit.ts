@@ -1,59 +1,77 @@
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { ok, err } from "@/lib/api";
-import { validateEmail } from "@/shared/validation";
+import {
+  asText,
+  validateCompanyName,
+  validateEmail,
+  validateMessage,
+  validateName,
+  validatePhone,
+} from "@/shared/validation";
+import { spamGuardResponse, type SpamGuardFields } from "@/shared/spam-guard";
 import { notifyDemoBookingSubmission } from "./notify";
+
+const COURSE_MAX = 150;
 
 type BookingType = "individual" | "corporate";
 
-export async function submitDemoBooking(body: {
-  name?: string;
-  email?: string;
-  phone?: string;
-  course?: string;
-  message?: string;
-  bookingType?: BookingType;
-  companyName?: string;
-  companySize?: string;
-  participants?: number;
-  preferredDate?: string;
-}) {
-  const {
-    name,
-    email,
-    phone,
-    course,
-    message,
-    companySize,
-    participants,
-    preferredDate,
-  } = body;
+const SUCCESS_MESSAGE = "Demo booking submitted successfully";
+
+export async function submitDemoBooking(
+  body: SpamGuardFields & {
+    name?: string;
+    email?: string;
+    phone?: string;
+    course?: string;
+    message?: string;
+    bookingType?: BookingType;
+    companyName?: string;
+    companySize?: string;
+    participants?: number;
+    preferredDate?: string;
+  },
+) {
+  const blocked = await spamGuardResponse(body, {
+    action: "demo-booking",
+    successMessage: SUCCESS_MESSAGE,
+  });
+  if (blocked) return blocked;
+
+  const { companySize, participants, preferredDate } = body;
+  const name = asText(body.name);
+  const email = asText(body.email);
+  const phone = asText(body.phone);
+  const course = asText(body.course);
+  const message = asText(body.message);
   const bookingType: BookingType =
     body.bookingType === "corporate" ? "corporate" : "individual";
-  const companyName = body.companyName?.trim();
+  const companyName = asText(body.companyName);
 
   if (!name || !phone || !course) {
     return err("Name, phone, and course are required", 400);
   }
 
-  const emailError = validateEmail(email ?? "");
-  if (emailError) return err(emailError, 400);
+  const invalid =
+    validateName(name) ??
+    validatePhone(phone) ??
+    validateEmail(email) ??
+    (bookingType === "corporate" ? validateCompanyName(companyName) : null) ??
+    validateMessage(message);
+  if (invalid) return err(invalid, 400);
 
-  if (bookingType === "corporate" && !companyName) {
-    return err("Company name is required for corporate bookings", 400);
-  }
+  if (course.length > COURSE_MAX) return err("Invalid course", 400);
 
   const { error } = await supabaseAdmin.from("demo_bookings").insert({
     name,
-    email: email?.trim(),
+    email,
     phone,
     course,
-    message,
+    message: message || null,
     booking_type: bookingType,
     company_name: bookingType === "corporate" ? companyName : null,
     company_size: bookingType === "corporate" ? companySize : null,
     participants: bookingType === "corporate" ? (participants ?? null) : null,
-    preferred_date:
-      bookingType === "corporate" ? (preferredDate || null) : null,
+    preferred_date: bookingType === "corporate" ? preferredDate || null : null,
   });
 
   if (error) throw error;
@@ -63,7 +81,7 @@ export async function submitDemoBooking(body: {
     email,
     phone,
     course,
-    message,
+    message: message || undefined,
     bookingType,
     companyName: bookingType === "corporate" ? companyName : null,
     companySize: bookingType === "corporate" ? companySize : null,
@@ -71,5 +89,5 @@ export async function submitDemoBooking(body: {
     preferredDate: bookingType === "corporate" ? preferredDate || null : null,
   });
 
-  return ok({ message: "Demo booking submitted successfully" }, 201);
+  return ok({ message: SUCCESS_MESSAGE }, 201);
 }

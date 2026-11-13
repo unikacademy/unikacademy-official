@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { MeshTransmissionMaterial } from "@react-three/drei";
 import * as THREE from "three";
@@ -53,7 +53,12 @@ function GlassSphere({
       ) : (
         <MeshTransmissionMaterial
           backside
-          samples={6}
+          // Each transmissive sphere re-renders the scene into its own buffer
+          // every frame; small buffers keep that cheap and the spheres are
+          // blurred background decoration anyway.
+          samples={4}
+          resolution={256}
+          backsideResolution={256}
           thickness={0.5}
           chromaticAberration={0.02}
           anisotropy={0.1}
@@ -128,18 +133,46 @@ function SceneContent({ isMobile }: { isMobile: boolean }) {
 
 export default function HeroScene() {
   const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  // Only render frames while the hero is on screen and the tab is visible —
+  // otherwise the scene keeps the GPU busy while the visitor scrolls the rest
+  // of the page.
+  const [active, setActive] = useState(true);
+
+  useEffect(() => {
+    const el = wrapperRef.current;
+    if (!el) return;
+    let onScreen = true;
+    const update = () => setActive(onScreen && !document.hidden);
+    const observer = new IntersectionObserver(([entry]) => {
+      onScreen = entry.isIntersecting;
+      update();
+    });
+    observer.observe(el);
+    document.addEventListener("visibilitychange", update);
+    return () => {
+      observer.disconnect();
+      document.removeEventListener("visibilitychange", update);
+    };
+  }, []);
 
   return (
-    <Canvas
+    <div
+      ref={wrapperRef}
       style={{ position: "absolute", inset: 0, pointerEvents: "none" }}
-      camera={{ position: [0, 0, 6], fov: 55 }}
-      gl={{ antialias: true, alpha: true }}
-      dpr={[1, 1.5]}
     >
-      <ambientLight intensity={0.4} />
-      <pointLight position={[5, 5, 4]} color="#c0a84f" intensity={1.2} />
-      <pointLight position={[-5, -3, 2]} color="#133a67" intensity={0.6} />
-      <SceneContent isMobile={isMobile} />
-    </Canvas>
+      <Canvas
+        style={{ position: "absolute", inset: 0, pointerEvents: "none" }}
+        camera={{ position: [0, 0, 6], fov: 55 }}
+        gl={{ antialias: true, alpha: true }}
+        dpr={[1, 1.5]}
+        frameloop={active ? "always" : "never"}
+      >
+        <ambientLight intensity={0.4} />
+        <pointLight position={[5, 5, 4]} color="#c0a84f" intensity={1.2} />
+        <pointLight position={[-5, -3, 2]} color="#133a67" intensity={0.6} />
+        <SceneContent isMobile={isMobile} />
+      </Canvas>
+    </div>
   );
 }

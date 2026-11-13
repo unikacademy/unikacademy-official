@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { DEMO_ORIGINAL_PRICE } from "@/modules/courses/constants";
 import { findCourseDetail } from "@/modules/courses/data/courseDetails";
+import { getActiveCourses } from "@/modules/courses/server/public";
 import HeroCarouselSection from "@/modules/marketing/components/HeroCarouselSection";
 import { isOfferActive } from "@/modules/courses/offer";
 import JourneySection from "@/modules/marketing/components/JourneySection";
@@ -49,12 +50,12 @@ interface DBCourse {
   order: number;
 }
 
+// Courses come from Supabase — see the note in courses/[slug]/page.tsx.
+export const revalidate = 60;
+
 async function getCourses(): Promise<DBCourse[]> {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
-    const res = await fetch(`${baseUrl}/api/courses`, { cache: "no-store" });
-    if (!res.ok) return [];
-    return res.json();
+    return (await getActiveCourses()) as unknown as DBCourse[];
   } catch {
     return [];
   }

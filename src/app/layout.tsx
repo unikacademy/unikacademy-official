@@ -2,11 +2,28 @@ import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
-import { Geist } from "next/font/google";
+import { Geist, Inter, Poppins } from "next/font/google";
 import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+
+// Self-hosted by next/font (no render-blocking request to Google Fonts). The
+// families keep their real names, so `font-family: Poppins` / `Inter` in the
+// styles keeps working.
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-poppins",
+  display: "swap",
+});
+// Dashboard headings only — not worth preloading on the marketing pages.
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+  preload: false,
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.unikacademy.in"),
@@ -41,15 +58,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={cn("font-sans", geist.variable)}>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
-      </head>
+    <html
+      lang="en"
+      className={cn(
+        "font-sans",
+        geist.variable,
+        poppins.variable,
+        inter.variable,
+      )}
+    >
       <body className="antialiased">
         <TooltipProvider>{children}</TooltipProvider>
         <Analytics />

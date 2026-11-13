@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import EnrollClient from "./EnrollClient";
+import EnrollFromQuery from "./EnrollFromQuery";
 import { getCoursePlanPrices } from "@/modules/courses/server/pricing";
-import { isPlanId } from "@/modules/courses/constants";
 import { isOfferActive } from "@/modules/courses/offer";
 
 export const metadata: Metadata = {
@@ -31,19 +32,22 @@ export const metadata: Metadata = {
   },
 };
 
-interface Props {
-  searchParams: Promise<{ course?: string; plan?: string }>;
-}
+// Course prices come from Supabase — see the note in courses/[slug]/page.tsx.
+export const revalidate = 60;
 
-export default async function EnrollPage({ searchParams }: Props) {
-  const { course, plan } = await searchParams;
+// ?course= / ?plan= are read in the browser (EnrollFromQuery) rather than from
+// `searchParams` here, which would force a server render on every visit. The
+// fallback is the same form without a preselection, so it is in the static HTML.
+export default async function EnrollPage() {
   const planPrices = await getCoursePlanPrices();
+  const offerActive = isOfferActive();
   return (
-    <EnrollClient
-      preSelectedCourse={course}
-      preSelectedPlan={isPlanId(plan) ? plan : undefined}
-      planPrices={planPrices}
-      offerActive={isOfferActive()}
-    />
+    <Suspense
+      fallback={
+        <EnrollClient planPrices={planPrices} offerActive={offerActive} />
+      }
+    >
+      <EnrollFromQuery planPrices={planPrices} offerActive={offerActive} />
+    </Suspense>
   );
 }

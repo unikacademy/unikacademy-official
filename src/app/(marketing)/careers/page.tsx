@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { CareersClient } from "./CareersClient";
+import { getActiveJobs } from "@/modules/jobs/server/public";
 
 export const metadata: Metadata = {
   title: "Careers at UNIK Academy – Join Our Teaching Team",
@@ -37,12 +38,13 @@ interface Job {
   eligibility: string[];
 }
 
+// Jobs come from Supabase; re-generate at most once a minute so jobs published
+// in the dashboard show up without a redeploy.
+export const revalidate = 60;
+
 async function getJobs(): Promise<Job[]> {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
-    const res = await fetch(`${baseUrl}/api/jobs`, { cache: "no-store" });
-    if (!res.ok) return [];
-    return res.json();
+    return (await getActiveJobs()) as unknown as Job[];
   } catch {
     return [];
   }

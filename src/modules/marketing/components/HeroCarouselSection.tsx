@@ -89,18 +89,61 @@ export default function HeroCarouselSection({ courses, offerActive = false }: Pr
     getReducedMotion,
     () => false,
   );
-  const [progress, setProgress] = useState(0);
-  const progressRef = useRef<number>(0);
+  // The progress bar is written straight to the DOM: keeping it in state would
+  // re-render this whole section on every animation frame.
+  const sectionRef = useRef<HTMLElement>(null);
+  const barRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number>(0);
   const startRef = useRef<number | null>(null);
   const pausedRef = useRef(false);
+  const offscreenRef = useRef(false);
+  // The 3D scene (three.js, ~900 KB) mounts once the browser is idle, so it
+  // doesn't compete with first paint and hydration.
+  const [sceneReady, setSceneReady] = useState(false);
+
+  useEffect(() => {
+    if (reducedMotion) return;
+    if (typeof window.requestIdleCallback === "function") {
+      const id = window.requestIdleCallback(() => setSceneReady(true), {
+        timeout: 2500,
+      });
+      return () => window.cancelIdleCallback(id);
+    }
+    const id = setTimeout(() => setSceneReady(true), 1200);
+    return () => clearTimeout(id);
+  }, [reducedMotion]);
+
+  // Stop auto-advancing while the hero is scrolled out of view or the tab is
+  // in the background.
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+    let onScreen = true;
+    const update = () => {
+      offscreenRef.current = !onScreen || document.hidden;
+    };
+    const observer = new IntersectionObserver(([entry]) => {
+      onScreen = entry.isIntersecting;
+      update();
+    });
+    observer.observe(el);
+    document.addEventListener("visibilitychange", update);
+    return () => {
+      observer.disconnect();
+      document.removeEventListener("visibilitychange", update);
+    };
+  }, []);
+
+  function setBar(pct: number) {
+    if (barRef.current) barRef.current.style.transform = `scaleX(${pct / 100})`;
+  }
 
   useEffect(() => {
     if (reducedMotion) return;
     pausedRef.current = paused;
 
     function tick(ts: number) {
-      if (pausedRef.current) {
+      if (pausedRef.current || offscreenRef.current) {
         startRef.current = null;
         rafRef.current = requestAnimationFrame(tick);
         return;
@@ -108,8 +151,7 @@ export default function HeroCarouselSection({ courses, offerActive = false }: Pr
       if (startRef.current === null) startRef.current = ts;
       const elapsed = ts - startRef.current;
       const pct = Math.min((elapsed / INTERVAL) * 100, 100);
-      progressRef.current = pct;
-      setProgress(pct);
+      setBar(pct);
       if (elapsed >= INTERVAL) {
         startRef.current = null;
         setCurrent((c) => c + 1);
@@ -135,6 +177,7 @@ export default function HeroCarouselSection({ courses, offerActive = false }: Pr
 
   return (
     <section
+      ref={sectionRef}
       className="relative overflow-hidden text-white"
       style={{
         overflowX: "hidden",
@@ -142,9 +185,11 @@ export default function HeroCarouselSection({ courses, offerActive = false }: Pr
       }}
     >
       {/* 3D Canvas */}
-      <Suspense fallback={null}>
-        <HeroScene />
-      </Suspense>
+      {sceneReady && !reducedMotion && (
+        <Suspense fallback={null}>
+          <HeroScene />
+        </Suspense>
+      )}
 
       {/* Noise texture overlay */}
       <div
@@ -339,9 +384,11 @@ export default function HeroCarouselSection({ courses, offerActive = false }: Pr
               {/* Progress bar */}
               <div className="absolute bottom-0 left-0 right-0 h-0.5" style={{ background: "rgba(255,255,255,0.06)" }}>
                 <div
+                  ref={barRef}
                   className="h-full transition-none"
                   style={{
-                    width: `${progress}%`,
+                    transform: "scaleX(0)",
+                    transformOrigin: "left",
                     background: "linear-gradient(90deg, #c0a84f, #d4bc72)",
                     boxShadow: "0 0 8px rgba(192,168,79,0.6)",
                   }}
@@ -354,7 +401,7 @@ export default function HeroCarouselSection({ courses, offerActive = false }: Pr
               {slides.map((_, i) => (
                 <button
                   key={i}
-                  onClick={() => { setCurrent(i); startRef.current = null; setProgress(0); }}
+                  onClick={() => { setCurrent(i); startRef.current = null; setBar(0); }}
                   aria-label={`Go to slide ${i + 1}`}
                   className="transition-all duration-300"
                   style={{
